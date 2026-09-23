@@ -1,0 +1,100 @@
+package com.thelastecho.reminder.presentation.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
+import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
+import com.thelastecho.reminder.data.local.ReminderDatabase
+import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
+import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
+import com.thelastecho.reminder.domain.usecase.GetRemindersUseCase
+import com.thelastecho.reminder.domain.usecase.SaveReminderUseCase
+import com.thelastecho.reminder.domain.usecase.ToggleReminderCompleteUseCase
+import com.thelastecho.reminder.presentation.editor.EditorViewModel
+import com.thelastecho.reminder.presentation.editor.ReminderEditorScreen
+import com.thelastecho.reminder.presentation.home.HomeScreen
+import com.thelastecho.reminder.presentation.home.HomeViewModel
+import com.thelastecho.reminder.presentation.settings.SettingsScreen
+import com.thelastecho.reminder.presentation.settings.SettingsViewModel
+
+@Composable
+fun NavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val database = remember { ReminderDatabase.getInstance(context) }
+    val repository = remember { ReminderRepositoryImpl(database.reminderDao(), database.categoryDao()) }
+    val alarmScheduler = remember { AndroidAlarmScheduler(context) }
+    val preferencesRepository = remember { UserPreferencesRepository(context) }
+
+    NavHost(
+        navController = navController,
+        startDestination = NavDestination.Home.route,
+        modifier = modifier
+    ) {
+        composable(NavDestination.Home.route) {
+            val homeViewModel = remember {
+                HomeViewModel(
+                    getRemindersUseCase = GetRemindersUseCase(repository),
+                    toggleReminderCompleteUseCase = ToggleReminderCompleteUseCase(repository, alarmScheduler),
+                    deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
+                    repository = repository
+                )
+            }
+            HomeScreen(
+                viewModel = homeViewModel,
+                onNavigateToEditor = { reminderId ->
+                    navController.navigate(NavDestination.Editor.createRoute(reminderId))
+                },
+                onNavigateToSettings = {
+                    navController.navigate(NavDestination.Settings.route)
+                }
+            )
+        }
+
+        composable(
+            route = "editor?reminderId={reminderId}",
+            arguments = listOf(
+                navArgument("reminderId") {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
+        ) { backStackEntry ->
+            val reminderIdArg = backStackEntry.arguments?.getLong("reminderId")
+            val reminderId = if (reminderIdArg != null && reminderIdArg > 0) reminderIdArg else null
+
+            val editorViewModel = remember(reminderId) {
+                EditorViewModel(
+                    reminderId = reminderId,
+                    saveReminderUseCase = SaveReminderUseCase(repository, alarmScheduler),
+                    deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
+                    repository = repository
+                )
+            }
+
+            ReminderEditorScreen(
+                viewModel = editorViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavDestination.Settings.route) {
+            val settingsViewModel = remember {
+                SettingsViewModel(preferencesRepository = preferencesRepository)
+            }
+            SettingsScreen(
+                viewModel = settingsViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+    }
+}

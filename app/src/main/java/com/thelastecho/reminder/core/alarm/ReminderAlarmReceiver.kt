@@ -1,0 +1,26 @@
+package com.thelastecho.reminder.core.alarm
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import com.thelastecho.reminder.core.notification.ReminderNotificationManager
+
+class ReminderAlarmReceiver : BroadcastReceiver() {
+
+    override fun onReceive(context: Context, intent: Intent) {
+        val reminderId = intent.getLongExtra(AndroidAlarmScheduler.EXTRA_REMINDER_ID, -1L)
+        if (reminderId == -1L) return
+
+        val title = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_TITLE) ?: "Reminder"
+        val notes = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTES) ?: ""
+        val priority = intent.getIntExtra(AndroidAlarmScheduler.EXTRA_REMINDER_PRIORITY, 0)
+
+        val notificationManager = ReminderNotificationManager(context)
+        notificationManager.showReminderNotification(
+            reminderId = reminderId,
+            title = title,
+            notes = notes,
+            priorityLevel = priority
+        )
+    }
+}
