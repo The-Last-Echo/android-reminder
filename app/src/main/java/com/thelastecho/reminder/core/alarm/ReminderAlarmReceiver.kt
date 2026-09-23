@@ -14,6 +14,8 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         val title = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_TITLE) ?: "Reminder"
         val notes = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTES) ?: ""
         val priority = intent.getIntExtra(AndroidAlarmScheduler.EXTRA_REMINDER_PRIORITY, 0)
+        val photoUri = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_PHOTO_URI)
+        val style = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTIFICATION_STYLE)
 
         val notificationManager = ReminderNotificationManager(
             context,
@@ -23,7 +25,9 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
             reminderId = reminderId,
             title = title,
             notes = notes,
-            priorityLevel = priority
+            priorityLevel = priority,
+            photoUri = photoUri,
+            reminderStyle = style
         )
     }
 }

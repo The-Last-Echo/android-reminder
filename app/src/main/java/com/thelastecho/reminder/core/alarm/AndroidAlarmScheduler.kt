@@ -22,6 +22,8 @@ class AndroidAlarmScheduler(
             putExtra(EXTRA_REMINDER_TITLE, reminder.title)
             putExtra(EXTRA_REMINDER_NOTES, reminder.notes)
             putExtra(EXTRA_REMINDER_PRIORITY, reminder.priority.level)
+            putExtra(EXTRA_REMINDER_PHOTO_URI, reminder.imageUri)
+            putExtra(EXTRA_REMINDER_NOTIFICATION_STYLE, reminder.notificationStyle)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
@@ -79,5 +81,7 @@ class AndroidAlarmScheduler(
         const val EXTRA_REMINDER_TITLE = "extra_reminder_title"
         const val EXTRA_REMINDER_NOTES = "extra_reminder_notes"
         const val EXTRA_REMINDER_PRIORITY = "extra_reminder_priority"
+        const val EXTRA_REMINDER_PHOTO_URI = "extra_reminder_photo_uri"
+        const val EXTRA_REMINDER_NOTIFICATION_STYLE = "extra_reminder_notification_style"
     }
 }

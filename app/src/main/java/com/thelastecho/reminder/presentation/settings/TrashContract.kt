@@ -4,7 +4,8 @@ import com.thelastecho.reminder.domain.model.Reminder
 
 data class TrashUiState(
     val deletedReminders: List<Reminder> = emptyList(),
-    val isLoading: Boolean = true
+    val isLoading: Boolean = true,
+    val searchQuery: String = ""
 )
 
 sealed interface TrashIntent {
@@ -12,6 +13,7 @@ sealed interface TrashIntent {
     data class RestoreReminder(val reminderId: Long) : TrashIntent
     data class PermanentlyDeleteReminder(val reminderId: Long) : TrashIntent
     data object EmptyTrash : TrashIntent
+    data class UpdateSearch(val query: String) : TrashIntent
 }
 
 sealed interface TrashEffect {

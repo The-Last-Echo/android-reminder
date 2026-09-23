@@ -1,90 +1,43 @@
 # Architecture
 
-This project follows a clean architecture with MVI (Model-View-Intent) pattern and unidirectional data flow.
+Reminder is a single-module Android application. Package boundaries organize the code into presentation, domain, data, and platform infrastructure; these are Kotlin packages, not separate Gradle modules.
 
-## Project Structure
+## Runtime flow
 
-```
-app/src/main/java/com/thelastecho/reminder/
-├── presentation/          # UI Layer
-│   ├── home/             # Home screen (reminder list)
-│   ├── editor/           # Reminder creation/editing
-│   ├── settings/         # Settings screens
-│   ├── components/       # Reusable UI components
-│   └── navigation/       # Navigation graph
-├── domain/               # Business Logic Layer
-│   ├── model/            # Domain models
-│   ├── usecase/          # Business use cases
-│   └── repository/       # Repository interfaces
-├── data/                 # Data Layer
-│   ├── local/            # Local data (Room database)
-│   └── repository/       # Repository implementations
-└── core/                 # Core/Infrastructure
-    ├── alarm/            # Alarm scheduling
-    ├── notification/     # Notification management
-    ├── preferences/      # User preferences
-    └── designsystem/     # UI theming
+```text
+Compose screen -> ViewModel intent -> use case -> repository -> Room DAO
+       ^                                                    |
+       +------------- Flow-backed UI state -----------------+
 ```
 
-## Layers
+One-off navigation and snackbar events are emitted separately from persistent UI state. Screens collect ViewModel state with Compose. The Home screen filters the Room-backed reminder stream by date, category, completion, and search query.
 
-### Presentation Layer
-- **Screens**: Compose UI screens that observe ViewModels
-- **ViewModels**: Handle UI intents, emit UI states, coordinate use cases
-- **Components**: Reusable Compose components
-- **Navigation**: Navigation graph for screen routing
+## Packages
 
-### Domain Layer
-- **Models**: Pure data classes representing business entities
-- **Use Cases**: Single responsibility business operations
-- **Repository Interfaces**: Abstract data access contracts
+- `presentation/home`, `editor`, `settings`: Compose UI and screen state contracts.
+- `presentation/navigation`: Navigation Compose routes and manual object construction.
+- `domain/model`: Reminder, category, priority, repeat interval, and checklist models.
+- `domain/usecase`: Save, delete, query, completion, and snooze operations.
+- `domain/repository`: Repository interface used by the domain and presentation layers.
+- `data/local`: Room database, DAOs, and persistence entities.
+- `data/repository`: maps entities to domain models and implements repository operations.
+- `core/alarm`: schedules exact alarms when Android permits them and restores alarms on boot/package replacement.
+- `core/notification`: channels, alert styles, photo previews, and complete/snooze actions.
+- `core/preferences`: DataStore preferences for appearance and default notification style.
+- `core/designsystem`: Compose Material 3 colors, typography, and theme.
 
-### Data Layer
-- **Entities**: Database entities mapped to domain models
-- **DAOs**: Room database access objects
-- **Repository Implementations**: Concrete implementations of repository interfaces
+## Persistence
 
-### Core Layer
-- **Alarm Scheduling**: Android AlarmManager integration
-- **Notification Management**: Android notification system
-- **Preferences**: DataStore for user settings
-- **Design System**: Material 3 theming and styling
+Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted` and `deletedAt`; expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup.
 
-## MVI Pattern
+## Notifications
 
-The application uses the MVI pattern with unidirectional data flow:
+`SaveReminderUseCase` passes scheduled reminders to `AndroidAlarmScheduler`. The alarm intent carries the reminder text, image URI, priority, and optional per-reminder notification style. If no reminder-level style is selected, the notification manager uses the DataStore default. Android notification channel importance and full-screen access remain subject to OS/user settings.
 
-1. **Intent**: User actions (e.g., click, input)
-2. **ViewModel**: Processes intents, coordinates use cases
-3. **State**: Immutable UI state emitted by ViewModel
-4. **Effect**: One-time events (navigation, snackbar)
+## Theme and language
 
-### Example Flow
+`MainActivity` keeps the Android splash screen visible until DataStore emits appearance preferences, so the first Compose frame uses the saved theme. Light/dark and AMOLED appearance are applied by `ReminderTheme`. English and French are declared in the app locale configuration; Android 13+ provides the native per-app language settings UI.
 
-```
-User Action → Intent → ViewModel → Use Case → Repository → Database
-                                                      ↓
-                                              UI State ← ViewModel
-```
+## Build configuration
 
-## Data Flow
-
-- **Bottom-up**: Database → Repository → Use Case → ViewModel → UI
-- **Top-down**: User → Intent → ViewModel → Use Case → Repository → Database
-
-## Key Principles
-
-1. **Separation of Concerns**: Each layer has distinct responsibilities
-2. **Dependency Inversion**: Domain layer doesn't depend on data layer
-3. **Single Source of Truth**: Database is the primary data source
-4. **Immutability**: UI states are immutable
-5. **Reactive Programming**: Uses Kotlin Flow for data streams
-
-## Technology Stack
-
-- **Language**: Kotlin 2.1.0
-- **UI**: Jetpack Compose + Material 3
-- **Database**: Room (SQLite)
-- **Async**: Coroutines + Flow
-- **DI**: Manual (no framework)
-- **Preferences**: DataStore
+The project uses Kotlin 2.1, AGP 8.7, Compose, Room/KSP, Coroutines/Flow, and DataStore. SDK levels, dependencies, and versions are configured in `app/build.gradle.kts` and `gradle/libs.versions.toml`.

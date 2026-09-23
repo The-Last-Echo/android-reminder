@@ -72,6 +72,9 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE isDeleted = 1")
     suspend fun permanentlyDeleteAllDeletedReminders()
 
+    @Query("DELETE FROM reminders WHERE isDeleted = 1 AND deletedAt IS NOT NULL AND deletedAt <= :cutoffMillis")
+    suspend fun permanentlyDeleteExpiredReminders(cutoffMillis: Long)
+
     // Subtask management
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSubTasks(subTasks: List<SubTaskEntity>)

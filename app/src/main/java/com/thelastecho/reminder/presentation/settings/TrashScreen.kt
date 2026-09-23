@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Restore
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,6 +42,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
@@ -57,6 +60,7 @@ fun TrashScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showEmptyTrashDialog by remember { mutableStateOf(false) }
+    val visibleReminders = state.deletedReminders.filter { it.title.contains(state.searchQuery, true) || it.notes.contains(state.searchQuery, true) }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -71,16 +75,16 @@ fun TrashScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Trash") },
+                title = { Text(stringResource(com.thelastecho.reminder.R.string.trash_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(com.thelastecho.reminder.R.string.back))
                     }
                 },
                 actions = {
                     if (state.deletedReminders.isNotEmpty()) {
                         IconButton(onClick = { showEmptyTrashDialog = true }) {
-                            Icon(Icons.Default.DeleteForever, contentDescription = "Empty trash")
+                            Icon(Icons.Default.DeleteForever, contentDescription = stringResource(com.thelastecho.reminder.R.string.empty_trash))
                         }
                     }
                 },
@@ -90,11 +94,21 @@ fun TrashScreen(
             )
         }
     ) { innerPadding ->
+        Column(Modifier.fillMaxSize().padding(innerPadding)) {
+        if (state.deletedReminders.isNotEmpty()) {
+            OutlinedTextField(
+                value = state.searchQuery,
+                onValueChange = { viewModel.onIntent(TrashIntent.UpdateSearch(it)) },
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                singleLine = true,
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.search_trash)) }
+            )
+        }
         if (state.isLoading) {
             Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
+                    .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
                 androidx.compose.material3.CircularProgressIndicator()
@@ -103,7 +117,6 @@ fun TrashScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
                     .padding(32.dp),
                 contentAlignment = Alignment.Center
             ) {
@@ -116,28 +129,32 @@ fun TrashScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Trash is empty",
+                        text = stringResource(com.thelastecho.reminder.R.string.trash_empty),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Deleted reminders will appear here",
+                        text = stringResource(com.thelastecho.reminder.R.string.trash_empty_details),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                 }
             }
+        } else if (visibleReminders.isEmpty()) {
+            Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Text(stringResource(com.thelastecho.reminder.R.string.trash_no_matches), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         } else {
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                    .weight(1f)
+                    .fillMaxWidth()
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(
-                    items = state.deletedReminders,
+                    items = visibleReminders,
                     key = { it.id }
                 ) { reminder ->
                     DeletedReminderItem(
@@ -148,13 +165,14 @@ fun TrashScreen(
                 }
             }
         }
+        }
     }
 
     if (showEmptyTrashDialog) {
         AlertDialog(
             onDismissRequest = { showEmptyTrashDialog = false },
-            title = { Text("Empty Trash") },
-            text = { Text("Are you sure you want to permanently delete all reminders in the trash? This action cannot be undone.") },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.empty_trash)) },
+            text = { Text(stringResource(com.thelastecho.reminder.R.string.empty_trash_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -162,12 +180,12 @@ fun TrashScreen(
                         showEmptyTrashDialog = false
                     }
                 ) {
-                    Text("Empty")
+                    Text(stringResource(com.thelastecho.reminder.R.string.empty_trash))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showEmptyTrashDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             }
         )
@@ -182,6 +200,9 @@ private fun DeletedReminderItem(
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
     val deletedDate = reminder.deletedAt?.let { dateFormat.format(Date(it)) } ?: "Unknown"
+    val remainingDays = reminder.deletedAt?.let {
+        ((it + 90L * 24 * 60 * 60 * 1000 - System.currentTimeMillis()).coerceAtLeast(0) + 86_399_999) / 86_400_000
+    } ?: 0
 
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -204,10 +225,11 @@ private fun DeletedReminderItem(
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Deleted: $deletedDate",
+                text = stringResource(com.thelastecho.reminder.R.string.deleted_at_date, deletedDate),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Text(stringResource(com.thelastecho.reminder.R.string.days_until_deletion, remainingDays.toInt()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -216,12 +238,12 @@ private fun DeletedReminderItem(
                 TextButton(onClick = onPermanentlyDelete) {
                     Icon(Icons.Default.DeleteForever, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.size(4.dp))
-                    Text("Delete Forever")
+                    Text(stringResource(com.thelastecho.reminder.R.string.delete_forever))
                 }
                 TextButton(onClick = onRestore) {
                     Icon(Icons.Default.Restore, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.size(4.dp))
-                    Text("Restore")
+                    Text(stringResource(com.thelastecho.reminder.R.string.restore))
                 }
             }
         }

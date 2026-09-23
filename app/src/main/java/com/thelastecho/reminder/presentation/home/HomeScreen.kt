@@ -164,125 +164,114 @@ fun HomeScreen(
             state = pullToRefreshState,
             modifier = Modifier.fillMaxSize()
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-            // Quick Filter Cards (Samsung Reminder style summary)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                FilterSummaryCard(
-                    title = stringResource(com.thelastecho.reminder.R.string.today),
-                    count = state.todayCount,
-                    icon = Icons.Outlined.Today,
-                    isSelected = state.selectedFilter == ReminderFilter.TODAY,
-                    onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.TODAY)) },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterSummaryCard(
-                    title = stringResource(com.thelastecho.reminder.R.string.scheduled),
-                    count = state.scheduledCount,
-                    icon = Icons.Outlined.Event,
-                    isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
-                    onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.SCHEDULED)) },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterSummaryCard(
-                    title = stringResource(com.thelastecho.reminder.R.string.all),
-                    count = state.allCount,
-                    icon = Icons.Outlined.Notifications,
-                    isSelected = state.selectedFilter == ReminderFilter.ALL,
-                    onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.ALL)) },
-                    modifier = Modifier.weight(1f)
-                )
-                FilterSummaryCard(
-                    title = stringResource(com.thelastecho.reminder.R.string.done),
-                    count = state.completedCount,
-                    icon = Icons.Outlined.CheckCircle,
-                    isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
-                    onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.COMPLETED)) },
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Categories horizontal list
-            if (state.categories.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 16.dp, vertical = 6.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterChip(
-                        selected = state.selectedCategoryId == null,
-                        onClick = { viewModel.onIntent(HomeIntent.SelectCategory(null)) },
-                        label = { Text(stringResource(com.thelastecho.reminder.R.string.all_categories)) }
-                    )
-                    state.categories.forEach { category ->
-                        FilterChip(
-                            selected = state.selectedCategoryId == category.id,
-                            onClick = { viewModel.onIntent(HomeIntent.SelectCategory(category.id)) },
-                            label = { Text(category.name) }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        FilterSummaryCard(
+                            title = stringResource(com.thelastecho.reminder.R.string.today),
+                            count = state.todayCount,
+                            icon = Icons.Outlined.Today,
+                            isSelected = state.selectedFilter == ReminderFilter.TODAY,
+                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.TODAY)) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilterSummaryCard(
+                            title = stringResource(com.thelastecho.reminder.R.string.scheduled),
+                            count = state.scheduledCount,
+                            icon = Icons.Outlined.Event,
+                            isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
+                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.SCHEDULED)) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilterSummaryCard(
+                            title = stringResource(com.thelastecho.reminder.R.string.all),
+                            count = state.allCount,
+                            icon = Icons.Outlined.Notifications,
+                            isSelected = state.selectedFilter == ReminderFilter.ALL,
+                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.ALL)) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        FilterSummaryCard(
+                            title = stringResource(com.thelastecho.reminder.R.string.done),
+                            count = state.completedCount,
+                            icon = Icons.Outlined.CheckCircle,
+                            isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
+                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.COMPLETED)) },
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Reminders List / Empty State
-            if (state.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else if (state.reminders.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            imageVector = Icons.Outlined.NotificationsActive,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = if (state.selectedFilter == ReminderFilter.COMPLETED) {
-                                stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
-                            } else {
-                                stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
-                            },
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                        )
+                if (state.categories.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            FilterChip(
+                                selected = state.selectedCategoryId == null,
+                                onClick = { viewModel.onIntent(HomeIntent.SelectCategory(null)) },
+                                label = { Text(stringResource(com.thelastecho.reminder.R.string.all_categories)) }
+                            )
+                            state.categories.forEach { category ->
+                                FilterChip(
+                                    selected = state.selectedCategoryId == category.id,
+                                    onClick = { viewModel.onIntent(HomeIntent.SelectCategory(category.id)) },
+                                    label = { Text(category.name) }
+                                )
+                            }
+                        }
                     }
                 }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    items(
-                        items = state.reminders,
-                        key = { it.id }
-                    ) { reminder ->
+
+                if (state.isLoading) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(280.dp),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                } else if (state.reminders.isEmpty()) {
+                    item {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(300.dp).padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    imageVector = Icons.Outlined.NotificationsActive,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = if (state.selectedFilter == ReminderFilter.COMPLETED) {
+                                        stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
+                                    } else {
+                                        stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
+                                    },
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(items = state.reminders, key = { it.id }) { reminder ->
                         ReminderItem(
                             reminder = reminder,
                             onToggleComplete = {
@@ -297,7 +286,7 @@ fun HomeScreen(
         }
     }
 }
-}
+
 @Composable
 private fun FilterSummaryCard(
     title: String,

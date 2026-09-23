@@ -20,6 +20,7 @@ interface ReminderRepository {
     suspend fun restoreReminder(reminderId: Long)
     suspend fun permanentlyDeleteReminder(reminderId: Long)
     suspend fun permanentlyDeleteAllDeletedReminders()
+    suspend fun permanentlyDeleteExpiredReminders(cutoffMillis: Long)
     fun getDeletedReminders(): Flow<List<Reminder>>
     suspend fun toggleReminderComplete(reminderId: Long, isCompleted: Boolean)
     suspend fun snoozeReminder(reminderId: Long, snoozeDurationMillis: Long)

@@ -30,6 +30,8 @@ class HomeViewModel(
     private val repository: ReminderRepository
 ) : ViewModel() {
 
+    private var latestReminders: List<Reminder> = emptyList()
+
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -45,6 +47,7 @@ class HomeViewModel(
             repository.getAllReminders(),
             repository.getAllCategories()
         ) { allReminders, categories ->
+            latestReminders = allReminders
             val nowMillis = System.currentTimeMillis()
             val today = LocalDate.now()
             val zone = ZoneId.systemDefault()
@@ -123,24 +126,38 @@ class HomeViewModel(
                     _effect.send(HomeEffect.NavigateToSettings)
                 }
             }
-            HomeIntent.Refresh -> {
-                refreshFilteredList()
-            }
+            HomeIntent.Refresh -> reloadReminders()
         }
     }
 
     private fun refreshFilteredList() {
-        viewModelScope.launch {
-            val allReminders = repository.getActiveReminders().first()
-            // The observation in combine already auto-updates when state changes
-            _uiState.update { current ->
-                val updated = applyFilterAndSearch(
-                    allReminders = allReminders,
+        _uiState.update { current ->
+            current.copy(
+                reminders = applyFilterAndSearch(
+                    allReminders = latestReminders,
                     filter = current.selectedFilter,
                     categoryId = current.selectedCategoryId,
                     query = current.searchQuery
                 )
-                current.copy(reminders = updated)
+            )
+        }
+    }
+
+    private fun reloadReminders() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val allReminders = repository.getAllReminders().first()
+            latestReminders = allReminders
+            _uiState.update { current ->
+                current.copy(
+                    reminders = applyFilterAndSearch(
+                        allReminders = allReminders,
+                        filter = current.selectedFilter,
+                        categoryId = current.selectedCategoryId,
+                        query = current.searchQuery
+                    ),
+                    isLoading = false
+                )
             }
         }
     }

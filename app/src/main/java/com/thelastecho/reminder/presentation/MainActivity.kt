@@ -5,6 +5,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
+import kotlinx.coroutines.flow.map
 import com.thelastecho.reminder.core.designsystem.ReminderTheme
 import com.thelastecho.reminder.core.preferences.DarkThemeConfig
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
@@ -25,7 +27,11 @@ import com.thelastecho.reminder.presentation.navigation.NavGraph
 
 class MainActivity : ComponentActivity() {
 
+    @Volatile private var themeSettingsLoaded = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { !themeSettingsLoaded }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -33,9 +39,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val userPreferences = remember { UserPreferencesRepository(applicationContext) }
-            val themeSettings by userPreferences.themeSettings.collectAsState(
-                initial = com.thelastecho.reminder.core.preferences.AppThemeSettings()
+            val loadedThemeSettings by userPreferences.themeSettings
+                .map { it as com.thelastecho.reminder.core.preferences.AppThemeSettings? }
+                .collectAsState(initial = null)
+            val themeSettings = loadedThemeSettings ?: com.thelastecho.reminder.core.preferences.AppThemeSettings(
+                darkThemeConfig = if (isSystemInDarkTheme()) DarkThemeConfig.DARK else DarkThemeConfig.LIGHT
             )
+            androidx.compose.runtime.SideEffect { themeSettingsLoaded = loadedThemeSettings != null }
 
             // Request POST_NOTIFICATIONS runtime permission on Android 13+ (API 33+)
             RequestNotificationPermissionIfNeeded()

@@ -67,6 +67,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -90,6 +91,7 @@ fun ReminderEditorScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     var showDatePicker by remember { mutableStateOf(false) }
@@ -101,6 +103,7 @@ fun ReminderEditorScreen(
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
+        if (uri != null) runCatching { context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) }
         viewModel.onIntent(EditorIntent.SetImageUri(uri?.toString()))
     }
 
@@ -120,7 +123,7 @@ fun ReminderEditorScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (state.reminderId != null) "Edit Reminder" else "New Reminder",
+                        text = if (state.reminderId != null) stringResource(com.thelastecho.reminder.R.string.edit_reminder) else stringResource(com.thelastecho.reminder.R.string.new_reminder),
                         style = MaterialTheme.typography.titleLarge
                     )
                 },
@@ -140,7 +143,7 @@ fun ReminderEditorScreen(
                         enabled = !state.isSaving
                     ) {
                         Text(
-                            text = "Save",
+                            text = stringResource(com.thelastecho.reminder.R.string.save),
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -163,8 +166,8 @@ fun ReminderEditorScreen(
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { viewModel.onIntent(EditorIntent.UpdateTitle(it)) },
-                label = { Text("What would you like to be reminded of?") },
-                placeholder = { Text("e.g. Call the doctor") },
+                label = { Text(stringResource(com.thelastecho.reminder.R.string.what_reminded)) },
+                placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.call_doctor)) },
                 isError = state.titleError != null,
                 supportingText = state.titleError?.let { { Text(it) } },
                 modifier = Modifier.fillMaxWidth(),
@@ -175,8 +178,8 @@ fun ReminderEditorScreen(
             OutlinedTextField(
                 value = state.notes,
                 onValueChange = { viewModel.onIntent(EditorIntent.UpdateNotes(it)) },
-                label = { Text("Notes (optional)") },
-                placeholder = { Text("Add extra details or links...") },
+                label = { Text(stringResource(com.thelastecho.reminder.R.string.notes_optional)) },
+                placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.add_extra_details)) },
                 minLines = 3,
                 maxLines = 6,
                 modifier = Modifier.fillMaxWidth(),
@@ -185,7 +188,7 @@ fun ReminderEditorScreen(
 
             // Date & Time Scheduling Section
             Text(
-                text = "Schedule & Alarm",
+                text = stringResource(com.thelastecho.reminder.R.string.schedule_alarm),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
 
@@ -208,7 +211,7 @@ fun ReminderEditorScreen(
                             ) {
                                 Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Set Date")
+                                Text(stringResource(com.thelastecho.reminder.R.string.set_date))
                             }
                         }
                     } else {
@@ -261,7 +264,7 @@ fun ReminderEditorScreen(
                                 value = state.repeatInterval.displayName,
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Repeat") },
+                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat)) },
                                 leadingIcon = { Icon(Icons.Outlined.Repeat, contentDescription = null) },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatDropdownExpanded) },
                                 modifier = Modifier
@@ -290,7 +293,7 @@ fun ReminderEditorScreen(
 
             // Priority Selector
             Text(
-                text = "Priority",
+                text = stringResource(com.thelastecho.reminder.R.string.priority),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
             Row(
@@ -319,10 +322,21 @@ fun ReminderEditorScreen(
                 }
             }
 
+            Text(stringResource(com.thelastecho.reminder.R.string.notification_style), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf(null to stringResource(com.thelastecho.reminder.R.string.notification_default), "SIMPLE" to stringResource(com.thelastecho.reminder.R.string.simple_style_name), "HEADS_UP" to stringResource(com.thelastecho.reminder.R.string.heads_up_style_name), "FULL_SCREEN" to stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)).forEach { (style, label) ->
+                    FilterChip(
+                        selected = state.notificationStyle == style,
+                        onClick = { viewModel.onIntent(EditorIntent.SetNotificationStyle(style)) },
+                        label = { Text(label) }
+                    )
+                }
+            }
+
             // Categories Selector
             if (state.categories.isNotEmpty()) {
                 Text(
-                    text = "Category",
+                    text = stringResource(com.thelastecho.reminder.R.string.category),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
                 )
                 Row(
@@ -334,7 +348,7 @@ fun ReminderEditorScreen(
                     FilterChip(
                         selected = state.categoryId == null,
                         onClick = { viewModel.onIntent(EditorIntent.SetCategory(null)) },
-                        label = { Text("No Category") }
+                        label = { Text(stringResource(com.thelastecho.reminder.R.string.no_category)) }
                     )
                     state.categories.forEach { category ->
                         FilterChip(
@@ -348,7 +362,7 @@ fun ReminderEditorScreen(
 
             // Checklist / Subtasks Section
             Text(
-                text = "Subtasks / Checklist",
+                text = stringResource(com.thelastecho.reminder.R.string.subtasks_checklist),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
 
@@ -399,7 +413,7 @@ fun ReminderEditorScreen(
                         OutlinedTextField(
                             value = newSubTaskText,
                             onValueChange = { newSubTaskText = it },
-                            placeholder = { Text("Add subtask...") },
+                            placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.add_subtask)) },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
                             shape = RoundedCornerShape(8.dp)
@@ -421,7 +435,7 @@ fun ReminderEditorScreen(
 
             // Image Attachment via System PhotoPicker
             Text(
-                text = "Attachment",
+                text = stringResource(com.thelastecho.reminder.R.string.attachment),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
             )
 
@@ -441,14 +455,14 @@ fun ReminderEditorScreen(
                         Icon(Icons.Outlined.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = if (state.imageUri != null) "Photo attached" else "Add a photo",
+                            text = if (state.imageUri != null) stringResource(com.thelastecho.reminder.R.string.photo_attached) else stringResource(com.thelastecho.reminder.R.string.add_photo),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
 
                     if (state.imageUri != null) {
                         IconButton(onClick = { viewModel.onIntent(EditorIntent.SetImageUri(null)) }) {
-                            Icon(Icons.Default.Clear, contentDescription = "Remove photo")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.remove_photo))
                         }
                     } else {
                         Button(
@@ -459,7 +473,7 @@ fun ReminderEditorScreen(
                             },
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Text("Select")
+                            Text(stringResource(com.thelastecho.reminder.R.string.select))
                         }
                     }
                 }

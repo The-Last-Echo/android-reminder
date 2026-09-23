@@ -13,6 +13,7 @@ data class Reminder(
     val repeatInterval: RepeatInterval = RepeatInterval.ONCE,
     val categoryId: Long? = null,
     val imageUri: String? = null,
+    val notificationStyle: String? = null,
     val subTasks: List<SubTask> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,

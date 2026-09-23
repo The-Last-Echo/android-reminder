@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         SubTaskEntity::class,
         CategoryEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class ReminderDatabase : RoomDatabase() {
@@ -64,8 +64,14 @@ abstract class ReminderDatabase : RoomDatabase() {
                         }
                     }
                 })
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
+        }
+
+        private val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE reminders ADD COLUMN notificationStyleId TEXT")
+            }
         }
 
         private val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {

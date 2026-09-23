@@ -14,6 +14,7 @@ data class EditorUiState(
     val repeatInterval: RepeatInterval = RepeatInterval.ONCE,
     val categoryId: Long? = null,
     val imageUri: String? = null,
+    val notificationStyle: String? = null,
     val subTasks: List<SubTask> = emptyList(),
     val categories: List<Category> = emptyList(),
     val isCompleted: Boolean = false,
@@ -31,6 +32,7 @@ sealed interface EditorIntent {
     data class SetRepeatInterval(val interval: RepeatInterval) : EditorIntent
     data class SetCategory(val categoryId: Long?) : EditorIntent
     data class SetImageUri(val uriString: String?) : EditorIntent
+    data class SetNotificationStyle(val style: String?) : EditorIntent
     data class AddSubTask(val text: String) : EditorIntent
     data class ToggleSubTask(val index: Int) : EditorIntent
     data class DeleteSubTask(val index: Int) : EditorIntent

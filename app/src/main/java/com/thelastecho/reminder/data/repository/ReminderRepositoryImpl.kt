@@ -76,6 +76,10 @@ class ReminderRepositoryImpl(
         reminderDao.permanentlyDeleteAllDeletedReminders()
     }
 
+    override suspend fun permanentlyDeleteExpiredReminders(cutoffMillis: Long) {
+        reminderDao.permanentlyDeleteExpiredReminders(cutoffMillis)
+    }
+
     override fun getDeletedReminders(): Flow<List<Reminder>> {
         return reminderDao.getDeletedRemindersWithSubTasks().map { list ->
             list.map { it.toDomain() }

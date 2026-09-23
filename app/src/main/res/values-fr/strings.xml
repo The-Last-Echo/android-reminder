@@ -97,6 +97,23 @@
     <string name="heads_up_notification">Heads-up - Alerte en haut de l\'écran</string>
     <string name="choose_notification_style">Choisir le style de notification</string>
     <string name="choose_theme">Choisir le thème</string>
+    <string name="simple_style_name">Simple</string>
+    <string name="full_screen_style_name">Plein écran</string>
+    <string name="heads_up_style_name">Bannière</string>
+    <string name="app_language">Langue de l’application</string>
+    <string name="add">Ajouter</string>
+    <string name="app_language_details">Choisir le français ou l’anglais dans les paramètres de langue Android</string>
+    <string name="app_version">Rappel v%1$s</string>
+    <string name="about_details">Sous licence GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder</string>
+    <string name="search_trash">Rechercher dans la corbeille</string>
+    <string name="trash_no_matches">Aucun rappel correspondant</string>
+    <string name="back">Retour</string>
+    <string name="deleted_at_date">Supprimé : %1$s</string>
+    <string name="days_until_deletion">%1$d jours avant la suppression définitive</string>
+    <string name="notification_default">Par défaut</string>
+    <string name="remove_photo">Supprimer la photo</string>
+    <string name="open_reminder">Ouvrir le rappel</string>
+    <string name="dismiss">Fermer</string>
     
     <!-- Priorities -->
     <string name="priority_high">Haute</string>

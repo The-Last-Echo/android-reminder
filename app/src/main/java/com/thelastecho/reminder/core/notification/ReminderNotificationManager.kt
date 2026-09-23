@@ -12,6 +12,7 @@ import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.MainActivity
+import com.thelastecho.reminder.presentation.ReminderFullScreenActivity
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -37,6 +38,11 @@ class ReminderNotificationManager(
                 setShowBadge(true)
             }
             notificationManager.createNotificationChannel(channel)
+            val simpleChannel = NotificationChannel(SIMPLE_CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = descriptionText
+                enableVibration(true)
+            }
+            notificationManager.createNotificationChannel(simpleChannel)
         }
     }
 
@@ -54,7 +60,9 @@ class ReminderNotificationManager(
         reminderId: Long,
         title: String,
         notes: String,
-        priorityLevel: Int
+        priorityLevel: Int,
+        photoUri: String? = null,
+        reminderStyle: String? = null
     ) {
         val tapIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -98,9 +106,10 @@ class ReminderNotificationManager(
             else -> 0xFF6750A4.toInt()
         }
 
-        val notificationStyle = getNotificationStyle()
+        val notificationStyle = reminderStyle?.let { runCatching { NotificationStyle.valueOf(it) }.getOrNull() } ?: getNotificationStyle()
 
-        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        val channelId = if (notificationStyle == NotificationStyle.SIMPLE) SIMPLE_CHANNEL_ID else CHANNEL_ID
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(notes.ifBlank { null })
@@ -113,6 +122,14 @@ class ReminderNotificationManager(
             .addAction(0, context.getString(R.string.action_complete), completePendingIntent)
             .addAction(0, context.getString(R.string.action_snooze), snoozePendingIntent)
 
+        photoUri?.let { rawUri ->
+            runCatching {
+                context.contentResolver.openInputStream(android.net.Uri.parse(rawUri))?.use { stream -> android.graphics.BitmapFactory.decodeStream(stream) }
+            }.getOrNull()?.let { bitmap ->
+                builder.setStyle(NotificationCompat.BigPictureStyle().bigPicture(bitmap).bigLargeIcon(null as android.graphics.Bitmap?))
+            }
+        }
+
         // Apply notification style
         when (notificationStyle) {
             NotificationStyle.SIMPLE -> {
@@ -122,7 +139,15 @@ class ReminderNotificationManager(
                 }
             }
             NotificationStyle.FULL_SCREEN -> {
-                builder.setFullScreenIntent(tapPendingIntent, true)
+                val fullScreenIntent = Intent(context, ReminderFullScreenActivity::class.java).apply {
+                    putExtra("reminder_id", reminderId)
+                    putExtra("reminder_title", title)
+                    putExtra("reminder_notes", notes)
+                    putExtra("reminder_photo_uri", photoUri)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }
+                val fullScreenPendingIntent = PendingIntent.getActivity(context, reminderId.toInt() + 1, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                builder.setFullScreenIntent(fullScreenPendingIntent, true)
                 builder.setPriority(NotificationCompat.PRIORITY_MAX)
             }
             NotificationStyle.HEADS_UP -> {
@@ -146,5 +171,6 @@ class ReminderNotificationManager(
 
     companion object {
         const val CHANNEL_ID = "reminder_notifications_channel"
+        const val SIMPLE_CHANNEL_ID = "reminder_notifications_simple_channel"
     }
 }

@@ -1,5 +1,8 @@
 package com.thelastecho.reminder.presentation.settings
 
+import android.content.Intent
+import android.os.Build
+import android.provider.Settings as AndroidSettings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +63,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var showThemeDialog by remember { mutableStateOf(false) }
     var showNotificationStyleDialog by remember { mutableStateOf(false) }
 
@@ -75,7 +80,7 @@ fun SettingsScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(com.thelastecho.reminder.R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -97,7 +102,7 @@ fun SettingsScreen(
         ) {
             // Categories Section
             Text(
-                text = "Categories",
+                text = stringResource(com.thelastecho.reminder.R.string.categories),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -120,9 +125,9 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.Category, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("Manage Categories", style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(com.thelastecho.reminder.R.string.manage_categories), style = MaterialTheme.typography.bodyLarge)
                                 Text(
-                                    "Create and manage custom categories",
+                                    stringResource(com.thelastecho.reminder.R.string.create_manage_categories),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -134,7 +139,7 @@ fun SettingsScreen(
 
             // Data Management Section
             Text(
-                text = "Data Management",
+                text = stringResource(com.thelastecho.reminder.R.string.data_management),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -157,9 +162,9 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("Trash", style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(com.thelastecho.reminder.R.string.trash), style = MaterialTheme.typography.bodyLarge)
                                 Text(
-                                    "View and restore deleted reminders",
+                                    stringResource(com.thelastecho.reminder.R.string.view_restore_deleted),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -171,7 +176,7 @@ fun SettingsScreen(
 
             // Notifications Section
             Text(
-                text = "Notifications",
+                text = stringResource(com.thelastecho.reminder.R.string.notifications),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -194,12 +199,12 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("Notification Style", style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(com.thelastecho.reminder.R.string.notification_style), style = MaterialTheme.typography.bodyLarge)
                                 Text(
                                     text = when (state.notificationStyle) {
-                                        com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> "Simple"
-                                        com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> "Full Screen"
-                                        com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> "Heads-up"
+                                        com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> stringResource(com.thelastecho.reminder.R.string.simple_style_name)
+                                        com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)
+                                        com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> stringResource(com.thelastecho.reminder.R.string.heads_up_style_name)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -212,7 +217,7 @@ fun SettingsScreen(
 
             // Appearance Section
             Text(
-                text = "Appearance",
+                text = stringResource(com.thelastecho.reminder.R.string.appearance),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -223,6 +228,25 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            val localeIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                Intent(AndroidSettings.ACTION_APP_LOCALE_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)
+                            } else {
+                                Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}"))
+                            }
+                            runCatching { context.startActivity(localeIntent) }
+                        }.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_language), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_language_details), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
                     // Theme selector item
                     Row(
                         modifier = Modifier
@@ -236,12 +260,12 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("App Theme", style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(com.thelastecho.reminder.R.string.app_theme), style = MaterialTheme.typography.bodyLarge)
                                 Text(
                                     text = when (state.darkThemeConfig) {
-                                        DarkThemeConfig.FOLLOW_SYSTEM -> "System default"
-                                        DarkThemeConfig.LIGHT -> "Light"
-                                        DarkThemeConfig.DARK -> "Dark"
+                                        DarkThemeConfig.FOLLOW_SYSTEM -> stringResource(com.thelastecho.reminder.R.string.system_default)
+                                        DarkThemeConfig.LIGHT -> stringResource(com.thelastecho.reminder.R.string.light)
+                                        DarkThemeConfig.DARK -> stringResource(com.thelastecho.reminder.R.string.dark)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -261,9 +285,9 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("AMOLED Pure Black", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.amoled_pure_black), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "Uses #000000 background in dark mode for maximum contrast and battery savings",
+                                stringResource(com.thelastecho.reminder.R.string.amoled_description),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -288,9 +312,9 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.ColorLens, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(16.dp))
                             Column {
-                                Text("Dynamic Colors", style = MaterialTheme.typography.bodyLarge)
+                                Text(stringResource(com.thelastecho.reminder.R.string.dynamic_colors), style = MaterialTheme.typography.bodyLarge)
                                 Text(
-                                    "Adapt colors to system wallpaper (Android 12+)",
+                                    stringResource(com.thelastecho.reminder.R.string.dynamic_colors_description),
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -306,7 +330,7 @@ fun SettingsScreen(
 
             // Privacy & Freedom Section
             Text(
-                text = "Privacy & Freedom",
+                text = stringResource(com.thelastecho.reminder.R.string.privacy_freedom),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -321,9 +345,9 @@ fun SettingsScreen(
                         Icon(Icons.Outlined.Security, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
                         Column {
-                            Text("100% Free & Open Source (FOSS)", style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.foss_description), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "No tracking, no analytics, no closed proprietary Google Play Services SDKs. All data stays strictly on your device.",
+                                stringResource(com.thelastecho.reminder.R.string.foss_details),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -334,7 +358,7 @@ fun SettingsScreen(
 
             // About Section
             Text(
-                text = "About",
+                text = stringResource(com.thelastecho.reminder.R.string.about),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = MaterialTheme.colorScheme.primary
             )
@@ -348,10 +372,10 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text("Reminder v${state.appVersion}", style = MaterialTheme.typography.bodyLarge)
+                        Column(modifier = Modifier.clickable { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/The-Last-Echo/android-reminder"))) } }) {
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_version, state.appVersion), style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                "Licensed under GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder",
+                                stringResource(com.thelastecho.reminder.R.string.about_details),
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -367,10 +391,10 @@ fun SettingsScreen(
             onDismissRequest = { showNotificationStyleDialog = false },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { showNotificationStyleDialog = false }) {
-                    Text("Close")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             },
-            title = { Text("Choose notification style") },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.choose_notification_style)) },
             text = {
                 Column {
                     com.thelastecho.reminder.core.preferences.NotificationStyle.entries.forEach { style ->
@@ -394,9 +418,9 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = when (style) {
-                                    com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> "Simple - Standard notification"
-                                    com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> "Full Screen - Opens as overlay"
-                                    com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> "Heads-up - Alert at top of screen"
+                                    com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> stringResource(com.thelastecho.reminder.R.string.simple_notification)
+                                    com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> stringResource(com.thelastecho.reminder.R.string.full_screen_notification)
+                                    com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> stringResource(com.thelastecho.reminder.R.string.heads_up_notification)
                                 }
                             )
                         }
@@ -411,10 +435,10 @@ fun SettingsScreen(
             onDismissRequest = { showThemeDialog = false },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = { showThemeDialog = false }) {
-                    Text("Close")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             },
-            title = { Text("Choose theme") },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.choose_theme)) },
             text = {
                 Column {
                     DarkThemeConfig.entries.forEach { config ->
@@ -438,9 +462,9 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = when (config) {
-                                    DarkThemeConfig.FOLLOW_SYSTEM -> "System default"
-                                    DarkThemeConfig.LIGHT -> "Light"
-                                    DarkThemeConfig.DARK -> "Dark"
+                                    DarkThemeConfig.FOLLOW_SYSTEM -> stringResource(com.thelastecho.reminder.R.string.system_default)
+                                    DarkThemeConfig.LIGHT -> stringResource(com.thelastecho.reminder.R.string.light)
+                                    DarkThemeConfig.DARK -> stringResource(com.thelastecho.reminder.R.string.dark)
                                 }
                             )
                         }

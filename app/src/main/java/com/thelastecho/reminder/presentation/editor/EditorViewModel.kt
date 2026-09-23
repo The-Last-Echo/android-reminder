@@ -59,6 +59,7 @@ class EditorViewModel(
                             repeatInterval = existing.repeatInterval,
                             categoryId = existing.categoryId,
                             imageUri = existing.imageUri,
+                            notificationStyle = existing.notificationStyle,
                             subTasks = existing.subTasks,
                             isCompleted = existing.isCompleted
                         )
@@ -118,6 +119,9 @@ class EditorViewModel(
             }
             is EditorIntent.SetImageUri -> {
                 _uiState.update { it.copy(imageUri = intent.uriString) }
+            }
+            is EditorIntent.SetNotificationStyle -> {
+                _uiState.update { it.copy(notificationStyle = intent.style) }
             }
             is EditorIntent.AddSubTask -> {
                 val text = intent.text.trim()
@@ -179,6 +183,7 @@ class EditorViewModel(
                 repeatInterval = state.repeatInterval,
                 categoryId = state.categoryId,
                 imageUri = state.imageUri,
+                notificationStyle = state.notificationStyle,
                 subTasks = state.subTasks
             )
 

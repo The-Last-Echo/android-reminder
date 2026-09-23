@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -77,7 +78,7 @@ fun CategoriesScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { Text("Manage Categories") },
+                title = { Text(stringResource(com.thelastecho.reminder.R.string.manage_categories_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -124,18 +125,18 @@ fun CategoriesScreen(
         
         AlertDialog(
             onDismissRequest = { viewModel.onIntent(CategoriesIntent.ShowAddDialog(false)) },
-            title = { Text("Add Category") },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.add_category)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
                         value = state.newCategoryName,
                         onValueChange = { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryName(it)) },
-                        label = { Text("Category name") },
+                        label = { Text(stringResource(com.thelastecho.reminder.R.string.category_name)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
                     
-                    Text("Color", style = MaterialTheme.typography.labelMedium)
+                    Text(stringResource(com.thelastecho.reminder.R.string.color), style = MaterialTheme.typography.labelMedium)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -178,12 +179,12 @@ fun CategoriesScreen(
                     onClick = { viewModel.onIntent(CategoriesIntent.AddCategory) },
                     enabled = state.newCategoryName.isNotBlank()
                 ) {
-                    Text("Add")
+                    Text(stringResource(com.thelastecho.reminder.R.string.add))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onIntent(CategoriesIntent.ShowAddDialog(false)) }) {
-                    Text("Cancel")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             }
         )
@@ -193,8 +194,8 @@ fun CategoriesScreen(
     showDeleteDialog?.let { categoryId ->
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
-            title = { Text("Delete Category") },
-            text = { Text("Are you sure you want to delete this category? Reminders in this category will not be deleted.") },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.delete_category)) },
+            text = { Text(stringResource(com.thelastecho.reminder.R.string.delete_category_confirmation)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -202,12 +203,12 @@ fun CategoriesScreen(
                         showDeleteDialog = null
                     }
                 ) {
-                    Text("Delete")
+                    Text(stringResource(com.thelastecho.reminder.R.string.delete))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = null }) {
-                    Text("Cancel")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             }
         )

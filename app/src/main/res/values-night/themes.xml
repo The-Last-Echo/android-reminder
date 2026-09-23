@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Reminder" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Reminder" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/app_window_background</item>
-        <item name="android:colorAccent">#6750A4</item>
+        <item name="android:colorAccent">#D0BCFF</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
     <style name="Theme.Reminder.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/app_window_background</item>
