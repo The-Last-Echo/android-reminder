@@ -5,6 +5,13 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val appVersionCode = providers.gradleProperty("appVersionCode")
+    .map { it.toInt() }
+    .getOrElse(1)
+
+val appVersionName = providers.gradleProperty("appVersionName")
+    .getOrElse("1.0.0")
+
 android {
     namespace = "com.thelastecho.reminder"
     compileSdk = 36
@@ -13,12 +20,24 @@ android {
         applicationId = "com.thelastecho.reminder"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = appVersionCode
+        versionName = appVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank() && file(keystorePath).exists()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
         }
     }
 
@@ -30,6 +49,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            val releaseSigning = signingConfigs.getByName("release")
+            if (releaseSigning.storeFile != null) {
+                signingConfig = releaseSigning
+            }
         }
         debug {
             applicationIdSuffix = ".debug"

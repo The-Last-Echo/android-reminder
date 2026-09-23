@@ -3,7 +3,7 @@ name: Build & Release
 on:
   push:
     branches: [ "main" ]
-    tags: [ "v*" ]
+    tags: [ "v*.*.*" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
@@ -13,12 +13,14 @@ permissions:
 
 jobs:
   build:
-    name: Build & Test APK
+    name: Build, Test & Release
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -32,51 +34,123 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Determine Version Name and Code
+        id: versioning
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+            # Strip leading 'v'
+            CLEAN_VERSION="${TAG_NAME#v}"
+            echo "Building for Tag: $TAG_NAME (Version: $CLEAN_VERSION)"
+            
+            # Split version numbers
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CLEAN_VERSION"
+            MAJOR=${MAJOR:-0}
+            MINOR=${MINOR:-0}
+            PATCH=${PATCH:-0}
+            
+            # Calculate integer versionCode (e.g. 1.0.0 -> 10000, 1.2.3 -> 10203)
+            VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+            
+            echo "APP_VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
+            echo "APP_VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+            echo "IS_TAG=true" >> $GITHUB_ENV
+          else
+            echo "Building branch: ${{ github.ref_name }}"
+            echo "APP_VERSION=1.0.0-dev" >> $GITHUB_ENV
+            echo "APP_VERSION_CODE=1" >> $GITHUB_ENV
+            echo "IS_TAG=false" >> $GITHUB_ENV
+          fi
+
+      - name: Validate Signing Secrets (on Tag push)
+        if: env.IS_TAG == 'true'
+        run: |
+          MISSING=0
+          if [ -z "${{ secrets.SIGNING_KEYSTORE }}" ]; then
+            echo "::error::Secret SIGNING_KEYSTORE is missing or empty!"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.KEYSTORE_PASSWORD }}" ]; then
+            echo "::error::Secret KEYSTORE_PASSWORD is missing or empty!"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.KEY_ALIAS }}" ]; then
+            echo "::error::Secret KEY_ALIAS is missing or empty!"
+            MISSING=1
+          fi
+          if [ -z "${{ secrets.KEY_PASSWORD }}" ]; then
+            echo "::error::Secret KEY_PASSWORD is missing or empty!"
+            MISSING=1
+          fi
+          if [ $MISSING -eq 1 ]; then
+            echo "::error::Release build failed: Required signing secrets are missing in repository settings."
+            exit 1
+          fi
+
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug -PappVersionCode=${{ env.APP_VERSION_CODE }} -PappVersionName=${{ env.APP_VERSION }}
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
+      - name: Decode Keystore for Release
+        if: env.IS_TAG == 'true'
+        run: |
+          echo "${{ secrets.SIGNING_KEYSTORE }}" | base64 -d > /tmp/release.keystore
+
+      - name: Build Signed Release APK
+        if: env.IS_TAG == 'true'
         env:
-          SIGNING_KEYSTORE: ${{ secrets.SIGNING_KEYSTORE }}
+          KEYSTORE_PATH: /tmp/release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: ./gradlew assembleRelease -PappVersionCode=${{ env.APP_VERSION_CODE }} -PappVersionName=${{ env.APP_VERSION }}
 
-      - name: Sign Release APK (if secrets provided)
-        id: sign_app
-        if: env.SIGNING_KEYSTORE != ''
-        uses: ralfirza/apk-signer-action@v1
-        with:
-          apk-path: app/build/outputs/apk/release/app-release-unsigned.apk
-          key-store-base64: ${{ secrets.SIGNING_KEYSTORE }}
-          key-alias: ${{ secrets.KEY_ALIAS }}
-          key-store-password: ${{ secrets.KEYSTORE_PASSWORD }}
-          key-password: ${{ secrets.KEY_PASSWORD }}
-
-      - name: Upload Debug APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: Reminder-debug
-          path: app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Upload Release APK Artifact
-        uses: actions/upload-artifact@v4
+      - name: Clean up Keystore File
         if: always()
-        with:
-          name: Reminder-release
-          path: app/build/outputs/apk/release/
+        run: rm -f /tmp/release.keystore
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Prepare Assets for Distribution
+        run: |
+          mkdir -p release-assets
+          cp app/build/outputs/apk/debug/app-debug.apk release-assets/reminder-v${{ env.APP_VERSION }}-debug.apk
+          if [ -f app/build/outputs/apk/release/app-release.apk ]; then
+            cp app/build/outputs/apk/release/app-release.apk release-assets/reminder-v${{ env.APP_VERSION }}.apk
+          fi
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Reminder-APKs-${{ env.APP_VERSION }}
+          path: release-assets/
+
+      - name: Generate Changelog
+        if: env.IS_TAG == 'true'
+        run: |
+          PREV_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}^" 2>/dev/null || echo "")
+          echo "## What's Changed in ${{ github.ref_name }}" > changelog.md
+          echo "" >> changelog.md
+          if [ -n "$PREV_TAG" ]; then
+            echo "Changes since $PREV_TAG:" >> changelog.md
+            git log --pretty=format:"* %s (%h)" "$PREV_TAG"..${{ github.ref_name }} >> changelog.md
+          else
+            echo "Initial release changes:" >> changelog.md
+            git log --pretty=format:"* %s (%h)" ${{ github.ref_name }} >> changelog.md
+          fi
+          echo "" >> changelog.md
+          echo "---" >> changelog.md
+          echo "**Compatibility**: Android 8.0+ (API 26 to 36). Fully compatible with Obtainium." >> changelog.md
+
+      - name: Publish GitHub Release
+        if: env.IS_TAG == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          name: Release ${{ github.ref_name }}
+          body_path: changelog.md
           files: |
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/release/*.apk
+            release-assets/reminder-v${{ env.APP_VERSION }}.apk
+            release-assets/reminder-v${{ env.APP_VERSION }}-debug.apk
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: false
