@@ -15,7 +15,10 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         val notes = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTES) ?: ""
         val priority = intent.getIntExtra(AndroidAlarmScheduler.EXTRA_REMINDER_PRIORITY, 0)
 
-        val notificationManager = ReminderNotificationManager(context)
+        val notificationManager = ReminderNotificationManager(
+            context,
+            com.thelastecho.reminder.core.preferences.UserPreferencesRepository(context)
+        )
         notificationManager.showReminderNotification(
             reminderId = reminderId,
             title = title,

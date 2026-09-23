@@ -18,7 +18,10 @@ class NotificationActionReceiver : BroadcastReceiver() {
         val reminderId = intent.getLongExtra(EXTRA_REMINDER_ID, -1L)
         if (reminderId == -1L) return
 
-        val notificationManager = ReminderNotificationManager(context)
+        val notificationManager = ReminderNotificationManager(
+            context,
+            com.thelastecho.reminder.core.preferences.UserPreferencesRepository(context)
+        )
         notificationManager.dismissNotification(reminderId)
 
         val pendingResult = goAsync()

@@ -26,6 +26,7 @@ sealed interface HomeIntent {
     data object CreateNewReminder : HomeIntent
     data class EditReminder(val reminderId: Long) : HomeIntent
     data object OpenSettings : HomeIntent
+    data object Refresh : HomeIntent
 }
 
 sealed interface HomeEffect {

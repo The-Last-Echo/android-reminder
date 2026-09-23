@@ -15,30 +15,30 @@ import kotlinx.coroutines.flow.Flow
 interface ReminderDao {
 
     @Transaction
-    @Query("SELECT * FROM reminders ORDER BY isCompleted ASC, CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
+    @Query("SELECT * FROM reminders WHERE isDeleted = 0 ORDER BY isCompleted ASC, CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
     fun getAllRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
     @Transaction
-    @Query("SELECT * FROM reminders WHERE isCompleted = 0 ORDER BY CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
+    @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND isDeleted = 0 ORDER BY CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
     fun getActiveRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
     @Transaction
-    @Query("SELECT * FROM reminders WHERE isCompleted = 1 ORDER BY completedAt DESC, createdAt DESC")
+    @Query("SELECT * FROM reminders WHERE isCompleted = 1 AND isDeleted = 0 ORDER BY completedAt DESC, createdAt DESC")
     fun getCompletedRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
     @Transaction
-    @Query("SELECT * FROM reminders WHERE categoryId = :categoryId ORDER BY isCompleted ASC, CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
+    @Query("SELECT * FROM reminders WHERE categoryId = :categoryId AND isDeleted = 0 ORDER BY isCompleted ASC, CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
     fun getRemindersByCategoryWithSubTasks(categoryId: Long): Flow<List<ReminderWithSubTasks>>
 
     @Transaction
-    @Query("SELECT * FROM reminders WHERE id = :id")
+    @Query("SELECT * FROM reminders WHERE id = :id AND isDeleted = 0")
     fun getReminderWithSubTasksById(id: Long): Flow<ReminderWithSubTasks?>
 
     @Transaction
-    @Query("SELECT * FROM reminders WHERE id = :id")
+    @Query("SELECT * FROM reminders WHERE id = :id AND isDeleted = 0")
     suspend fun getReminderWithSubTasksByIdOnce(id: Long): ReminderWithSubTasks?
 
-    @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND dueDateTimeEpochMillis > :currentMillis")
+    @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND isDeleted = 0 AND dueDateTimeEpochMillis > :currentMillis")
     suspend fun getActiveScheduledReminders(currentMillis: Long): List<ReminderEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -55,6 +55,22 @@ interface ReminderDao {
 
     @Query("UPDATE reminders SET dueDateTimeEpochMillis = :newDueTime, isCompleted = 0, completedAt = NULL WHERE id = :id")
     suspend fun snoozeReminder(id: Long, newDueTime: Long)
+
+    @Transaction
+    @Query("SELECT * FROM reminders WHERE isDeleted = 1 ORDER BY deletedAt DESC")
+    fun getDeletedRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
+
+    @Query("UPDATE reminders SET isDeleted = 1, deletedAt = :deletedAt WHERE id = :id")
+    suspend fun softDeleteReminder(id: Long, deletedAt: Long)
+
+    @Query("UPDATE reminders SET isDeleted = 0, deletedAt = NULL WHERE id = :id")
+    suspend fun restoreReminder(id: Long)
+
+    @Query("DELETE FROM reminders WHERE id = :id")
+    suspend fun permanentlyDeleteReminder(id: Long)
+
+    @Query("DELETE FROM reminders WHERE isDeleted = 1")
+    suspend fun permanentlyDeleteAllDeletedReminders()
 
     // Subtask management
     @Insert(onConflict = OnConflictStrategy.REPLACE)

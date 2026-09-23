@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         SubTaskEntity::class,
         CategoryEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class ReminderDatabase : RoomDatabase() {
@@ -64,7 +64,15 @@ abstract class ReminderDatabase : RoomDatabase() {
                         }
                     }
                 })
+                .addMigrations(MIGRATION_1_2)
                 .build()
+        }
+
+        private val MIGRATION_1_2 = object : androidx.room.migration.Migration(1, 2) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE reminders ADD COLUMN isDeleted INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE reminders ADD COLUMN deletedAt INTEGER")
+            }
         }
     }
 }

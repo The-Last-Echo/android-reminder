@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -122,16 +123,19 @@ class HomeViewModel(
                     _effect.send(HomeEffect.NavigateToSettings)
                 }
             }
+            HomeIntent.Refresh -> {
+                refreshFilteredList()
+            }
         }
     }
 
     private fun refreshFilteredList() {
         viewModelScope.launch {
-            val allReminders = repository.getActiveReminders()
+            val allReminders = repository.getActiveReminders().first()
             // The observation in combine already auto-updates when state changes
             _uiState.update { current ->
                 val updated = applyFilterAndSearch(
-                    allReminders = current.reminders,
+                    allReminders = allReminders,
                     filter = current.selectedFilter,
                     categoryId = current.selectedCategoryId,
                     query = current.searchQuery

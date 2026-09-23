@@ -21,8 +21,12 @@ import com.thelastecho.reminder.presentation.editor.EditorViewModel
 import com.thelastecho.reminder.presentation.editor.ReminderEditorScreen
 import com.thelastecho.reminder.presentation.home.HomeScreen
 import com.thelastecho.reminder.presentation.home.HomeViewModel
+import com.thelastecho.reminder.presentation.settings.CategoriesScreen
+import com.thelastecho.reminder.presentation.settings.CategoriesViewModel
 import com.thelastecho.reminder.presentation.settings.SettingsScreen
 import com.thelastecho.reminder.presentation.settings.SettingsViewModel
+import com.thelastecho.reminder.presentation.settings.TrashScreen
+import com.thelastecho.reminder.presentation.settings.TrashViewModel
 
 @Composable
 fun NavGraph(
@@ -93,6 +97,32 @@ fun NavGraph(
             }
             SettingsScreen(
                 viewModel = settingsViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCategories = {
+                    navController.navigate(NavDestination.Categories.route)
+                },
+                onNavigateToTrash = {
+                    navController.navigate(NavDestination.Trash.route)
+                }
+            )
+        }
+
+        composable(NavDestination.Categories.route) {
+            val categoriesViewModel = remember {
+                CategoriesViewModel(repository = repository)
+            }
+            CategoriesScreen(
+                viewModel = categoriesViewModel,
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(NavDestination.Trash.route) {
+            val trashViewModel = remember {
+                TrashViewModel(repository = repository)
+            }
+            TrashScreen(
+                viewModel = trashViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

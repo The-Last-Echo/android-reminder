@@ -16,6 +16,11 @@ interface ReminderRepository {
     suspend fun getReminderByIdOnce(id: Long): Reminder?
     suspend fun saveReminder(reminder: Reminder): Long
     suspend fun deleteReminder(reminderId: Long)
+    suspend fun softDeleteReminder(reminderId: Long)
+    suspend fun restoreReminder(reminderId: Long)
+    suspend fun permanentlyDeleteReminder(reminderId: Long)
+    suspend fun permanentlyDeleteAllDeletedReminders()
+    fun getDeletedReminders(): Flow<List<Reminder>>
     suspend fun toggleReminderComplete(reminderId: Long, isCompleted: Boolean)
     suspend fun snoozeReminder(reminderId: Long, snoozeDurationMillis: Long)
     suspend fun getActiveScheduledReminders(): List<Reminder>

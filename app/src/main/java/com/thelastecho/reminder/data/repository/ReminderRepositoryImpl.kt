@@ -57,7 +57,29 @@ class ReminderRepositoryImpl(
     }
 
     override suspend fun deleteReminder(reminderId: Long) {
-        reminderDao.deleteReminderById(reminderId)
+        reminderDao.softDeleteReminder(reminderId, System.currentTimeMillis())
+    }
+
+    override suspend fun softDeleteReminder(reminderId: Long) {
+        reminderDao.softDeleteReminder(reminderId, System.currentTimeMillis())
+    }
+
+    override suspend fun restoreReminder(reminderId: Long) {
+        reminderDao.restoreReminder(reminderId)
+    }
+
+    override suspend fun permanentlyDeleteReminder(reminderId: Long) {
+        reminderDao.permanentlyDeleteReminder(reminderId)
+    }
+
+    override suspend fun permanentlyDeleteAllDeletedReminders() {
+        reminderDao.permanentlyDeleteAllDeletedReminders()
+    }
+
+    override fun getDeletedReminders(): Flow<List<Reminder>> {
+        return reminderDao.getDeletedRemindersWithSubTasks().map { list ->
+            list.map { it.toDomain() }
+        }
     }
 
     override suspend fun toggleReminderComplete(reminderId: Long, isCompleted: Boolean) {

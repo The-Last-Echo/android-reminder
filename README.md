@@ -1,4 +1,4 @@
-# Reminder ⏰
+# Reminder
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![100% FOSS](https://img.shields.io/badge/FOSS-100%25-brightgreen.svg)](#privacy--foss-commitment)
@@ -10,22 +10,27 @@
 
 ---
 
-## ✨ Features
+## Features
 
-- 🔔 **Precise Scheduled Alarms**: Exact timing powered by `AlarmManager.setExactAndAllowWhileIdle`, guaranteeing timely alerts even in Doze mode.
-- ⚡ **Interactive Notification Actions**: Mark tasks as complete or snooze for 10 minutes directly from the notification shade without unlocking or opening the app.
-- 🔄 **Smart Recurring Reminders**: Supports Daily, Mon–Fri (skips weekends), Weekly, Monthly, and Yearly recurrences. Automatically computes and schedules the next occurrence upon completion.
-- 📋 **Subtasks & Checklists**: Break down complex reminders into actionable checklists with individual progress tracking.
-- 🏷️ **Categories**: Organize tasks by personal, work, shopping, or custom categories.
-- 🎯 **Priority Indicators**: High, Medium, Low, and Normal priority tags mapped to Material 3 Expressive tokens.
-- 📷 **Privacy-First Photo Attachments**: Attaches images using Android's native scoped `PhotoPicker` (`PickVisualMedia`), eliminating any need for dangerous full-device storage permissions.
-- 🖤 **True AMOLED Pure Black Theme**: Optional `#000000` deep black background mode designed specifically for OLED/AMOLED battery preservation and high contrast, alongside standard light and dark modes.
-- 🎨 **Dynamic Material You**: Adapts accent colors automatically to system wallpapers on Android 12+.
-- 🔋 **Reboot Resilience**: Uses `RECEIVE_BOOT_COMPLETED` to seamlessly restore all active future alarms after a device restart.
+- **Precise Scheduled Alarms**: Exact timing powered by `AlarmManager.setExactAndAllowWhileIdle`, guaranteeing timely alerts even in Doze mode.
+- **Interactive Notification Actions**: Mark tasks as complete or snooze for 10 minutes directly from the notification shade without unlocking or opening the app.
+- **Smart Recurring Reminders**: Supports Daily, Mon–Fri (skips weekends), Weekly, Monthly, and Yearly recurrences. Automatically computes and schedules the next occurrence upon completion.
+- **Subtasks & Checklists**: Break down complex reminders into actionable checklists with individual progress tracking.
+- **Categories**: Organize tasks by personal, work, shopping, or custom categories.
+- **Priority Indicators**: High, Medium, Low, and Normal priority tags mapped to Material 3 Expressive tokens.
+- **Privacy-First Photo Attachments**: Attaches images using Android's native scoped `PhotoPicker` (`PickVisualMedia`), eliminating any need for dangerous full-device storage permissions.
+- **True AMOLED Pure Black Theme**: Optional `#000000` deep black background mode designed specifically for OLED/AMOLED battery preservation and high contrast, alongside standard light and dark modes.
+- **Dynamic Material You**: Adapts accent colors automatically to system wallpapers on Android 12+.
+- **Reboot Resilience**: Uses `RECEIVE_BOOT_COMPLETED` to seamlessly restore all active future alarms after a device restart.
+- **Custom Categories**: Create and manage custom categories with colors in settings.
+- **Trash & Restore**: Soft delete reminders and restore them from trash.
+- **Notification Styles**: Choose between simple, full screen, or heads-up notification styles.
+- **Multi-language Support**: Supports English and French, following system language settings.
+- **Pull-to-Refresh**: Refresh the reminder list with pull-to-refresh gesture.
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
 | Home (AMOLED Dark) | Reminder Editor | Notification Actions | Settings |
 |:---:|:---:|:---:|:---:|
@@ -33,7 +38,7 @@
 
 ---
 
-## 🛡️ Privacy & FOSS Commitment
+## Privacy & FOSS Commitment
 
 | Component | Standard / Proprietary App | Reminder (This App) |
 | :--- | :--- | :--- |
@@ -45,7 +50,7 @@
 
 ---
 
-## 🔐 Android Permissions Breakdown
+## Android Permissions Breakdown
 
 Reminder strictly follows the **principle of least privilege**:
 
@@ -59,7 +64,7 @@ Reminder strictly follows the **principle of least privilege**:
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 - **Language**: Kotlin 2.1.0
 - **UI Toolkit**: Jetpack Compose + Material 3 (Material Design 3 Expressive)
@@ -73,7 +78,7 @@ Reminder strictly follows the **principle of least privilege**:
 
 ---
 
-## 🚀 Building & Compiling
+## Building & Compiling
 
 ### Prerequisites
 - JDK 21 (Temurin or OpenJDK recommended)
@@ -104,7 +109,7 @@ The output APK will be located at:
 
 ---
 
-## 🤖 CI / CD (GitHub Actions)
+## CI / CD (GitHub Actions)
 
 A preconfigured GitHub Actions workflow (`.github/workflows/build-and-release.yml`) handles:
 - Automated compilation and unit testing on every push and pull request.
@@ -119,7 +124,7 @@ To enable automated release signing, add the following secrets in **GitHub > Set
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are warmly welcome! Whether you are reporting bugs, proposing features, or submitting code improvements:
 1. Fork the repository.
@@ -133,7 +138,7 @@ Please ensure all contributions respect the 100% FOSS ethos (no proprietary libr
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **GNU General Public License v3.0 (GPLv3)**.  
 See the [LICENSE](LICENSE) file for details.

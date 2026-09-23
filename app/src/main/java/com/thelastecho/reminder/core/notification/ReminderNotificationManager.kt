@@ -9,10 +9,15 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.thelastecho.reminder.R
+import com.thelastecho.reminder.core.preferences.NotificationStyle
+import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.MainActivity
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 class ReminderNotificationManager(
-    private val context: Context
+    private val context: Context,
+    private val preferencesRepository: UserPreferencesRepository
 ) {
     private val notificationManager =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -32,6 +37,16 @@ class ReminderNotificationManager(
                 setShowBadge(true)
             }
             notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun getNotificationStyle(): NotificationStyle {
+        return try {
+            runBlocking {
+                preferencesRepository.themeSettings.first().notificationStyle
+            }
+        } catch (e: Exception) {
+            NotificationStyle.HEADS_UP
         }
     }
 
@@ -83,6 +98,8 @@ class ReminderNotificationManager(
             else -> 0xFF6750A4.toInt()
         }
 
+        val notificationStyle = getNotificationStyle()
+
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
@@ -95,6 +112,26 @@ class ReminderNotificationManager(
             .setContentIntent(tapPendingIntent)
             .addAction(0, context.getString(R.string.action_complete), completePendingIntent)
             .addAction(0, context.getString(R.string.action_snooze), snoozePendingIntent)
+
+        // Apply notification style
+        when (notificationStyle) {
+            NotificationStyle.SIMPLE -> {
+                builder.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Simple notifications don't interrupt
+                }
+            }
+            NotificationStyle.FULL_SCREEN -> {
+                builder.setFullScreenIntent(tapPendingIntent, true)
+                builder.setPriority(NotificationCompat.PRIORITY_MAX)
+            }
+            NotificationStyle.HEADS_UP -> {
+                builder.setPriority(NotificationCompat.PRIORITY_HIGH)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    // Heads-up is handled by channel importance
+                }
+            }
+        }
 
         try {
             NotificationManagerCompat.from(context).notify(reminderId.toInt(), builder.build())

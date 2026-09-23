@@ -7,4 +7,6 @@ sealed class NavDestination(val route: String) {
             if (reminderId != null && reminderId > 0) "editor?reminderId=$reminderId" else "editor"
     }
     data object Settings : NavDestination("settings")
+    data object Categories : NavDestination("categories")
+    data object Trash : NavDestination("trash")
 }

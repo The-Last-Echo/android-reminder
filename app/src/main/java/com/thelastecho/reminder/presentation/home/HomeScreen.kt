@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +60,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -91,6 +94,8 @@ fun HomeScreen(
         }
     }
 
+    val pullToRefreshState = rememberPullToRefreshState()
+
     Scaffold(
         modifier = modifier.fillMaxSize(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -101,7 +106,7 @@ fun HomeScreen(
                         OutlinedTextField(
                             value = state.searchQuery,
                             onValueChange = { viewModel.onIntent(HomeIntent.UpdateSearch(it)) },
-                            placeholder = { Text("Search reminders...") },
+                            placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.search_reminders)) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -118,7 +123,7 @@ fun HomeScreen(
                         )
                     } else {
                         Text(
-                            text = "Reminders",
+                            text = stringResource(com.thelastecho.reminder.R.string.reminders),
                             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold)
                         )
                     }
@@ -153,11 +158,17 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { viewModel.onIntent(HomeIntent.Refresh) },
+            state = pullToRefreshState,
+            modifier = Modifier.fillMaxSize()
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
             // Quick Filter Cards (Samsung Reminder style summary)
             Row(
                 modifier = Modifier
@@ -166,7 +177,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FilterSummaryCard(
-                    title = "Today",
+                    title = stringResource(com.thelastecho.reminder.R.string.today),
                     count = state.todayCount,
                     icon = Icons.Outlined.Today,
                     isSelected = state.selectedFilter == ReminderFilter.TODAY,
@@ -174,7 +185,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 FilterSummaryCard(
-                    title = "Scheduled",
+                    title = stringResource(com.thelastecho.reminder.R.string.scheduled),
                     count = state.scheduledCount,
                     icon = Icons.Outlined.Event,
                     isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
@@ -182,7 +193,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 FilterSummaryCard(
-                    title = "All",
+                    title = stringResource(com.thelastecho.reminder.R.string.all),
                     count = state.allCount,
                     icon = Icons.Outlined.Notifications,
                     isSelected = state.selectedFilter == ReminderFilter.ALL,
@@ -190,7 +201,7 @@ fun HomeScreen(
                     modifier = Modifier.weight(1f)
                 )
                 FilterSummaryCard(
-                    title = "Done",
+                    title = stringResource(com.thelastecho.reminder.R.string.done),
                     count = state.completedCount,
                     icon = Icons.Outlined.CheckCircle,
                     isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
@@ -211,7 +222,7 @@ fun HomeScreen(
                     FilterChip(
                         selected = state.selectedCategoryId == null,
                         onClick = { viewModel.onIntent(HomeIntent.SelectCategory(null)) },
-                        label = { Text("All Categories") }
+                        label = { Text(stringResource(com.thelastecho.reminder.R.string.all_categories)) }
                     )
                     state.categories.forEach { category ->
                         FilterChip(
@@ -247,16 +258,16 @@ fun HomeScreen(
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(
                             text = if (state.selectedFilter == ReminderFilter.COMPLETED) {
-                                "No completed reminders"
+                                stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
                             } else {
-                                "No reminders here"
+                                stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
                             },
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Tap the + button below to create one",
+                            text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
@@ -286,7 +297,7 @@ fun HomeScreen(
         }
     }
 }
-
+}
 @Composable
 private fun FilterSummaryCard(
     title: String,
@@ -347,5 +358,5 @@ private fun FilterSummaryCard(
                 }
             )
         }
+	}
     }
-}
