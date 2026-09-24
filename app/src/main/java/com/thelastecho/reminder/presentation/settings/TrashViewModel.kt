@@ -17,8 +17,6 @@ class TrashViewModel(
     private val repository: ReminderRepository
 ) : ViewModel() {
 
-    companion object { private const val RETENTION_MILLIS = 90L * 24 * 60 * 60 * 1000 }
-
     private val _uiState = MutableStateFlow(TrashUiState())
     val uiState: StateFlow<TrashUiState> = _uiState.asStateFlow()
 
@@ -30,7 +28,7 @@ class TrashViewModel(
     }
 
     private fun observeDeletedReminders() {
-        viewModelScope.launch { repository.permanentlyDeleteExpiredReminders(System.currentTimeMillis() - RETENTION_MILLIS) }
+        viewModelScope.launch { repository.permanentlyDeleteExpiredReminders(System.currentTimeMillis()) }
         repository.getDeletedReminders().onEach { reminders ->
             _uiState.update { 
                 it.copy(

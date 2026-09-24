@@ -30,7 +30,8 @@ class SettingsViewModel(
                     darkThemeConfig = settings.darkThemeConfig,
                     isAmoledMode = settings.isAmoledMode,
                     useDynamicColors = settings.useDynamicColors,
-                    notificationStyle = settings.notificationStyle
+                    notificationStyle = settings.notificationStyle,
+                    allowUrgentDndBypass = settings.allowUrgentDndBypass
                 )
             }
         }.launchIn(viewModelScope)
@@ -50,6 +51,9 @@ class SettingsViewModel(
                 }
                 is SettingsIntent.SetNotificationStyle -> {
                     preferencesRepository.setNotificationStyle(intent.style)
+                }
+                is SettingsIntent.SetUrgentDndBypass -> {
+                    preferencesRepository.setAllowUrgentDndBypass(intent.enabled)
                 }
                 SettingsIntent.NavigateToCategories -> {
                     _effect.send(SettingsEffect.NavigateToCategories)

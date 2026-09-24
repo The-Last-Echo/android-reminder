@@ -1,8 +1,12 @@
 package com.thelastecho.reminder.presentation.settings
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings as AndroidSettings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,6 +50,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
@@ -64,6 +69,12 @@ fun SettingsScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val packageVersion = remember(context) {
+        runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
+    }
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (!granted) openAppNotificationSettings(context)
+    }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showNotificationStyleDialog by remember { mutableStateOf(false) }
 
@@ -215,6 +226,57 @@ fun SettingsScreen(
                 }
             }
 
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.notification_access), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(com.thelastecho.reminder.R.string.notification_access_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TextButton(onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                            ) notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            else openAppNotificationSettings(context)
+                        }) { Text(stringResource(com.thelastecho.reminder.R.string.request_notification_permission)) }
+                        TextButton(onClick = {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                runCatching {
+                                    context.startActivity(Intent(AndroidSettings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).setData(android.net.Uri.parse("package:${context.packageName}")))
+                                }.onFailure { openAppNotificationSettings(context) }
+                            } else openAppNotificationSettings(context)
+                        }) { Text(stringResource(com.thelastecho.reminder.R.string.exact_alarm_access)) }
+                    }
+                    TextButton(onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                            runCatching {
+                                context.startActivity(Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).setData(android.net.Uri.parse("package:${context.packageName}")))
+                            }.onFailure { openAppNotificationSettings(context) }
+                        } else openAppNotificationSettings(context)
+                    }) { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_access)) }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(stringResource(com.thelastecho.reminder.R.string.allow_dnd_bypass), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.allow_dnd_bypass_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(
+                            checked = state.allowUrgentDndBypass,
+                            onCheckedChange = { enabled ->
+                                viewModel.onIntent(SettingsIntent.SetUrgentDndBypass(enabled))
+                                if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    val manager = context.getSystemService(android.app.NotificationManager::class.java)
+                                    if (!manager.isNotificationPolicyAccessGranted) {
+                                        runCatching { context.startActivity(Intent(AndroidSettings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)) }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+
             // Appearance Section
             Text(
                 text = stringResource(com.thelastecho.reminder.R.string.appearance),
@@ -231,7 +293,7 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth().clickable {
                             val localeIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                Intent(AndroidSettings.ACTION_APP_LOCALE_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)
+                                Intent(AndroidSettings.ACTION_APP_LOCALE_SETTINGS).setData(android.net.Uri.parse("package:${context.packageName}"))
                             } else {
                                 Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}"))
                             }
@@ -373,7 +435,7 @@ fun SettingsScreen(
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.clickable { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/The-Last-Echo/android-reminder"))) } }) {
-                            Text(stringResource(com.thelastecho.reminder.R.string.app_version, state.appVersion), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_version, packageVersion), style = MaterialTheme.typography.bodyLarge)
                             Text(
                                 stringResource(com.thelastecho.reminder.R.string.about_details),
                                 style = MaterialTheme.typography.bodyMedium,
@@ -472,5 +534,13 @@ fun SettingsScreen(
                 }
             }
         )
+    }
+}
+
+private fun openAppNotificationSettings(context: android.content.Context) {
+    runCatching {
+        context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName))
+    }.onFailure {
+        context.startActivity(Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}")))
     }
 }

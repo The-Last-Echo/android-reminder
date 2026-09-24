@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         SubTaskEntity::class,
         CategoryEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class ReminderDatabase : RoomDatabase() {
@@ -64,8 +64,15 @@ abstract class ReminderDatabase : RoomDatabase() {
                         }
                     }
                 })
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
+        }
+
+        private val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE reminders ADD COLUMN expiresAt INTEGER")
+                database.execSQL("UPDATE reminders SET expiresAt = deletedAt + 7776000000 WHERE isDeleted = 1 AND deletedAt IS NOT NULL")
+            }
         }
 
         private val MIGRATION_2_3 = object : androidx.room.migration.Migration(2, 3) {

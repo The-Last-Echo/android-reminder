@@ -25,8 +25,7 @@ class ReminderApp : Application() {
             PeriodicWorkRequestBuilder<com.thelastecho.reminder.data.local.TrashPurgeWorker>(1, TimeUnit.DAYS).build()
         )
         CoroutineScope(Dispatchers.IO).launch {
-            val cutoff = System.currentTimeMillis() - 90L * 24 * 60 * 60 * 1000
-            ReminderDatabase.getInstance(this@ReminderApp).reminderDao().permanentlyDeleteExpiredReminders(cutoff)
+            ReminderDatabase.getInstance(this@ReminderApp).reminderDao().permanentlyDeleteExpiredReminders(System.currentTimeMillis())
         }
     }
 }

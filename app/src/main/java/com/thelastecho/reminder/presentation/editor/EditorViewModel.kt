@@ -2,6 +2,7 @@ package com.thelastecho.reminder.presentation.editor
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.domain.model.Priority
 import com.thelastecho.reminder.domain.model.Reminder
 import com.thelastecho.reminder.domain.model.RepeatInterval
@@ -27,7 +28,8 @@ class EditorViewModel(
     private val reminderId: Long?,
     private val saveReminderUseCase: SaveReminderUseCase,
     private val deleteReminderUseCase: DeleteReminderUseCase,
-    private val repository: ReminderRepository
+    private val repository: ReminderRepository,
+    private val notificationManager: ReminderNotificationManager? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState(reminderId = reminderId))
@@ -203,7 +205,10 @@ class EditorViewModel(
     private fun deleteReminder() {
         val id = _uiState.value.reminderId ?: return
         viewModelScope.launch {
+            val title = _uiState.value.title
+            notificationManager?.dismissNotification(id)
             deleteReminderUseCase(id)
+            notificationManager?.showUndoDeleteNotification(id, title)
             _effect.send(EditorEffect.NavigateBack)
         }
     }

@@ -15,7 +15,8 @@ data class AppThemeSettings(
     val darkThemeConfig: DarkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
     val isAmoledMode: Boolean = true,
     val useDynamicColors: Boolean = true,
-    val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP
+    val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP,
+    val allowUrgentDndBypass: Boolean = false
 )
 
 enum class NotificationStyle {
@@ -37,6 +38,7 @@ class UserPreferencesRepository(private val context: Context) {
         val IS_AMOLED_MODE = booleanPreferencesKey("is_amoled_mode")
         val USE_DYNAMIC_COLORS = booleanPreferencesKey("use_dynamic_colors")
         val NOTIFICATION_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("notification_style")
+        val ALLOW_URGENT_DND_BYPASS = booleanPreferencesKey("allow_urgent_dnd_bypass")
     }
 
     val themeSettings: Flow<AppThemeSettings> = context.dataStore.data.map { preferences ->
@@ -49,6 +51,7 @@ class UserPreferencesRepository(private val context: Context) {
         val isAmoled = preferences[PreferencesKeys.IS_AMOLED_MODE] ?: true
         val dynamicColors = preferences[PreferencesKeys.USE_DYNAMIC_COLORS] ?: true
         val notificationStyleStr = preferences[PreferencesKeys.NOTIFICATION_STYLE] ?: NotificationStyle.HEADS_UP.name
+        val allowUrgentDndBypass = preferences[PreferencesKeys.ALLOW_URGENT_DND_BYPASS] ?: false
         val notificationStyle = try {
             NotificationStyle.valueOf(notificationStyleStr)
         } catch (e: Exception) {
@@ -59,19 +62,22 @@ class UserPreferencesRepository(private val context: Context) {
             darkThemeConfig = config,
             isAmoledMode = isAmoled,
             useDynamicColors = dynamicColors,
-            notificationStyle = notificationStyle
+            notificationStyle = notificationStyle,
+            allowUrgentDndBypass = allowUrgentDndBypass
         )
     }
 
     suspend fun setDarkThemeConfig(config: DarkThemeConfig) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.DARK_THEME_CONFIG] = config.name
+            if (config == DarkThemeConfig.LIGHT) preferences[PreferencesKeys.IS_AMOLED_MODE] = false
         }
     }
 
     suspend fun setAmoledMode(enabled: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.IS_AMOLED_MODE] = enabled
+            if (enabled) preferences[PreferencesKeys.DARK_THEME_CONFIG] = DarkThemeConfig.DARK.name
         }
     }
 
@@ -79,6 +85,10 @@ class UserPreferencesRepository(private val context: Context) {
         context.dataStore.edit { preferences ->
             preferences[PreferencesKeys.USE_DYNAMIC_COLORS] = enabled
         }
+    }
+
+    suspend fun setAllowUrgentDndBypass(enabled: Boolean) {
+        context.dataStore.edit { it[PreferencesKeys.ALLOW_URGENT_DND_BYPASS] = enabled }
     }
 
     suspend fun setNotificationStyle(style: NotificationStyle) {

@@ -17,7 +17,8 @@ data class Reminder(
     val subTasks: List<SubTask> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
-    val deletedAt: Long? = null
+    val deletedAt: Long? = null,
+    val expiresAt: Long? = null
 ) {
     val isOverdue: Boolean
         get() = !isCompleted && dueDateTimeEpochMillis != null && dueDateTimeEpochMillis < System.currentTimeMillis()

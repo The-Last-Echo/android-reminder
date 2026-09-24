@@ -23,12 +23,12 @@ One-off navigation and snackbar events are emitted separately from persistent UI
 - `data/repository`: maps entities to domain models and implements repository operations.
 - `core/alarm`: schedules exact alarms when Android permits them and restores alarms on boot/package replacement.
 - `core/notification`: channels, alert styles, photo previews, and complete/snooze actions.
-- `core/preferences`: DataStore preferences for appearance and default notification style.
+- `core/preferences`: DataStore preferences for appearance and default notification style, including optional DND bypass.
 - `core/designsystem`: Compose Material 3 colors, typography, and theme.
 
 ## Persistence
 
-Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted` and `deletedAt`; expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup.
+Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted`, `deletedAt`, and `expiresAt` (90 days after deletion); expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup.
 
 ## Notifications
 

@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
+import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
@@ -38,6 +39,7 @@ fun NavGraph(
     val repository = remember { ReminderRepositoryImpl(database.reminderDao(), database.categoryDao()) }
     val alarmScheduler = remember { AndroidAlarmScheduler(context) }
     val preferencesRepository = remember { UserPreferencesRepository(context) }
+    val notificationManager = remember { ReminderNotificationManager(context, preferencesRepository) }
 
     NavHost(
         navController = navController,
@@ -50,7 +52,8 @@ fun NavGraph(
                     getRemindersUseCase = GetRemindersUseCase(repository),
                     toggleReminderCompleteUseCase = ToggleReminderCompleteUseCase(repository, alarmScheduler),
                     deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
-                    repository = repository
+                    repository = repository,
+                    notificationManager = notificationManager
                 )
             }
             HomeScreen(
@@ -81,7 +84,8 @@ fun NavGraph(
                     reminderId = reminderId,
                     saveReminderUseCase = SaveReminderUseCase(repository, alarmScheduler),
                     deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
-                    repository = repository
+                    repository = repository,
+                    notificationManager = notificationManager
                 )
             }
 

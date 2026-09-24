@@ -8,7 +8,7 @@ This Android project does not expose a network or public SDK API. This page docu
 
 ## Repository
 
-`domain/repository/ReminderRepository.kt` provides Flow queries and suspend operations for reminders and categories. `data/repository/ReminderRepositoryImpl.kt` maps these calls to Room. `deleteReminder` is a soft delete; `permanentlyDeleteReminder` and `permanentlyDeleteAllDeletedReminders` remove data permanently. Expired items are purged using `permanentlyDeleteExpiredReminders(cutoffMillis)`.
+`domain/repository/ReminderRepository.kt` provides Flow queries and suspend operations for reminders and categories. `data/repository/ReminderRepositoryImpl.kt` maps these calls to Room. `deleteReminder` is a soft delete; `permanentlyDeleteReminder` and `permanentlyDeleteAllDeletedReminders` remove data permanently. Expired items are purged using `permanentlyDeleteExpiredReminders(nowMillis)`, which compares the supplied current time with each row’s stored expiration timestamp.
 
 ## Use cases
 
@@ -24,4 +24,4 @@ This Android project does not expose a network or public SDK API. This page docu
 
 ## Database
 
-Room schema version is 3. Migrations 1→2 add soft-delete fields; migration 2→3 adds a nullable per-reminder notification-style field. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.
+Room schema version is 4. Migrations 1→2 add soft-delete fields; migration 2→3 adds the per-reminder notification style; migration 3→4 adds the expiration timestamp used by Trash cleanup. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.

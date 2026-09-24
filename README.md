@@ -1,18 +1,15 @@
-# Reminder for Android
+# Reminder
 
-Reminder is a local-first Android reminder app built with Kotlin and Jetpack Compose. Reminder data is stored on device in a Room/SQLite database. The app has no account or sync service.
+Reminder is an offline-first Android app for scheduled reminders and checklists. Reminder data and preferences are stored locally.
 
 ## Features
 
-- Schedule one-time or repeating reminders (daily, weekdays, weekly, monthly, yearly).
-- Mark reminders complete, snooze them for ten minutes, and use quick actions from notifications.
-- Organize reminders with categories, priorities, and checklists.
-- Attach a photo from Android Photo Picker; scheduled alerts can show it as a large notification image.
-- Select a notification style globally in Settings or override it on an individual reminder.
-- Move deleted reminders to Trash, restore them, search them, or delete them permanently. Trash items are permanently purged after 90 days by a daily background cleanup.
-- Choose light, dark, or system theme, with optional AMOLED black and dynamic colors.
-- Choose English or French using Android's per-app language settings on Android 13 and later.
-- Restore scheduled alarms after device restart.
+- Create reminders with notes, dates, repeats, categories, photos, and subtasks.
+- Complete reminders from the app or from notification actions; snooze an alert for ten minutes.
+- Choose a default notification presentation or override it per reminder. Android may limit heads-up and full-screen presentation according to notification channel settings, permissions, and device policy.
+- Search and filter reminders, including completed items.
+- Soft-delete reminders, restore them from Trash, and permanently remove them after 90 days.
+- Choose light, dark, system, or AMOLED appearance. The app supports English and French using Android per-app language settings.
 
 ## Requirements
 
@@ -22,32 +19,31 @@ Reminder is a local-first Android reminder app built with Kotlin and Jetpack Com
 
 ## Build
 
+Use Android Studio or a local Android SDK and network access for Gradle dependency resolution.
+
 ```sh
 ./gradlew assembleDebug
 ```
 
-The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
+The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. Debug builds are debuggable and use the separate `com.thelastecho.reminder.debug` application ID, so they can be installed alongside a release build. Release builds enable code/resource shrinking and use the production application ID; signing credentials are read from `KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` when configured. There is no “Basic” build mode in this repository.
 
-Run unit tests with `./gradlew testDebugUnitTest`.
+Set `appVersionCode` and `appVersionName` in `gradle.properties` before making a release. The Settings screen reads the installed package `versionName`.
 
-## Architecture
+## Android behavior
 
-The Android app is a single Gradle module (`:app`). Source is grouped by responsibility under `app/src/main/java/com/thelastecho/reminder/`:
+Notifications and exact alarms require Android permissions or user settings depending on OS version. Full-screen intents are restricted by Android and may require explicit user enablement; this app does not request display-over-other-apps permission. DND bypass is optional and requires Android notification policy access. Notification channels are controlled by users after creation.
 
-- `presentation/`: Compose screens, ViewModels, and Navigation Compose graph.
-- `domain/`: reminder/category models, repository contract, and use cases.
-- `data/`: Room entities, DAOs, database migrations, and repository implementation.
-- `core/`: AlarmManager integration, notifications, DataStore preferences, and design system.
+On Android 13 and later, choose the app language from Android’s per-app language settings. On older versions the app follows the system language.
 
-The UI uses intent/state/effect contracts and Kotlin Flow. Dependencies are assembled manually in `NavGraph`; there is no dependency injection framework.
+## Project layout
 
-## Privacy and permissions
+- `app/src/main/java/.../domain`: reminder models, repository interfaces, and use cases.
+- `app/src/main/java/.../data`: Room database and repository implementation.
+- `app/src/main/java/.../core`: alarms, notifications, preferences, and design system.
+- `app/src/main/java/.../presentation`: Compose screens and view models.
+- `docs/`: architecture, API/data model notes, and changelog.
 
-Reminder content and preferences are stored locally. Photo selection uses Android Photo Picker rather than broad gallery access. The manifest declares notification, alarm, reboot, vibration, and full-screen notification permissions as needed for reminder delivery. Android may require the user to allow notifications and exact alarms; full-screen alert availability is controlled by Android and device settings.
-
-## Localization
-
-English and French resource sets are in `app/src/main/res/values/` and `values-fr/`. Android 13+ exposes the app language through the system's per-app language screen. On earlier Android versions, the app follows the system language.
+See [Architecture](docs/ARCHITECTURE.md), [API and data model](docs/API.md), [Changelog](docs/CHANGELOG.md), and [Contributing](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
 
 ## License
 

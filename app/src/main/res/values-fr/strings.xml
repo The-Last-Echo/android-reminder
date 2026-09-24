@@ -93,7 +93,7 @@
     
     <!-- Notification Styles -->
     <string name="simple_notification">Simple - Notification standard</string>
-    <string name="full_screen_notification">Plein écran - S\'ouvre en superposition</string>
+    <string name="full_screen_notification">Plein écran - alerte urgente gérée par Android</string>
     <string name="heads_up_notification">Heads-up - Alerte en haut de l\'écran</string>
     <string name="choose_notification_style">Choisir le style de notification</string>
     <string name="choose_theme">Choisir le thème</string>
@@ -128,4 +128,22 @@
     <string name="repeat_weekly">Hebdomadaire</string>
     <string name="repeat_monthly">Mensuel</string>
     <string name="repeat_yearly">Annuel</string>
+    <string name="notification_access">Autorisations des notifications</string>
+    <string name="notification_access_details">Gérez les notifications, alarmes exactes, alertes plein écran et l’accès facultatif au mode Ne pas déranger. Les alertes plein écran dépendent d’Android et des réglages système ; l’application n’a pas besoin de l’autorisation d’affichage par-dessus les autres applications.</string>
+    <string name="request_notification_permission">Autoriser les notifications</string>
+    <string name="exact_alarm_access">Autorisation d’alarme exacte</string>
+    <string name="full_screen_access">Autorisation des notifications plein écran</string>
+    <string name="allow_dnd_bypass">Autoriser les rappels urgents à ignorer Ne pas déranger</string>
+    <string name="allow_dnd_bypass_details">Android peut demander l’accès aux règles de notification. Seules les alertes urgentes non simples peuvent l’utiliser.</string>
+    <string name="undo_channel_name">Annuler la suppression</string>
+    <string name="reminder_moved_to_trash">Rappel déplacé dans la corbeille</string>
+    <string name="undo">Annuler</string>
+    <string name="reminder_channel_description">Notifications des rappels planifiés</string>
+    <string name="channel_priority_high">Rappels urgents</string>
+    <string name="channel_priority_medium">Rappels de priorité moyenne</string>
+    <string name="channel_priority_low">Rappels de faible priorité</string>
+    <string name="channel_priority_none">Rappels sans priorité</string>
+    <string name="refresh">Actualiser les rappels</string>
+    <string name="reminder_channel_name">%1$s · %2$s</string>
+    <string name="subtasks_progress">%1$d/%2$d sous-tâches</string>
 </resources>

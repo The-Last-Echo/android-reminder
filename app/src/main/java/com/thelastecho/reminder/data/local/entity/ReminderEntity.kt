@@ -39,7 +39,8 @@ data class ReminderEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
     val isDeleted: Boolean = false,
-    val deletedAt: Long? = null
+    val deletedAt: Long? = null,
+    val expiresAt: Long? = null
 ) {
     fun toDomain(): Reminder = Reminder(
         id = id,
@@ -55,7 +56,8 @@ data class ReminderEntity(
         subTasks = emptyList(),
         createdAt = createdAt,
         completedAt = completedAt,
-        deletedAt = deletedAt
+        deletedAt = deletedAt,
+        expiresAt = expiresAt
     )
 
     companion object {
@@ -73,7 +75,8 @@ data class ReminderEntity(
             createdAt = domain.createdAt,
             completedAt = domain.completedAt,
             isDeleted = false,
-            deletedAt = domain.deletedAt
+            deletedAt = domain.deletedAt,
+            expiresAt = domain.expiresAt
         )
     }
 }

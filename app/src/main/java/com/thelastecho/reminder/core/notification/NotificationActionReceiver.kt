@@ -22,7 +22,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
             context,
             com.thelastecho.reminder.core.preferences.UserPreferencesRepository(context)
         )
-        notificationManager.dismissNotification(reminderId)
+        if (intent.action != ACTION_UNDO_DELETE) notificationManager.dismissNotification(reminderId)
 
         val pendingResult = goAsync()
         val database = ReminderDatabase.getInstance(context)
@@ -32,6 +32,14 @@ class NotificationActionReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 when (intent.action) {
+                    ACTION_UNDO_DELETE -> {
+                        repository.restoreReminder(reminderId)
+                        val reminder = repository.getReminderByIdOnce(reminderId)
+                        if (reminder != null && !reminder.isCompleted &&
+                            (reminder.dueDateTimeEpochMillis == null || reminder.dueDateTimeEpochMillis > System.currentTimeMillis())
+                        ) alarmScheduler.schedule(reminder)
+                        notificationManager.dismissUndoDeleteNotification(reminderId)
+                    }
                     ACTION_COMPLETE -> {
                         val toggleUseCase = ToggleReminderCompleteUseCase(repository, alarmScheduler)
                         toggleUseCase(reminderId, isCompleted = true)
@@ -48,6 +56,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
     }
 
     companion object {
+        const val ACTION_UNDO_DELETE = "com.thelastecho.reminder.ACTION_UNDO_DELETE"
         const val ACTION_COMPLETE = "com.thelastecho.reminder.ACTION_COMPLETE"
         const val ACTION_SNOOZE = "com.thelastecho.reminder.ACTION_SNOOZE"
         const val EXTRA_REMINDER_ID = "com.thelastecho.reminder.EXTRA_REMINDER_ID"

@@ -22,6 +22,7 @@ sealed interface HomeIntent {
     data class SelectCategory(val categoryId: Long?) : HomeIntent
     data class UpdateSearch(val query: String) : HomeIntent
     data class ToggleComplete(val reminderId: Long, val isCompleted: Boolean) : HomeIntent
+    data class ToggleSubTask(val reminderId: Long, val subTaskId: Long, val isCompleted: Boolean) : HomeIntent
     data class DeleteReminder(val reminderId: Long) : HomeIntent
     data object CreateNewReminder : HomeIntent
     data class EditReminder(val reminderId: Long) : HomeIntent

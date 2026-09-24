@@ -34,6 +34,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,6 +47,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -60,6 +62,13 @@ fun TrashScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showEmptyTrashDialog by remember { mutableStateOf(false) }
+    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60_000)
+            nowMillis = System.currentTimeMillis()
+        }
+    }
     val visibleReminders = state.deletedReminders.filter { it.title.contains(state.searchQuery, true) || it.notes.contains(state.searchQuery, true) }
 
     LaunchedEffect(Unit) {
@@ -160,7 +169,8 @@ fun TrashScreen(
                     DeletedReminderItem(
                         reminder = reminder,
                         onRestore = { viewModel.onIntent(TrashIntent.RestoreReminder(reminder.id)) },
-                        onPermanentlyDelete = { viewModel.onIntent(TrashIntent.PermanentlyDeleteReminder(reminder.id)) }
+                        onPermanentlyDelete = { viewModel.onIntent(TrashIntent.PermanentlyDeleteReminder(reminder.id)) },
+                        nowMillis = nowMillis
                     )
                 }
             }
@@ -196,12 +206,13 @@ fun TrashScreen(
 private fun DeletedReminderItem(
     reminder: com.thelastecho.reminder.domain.model.Reminder,
     onRestore: () -> Unit,
-    onPermanentlyDelete: () -> Unit
+    onPermanentlyDelete: () -> Unit,
+    nowMillis: Long
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
     val deletedDate = reminder.deletedAt?.let { dateFormat.format(Date(it)) } ?: "Unknown"
-    val remainingDays = reminder.deletedAt?.let {
-        ((it + 90L * 24 * 60 * 60 * 1000 - System.currentTimeMillis()).coerceAtLeast(0) + 86_399_999) / 86_400_000
+    val remainingDays = reminder.expiresAt?.let { expiresAt ->
+        ((expiresAt - nowMillis).coerceAtLeast(0) + 86_399_999) / 86_400_000
     } ?: 0
 
     Card(

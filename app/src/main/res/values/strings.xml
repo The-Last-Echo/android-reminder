@@ -93,7 +93,7 @@
 
     <!-- Notification Styles -->
     <string name="simple_notification">Simple - Standard notification</string>
-    <string name="full_screen_notification">Full Screen - Opens as overlay</string>
+    <string name="full_screen_notification">Full screen - Android-managed urgent alert</string>
     <string name="heads_up_notification">Heads-up - Alert at top of screen</string>
     <string name="choose_notification_style">Choose notification style</string>
     <string name="choose_theme">Choose theme</string>
@@ -128,4 +128,22 @@
     <string name="repeat_weekly">Weekly</string>
     <string name="repeat_monthly">Monthly</string>
     <string name="repeat_yearly">Yearly</string>
+    <string name="notification_access">Notification permissions</string>
+    <string name="notification_access_details">Manage notification, exact alarm, full-screen and optional Do Not Disturb access. Full-screen alerts depend on Android version and your system settings; this app does not need display-over-other-apps access.</string>
+    <string name="request_notification_permission">Allow notifications</string>
+    <string name="exact_alarm_access">Exact alarm access</string>
+    <string name="full_screen_access">Full-screen notification access</string>
+    <string name="allow_dnd_bypass">Allow urgent reminders to bypass Do Not Disturb</string>
+    <string name="allow_dnd_bypass_details">Android may ask for notification policy access. Only high-priority non-simple alerts can use it.</string>
+    <string name="undo_channel_name">Undo deleted reminder</string>
+    <string name="reminder_moved_to_trash">Reminder moved to trash</string>
+    <string name="undo">Undo</string>
+    <string name="reminder_channel_description">Scheduled reminder notifications</string>
+    <string name="channel_priority_high">High priority reminders</string>
+    <string name="channel_priority_medium">Medium priority reminders</string>
+    <string name="channel_priority_low">Low priority reminders</string>
+    <string name="channel_priority_none">Unprioritized reminders</string>
+    <string name="refresh">Refresh reminders</string>
+    <string name="reminder_channel_name">%1$s · %2$s</string>
+    <string name="subtasks_progress">%1$d/%2$d subtasks</string>
 </resources>

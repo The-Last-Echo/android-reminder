@@ -50,6 +50,9 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE id = :id")
     suspend fun deleteReminderById(id: Long)
 
+    @Query("UPDATE subtasks SET isCompleted = :isCompleted WHERE id = :subTaskId AND reminderId = :reminderId")
+    suspend fun updateSubTaskCompletion(reminderId: Long, subTaskId: Long, isCompleted: Boolean)
+
     @Query("UPDATE reminders SET isCompleted = :isCompleted, completedAt = :completedAt WHERE id = :id")
     suspend fun updateCompletionStatus(id: Long, isCompleted: Boolean, completedAt: Long?)
 
@@ -60,10 +63,10 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE isDeleted = 1 ORDER BY deletedAt DESC")
     fun getDeletedRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
-    @Query("UPDATE reminders SET isDeleted = 1, deletedAt = :deletedAt WHERE id = :id")
-    suspend fun softDeleteReminder(id: Long, deletedAt: Long)
+    @Query("UPDATE reminders SET isDeleted = 1, deletedAt = :deletedAt, expiresAt = :expiresAt WHERE id = :id")
+    suspend fun softDeleteReminder(id: Long, deletedAt: Long, expiresAt: Long)
 
-    @Query("UPDATE reminders SET isDeleted = 0, deletedAt = NULL WHERE id = :id")
+    @Query("UPDATE reminders SET isDeleted = 0, deletedAt = NULL, expiresAt = NULL WHERE id = :id")
     suspend fun restoreReminder(id: Long)
 
     @Query("DELETE FROM reminders WHERE id = :id")
@@ -72,8 +75,8 @@ interface ReminderDao {
     @Query("DELETE FROM reminders WHERE isDeleted = 1")
     suspend fun permanentlyDeleteAllDeletedReminders()
 
-    @Query("DELETE FROM reminders WHERE isDeleted = 1 AND deletedAt IS NOT NULL AND deletedAt <= :cutoffMillis")
-    suspend fun permanentlyDeleteExpiredReminders(cutoffMillis: Long)
+    @Query("DELETE FROM reminders WHERE isDeleted = 1 AND expiresAt IS NOT NULL AND expiresAt <= :nowMillis")
+    suspend fun permanentlyDeleteExpiredReminders(nowMillis: Long)
 
     // Subtask management
     @Insert(onConflict = OnConflictStrategy.REPLACE)

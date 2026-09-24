@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -22,20 +23,27 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.thelastecho.reminder.domain.model.Reminder
+import com.thelastecho.reminder.domain.model.SubTask
 import com.thelastecho.reminder.domain.model.RepeatInterval
 import java.time.Instant
 import java.time.LocalDate
@@ -49,8 +57,11 @@ fun ReminderItem(
     onToggleComplete: () -> Unit,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onToggleSubTask: (SubTask) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    var checklistExpanded by remember(reminder.id) { mutableStateOf(false) }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -178,15 +189,48 @@ fun ReminderItem(
                     // Subtasks progress badge
                     if (reminder.subTasks.isNotEmpty()) {
                         val completedCount = reminder.subTasks.count { it.isCompleted }
-                        Text(
-                            text = "$completedCount/${reminder.subTasks.size} subtasks",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.tertiary
-                        )
+                        TextButton(
+                            onClick = { checklistExpanded = !checklistExpanded },
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 0.dp)
+                        ) {
+                            Text(
+                                text = stringResource(com.thelastecho.reminder.R.string.subtasks_progress, completedCount, reminder.subTasks.size),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.tertiary
+                            )
+                        }
                     }
 
                     // Priority
                     PriorityBadge(priority = reminder.priority)
+                }
+
+                AnimatedVisibility(
+                    visible = checklistExpanded && reminder.subTasks.isNotEmpty(),
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+                        reminder.subTasks.sortedBy { it.orderIndex }.forEach { subTask ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().clickable {
+                                    onToggleSubTask(subTask)
+                                },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = subTask.isCompleted,
+                                    onCheckedChange = { onToggleSubTask(subTask) }
+                                )
+                                Text(
+                                    text = subTask.title,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textDecoration = if (subTask.isCompleted) TextDecoration.LineThrough else null,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
                 }
             }
 

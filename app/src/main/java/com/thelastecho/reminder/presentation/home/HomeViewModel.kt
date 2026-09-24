@@ -3,6 +3,7 @@ package com.thelastecho.reminder.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thelastecho.reminder.domain.model.Reminder
+import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
 import com.thelastecho.reminder.domain.usecase.GetRemindersUseCase
@@ -27,7 +28,8 @@ class HomeViewModel(
     private val getRemindersUseCase: GetRemindersUseCase,
     private val toggleReminderCompleteUseCase: ToggleReminderCompleteUseCase,
     private val deleteReminderUseCase: DeleteReminderUseCase,
-    private val repository: ReminderRepository
+    private val repository: ReminderRepository,
+    private val notificationManager: ReminderNotificationManager? = null
 ) : ViewModel() {
 
     private var latestReminders: List<Reminder> = emptyList()
@@ -100,6 +102,11 @@ class HomeViewModel(
                 _uiState.update { it.copy(searchQuery = intent.query) }
                 refreshFilteredList()
             }
+            is HomeIntent.ToggleSubTask -> {
+                viewModelScope.launch {
+                    repository.toggleSubTaskCompletion(intent.reminderId, intent.subTaskId, intent.isCompleted)
+                }
+            }
             is HomeIntent.ToggleComplete -> {
                 viewModelScope.launch {
                     toggleReminderCompleteUseCase(intent.reminderId, intent.isCompleted)
@@ -107,7 +114,10 @@ class HomeViewModel(
             }
             is HomeIntent.DeleteReminder -> {
                 viewModelScope.launch {
+                    val title = latestReminders.firstOrNull { it.id == intent.reminderId }?.title.orEmpty()
+                    notificationManager?.dismissNotification(intent.reminderId)
                     deleteReminderUseCase(intent.reminderId)
+                    notificationManager?.showUndoDeleteNotification(intent.reminderId, title)
                     _effect.send(HomeEffect.ShowSnackbar("Reminder deleted"))
                 }
             }

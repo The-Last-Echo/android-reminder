@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Notifications
@@ -60,6 +61,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,6 +87,8 @@ fun HomeScreen(
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isSearchActive by remember { mutableStateOf(false) }
+    val searchFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -91,6 +97,13 @@ fun HomeScreen(
                 is HomeEffect.NavigateToSettings -> onNavigateToSettings()
                 is HomeEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
             }
+        }
+    }
+
+    LaunchedEffect(isSearchActive) {
+        if (isSearchActive) {
+            searchFocusRequester.requestFocus()
+            keyboardController?.show()
         }
     }
 
@@ -107,7 +120,7 @@ fun HomeScreen(
                             value = state.searchQuery,
                             onValueChange = { viewModel.onIntent(HomeIntent.UpdateSearch(it)) },
                             placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.search_reminders)) },
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,
@@ -129,6 +142,13 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { viewModel.onIntent(HomeIntent.Refresh) }) {
+                        if (state.isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(Icons.Default.Refresh, contentDescription = stringResource(com.thelastecho.reminder.R.string.refresh))
+                        }
+                    }
                     IconButton(onClick = {
                         isSearchActive = !isSearchActive
                         if (!isSearchActive) viewModel.onIntent(HomeIntent.UpdateSearch(""))
@@ -274,11 +294,15 @@ fun HomeScreen(
                     items(items = state.reminders, key = { it.id }) { reminder ->
                         ReminderItem(
                             reminder = reminder,
+                            modifier = Modifier.animateItem(),
                             onToggleComplete = {
                                 viewModel.onIntent(HomeIntent.ToggleComplete(reminder.id, !reminder.isCompleted))
                             },
                             onClick = { viewModel.onIntent(HomeIntent.EditReminder(reminder.id)) },
-                            onDelete = { viewModel.onIntent(HomeIntent.DeleteReminder(reminder.id)) }
+                            onDelete = { viewModel.onIntent(HomeIntent.DeleteReminder(reminder.id)) },
+                            onToggleSubTask = { subTask ->
+                                viewModel.onIntent(HomeIntent.ToggleSubTask(reminder.id, subTask.id, !subTask.isCompleted))
+                            }
                         )
                     }
                 }
