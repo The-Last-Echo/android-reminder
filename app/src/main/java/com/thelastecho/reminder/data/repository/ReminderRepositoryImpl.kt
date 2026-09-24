@@ -69,6 +69,9 @@ class ReminderRepositoryImpl(
         reminderDao.restoreReminder(reminderId)
     }
 
+    override suspend fun getDeletedReminderByIdOnce(reminderId: Long): Reminder? =
+        reminderDao.getDeletedReminderWithSubTasksById(reminderId)?.toDomain()
+
     override suspend fun permanentlyDeleteReminder(reminderId: Long) {
         reminderDao.permanentlyDeleteReminder(reminderId)
     }
@@ -113,7 +116,12 @@ class ReminderRepositoryImpl(
     }
 
     override suspend fun saveCategory(category: Category): Long {
-        return categoryDao.insertCategory(CategoryEntity.fromDomain(category))
+        val entity = CategoryEntity.fromDomain(category)
+        if (category.id > 0 && categoryDao.getCategoryById(category.id) != null) {
+            categoryDao.updateCategory(entity)
+            return category.id
+        }
+        return categoryDao.insertCategory(entity)
     }
 
     override suspend fun deleteCategory(categoryId: Long) {

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import com.thelastecho.reminder.core.designsystem.PriorityHigh
 import com.thelastecho.reminder.core.designsystem.PriorityLow
 import com.thelastecho.reminder.core.designsystem.PriorityMedium
@@ -38,7 +39,7 @@ fun PriorityBadge(
             .padding(horizontal = 8.dp, vertical = 2.dp)
     ) {
         Text(
-            text = priority.displayName,
+            text = stringResource(priorityLabelResource(priority)),
             style = MaterialTheme.typography.labelSmall,
             color = badgeText
         )

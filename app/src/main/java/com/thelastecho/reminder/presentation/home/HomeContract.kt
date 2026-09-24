@@ -14,7 +14,8 @@ data class HomeUiState(
     val allCount: Int = 0,
     val todayCount: Int = 0,
     val scheduledCount: Int = 0,
-    val completedCount: Int = 0
+    val completedCount: Int = 0,
+    val addButtonOnLeft: Boolean = false
 )
 
 sealed interface HomeIntent {
@@ -24,6 +25,7 @@ sealed interface HomeIntent {
     data class ToggleComplete(val reminderId: Long, val isCompleted: Boolean) : HomeIntent
     data class ToggleSubTask(val reminderId: Long, val subTaskId: Long, val isCompleted: Boolean) : HomeIntent
     data class DeleteReminder(val reminderId: Long) : HomeIntent
+    data class UndoDelete(val reminderId: Long) : HomeIntent
     data object CreateNewReminder : HomeIntent
     data class EditReminder(val reminderId: Long) : HomeIntent
     data object OpenSettings : HomeIntent
@@ -33,5 +35,5 @@ sealed interface HomeIntent {
 sealed interface HomeEffect {
     data class NavigateToEditor(val reminderId: Long? = null) : HomeEffect
     data object NavigateToSettings : HomeEffect
-    data class ShowSnackbar(val message: String) : HomeEffect
+    data class ShowUndoDelete(val reminderId: Long) : HomeEffect
 }

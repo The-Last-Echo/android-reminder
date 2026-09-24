@@ -31,7 +31,13 @@ class SettingsViewModel(
                     isAmoledMode = settings.isAmoledMode,
                     useDynamicColors = settings.useDynamicColors,
                     notificationStyle = settings.notificationStyle,
-                    allowUrgentDndBypass = settings.allowUrgentDndBypass
+                    alarmSoundUri = settings.alarmSoundUri,
+                    completedReminderRetentionDays = settings.completedReminderRetentionDays,
+                    addButtonOnLeft = settings.addButtonOnLeft,
+                    automaticUpdateChecks = settings.automaticUpdateChecks,
+                    latestReleaseTag = settings.latestReleaseTag,
+                    latestReleaseUrl = settings.latestReleaseUrl,
+                    lastUpdateCheckMillis = settings.lastUpdateCheckMillis
                 )
             }
         }.launchIn(viewModelScope)
@@ -52,15 +58,16 @@ class SettingsViewModel(
                 is SettingsIntent.SetNotificationStyle -> {
                     preferencesRepository.setNotificationStyle(intent.style)
                 }
-                is SettingsIntent.SetUrgentDndBypass -> {
-                    preferencesRepository.setAllowUrgentDndBypass(intent.enabled)
-                }
+                is SettingsIntent.SetAlarmSound -> preferencesRepository.setAlarmSoundUri(intent.uri)
+                is SettingsIntent.SetCompletedRetention -> preferencesRepository.setCompletedRetentionDays(intent.days)
+                is SettingsIntent.SetAddButtonOnLeft -> preferencesRepository.setAddButtonOnLeft(intent.enabled)
+                is SettingsIntent.SetAutomaticUpdateChecks -> preferencesRepository.setAutomaticUpdateChecks(intent.enabled)
                 SettingsIntent.NavigateToCategories -> {
                     _effect.send(SettingsEffect.NavigateToCategories)
                 }
-                SettingsIntent.NavigateToTrash -> {
-                    _effect.send(SettingsEffect.NavigateToTrash)
-                }
+                SettingsIntent.NavigateToTrash -> _effect.send(SettingsEffect.NavigateToTrash)
+                SettingsIntent.NavigateToBackup -> _effect.send(SettingsEffect.NavigateToBackup)
+                SettingsIntent.NavigateToPrivacy -> _effect.send(SettingsEffect.NavigateToPrivacy)
             }
         }
     }

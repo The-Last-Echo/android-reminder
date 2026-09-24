@@ -40,6 +40,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -64,6 +65,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.presentation.components.ReminderItem
+import com.thelastecho.reminder.presentation.components.CategoryIcon
 import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,6 +87,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var isSearchActive by remember { mutableStateOf(false) }
@@ -95,7 +99,15 @@ fun HomeScreen(
             when (effect) {
                 is HomeEffect.NavigateToEditor -> onNavigateToEditor(effect.reminderId)
                 is HomeEffect.NavigateToSettings -> onNavigateToSettings()
-                is HomeEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is HomeEffect.ShowUndoDelete -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = context.getString(com.thelastecho.reminder.R.string.reminder_deleted),
+                        actionLabel = context.getString(com.thelastecho.reminder.R.string.undo)
+                    )
+                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                        viewModel.onIntent(HomeIntent.UndoDelete(effect.reminderId))
+                    }
+                }
             }
         }
     }
@@ -129,7 +141,7 @@ fun HomeScreen(
                             trailingIcon = {
                                 if (state.searchQuery.isNotEmpty()) {
                                     IconButton(onClick = { viewModel.onIntent(HomeIntent.UpdateSearch("")) }) {
-                                        Icon(Icons.Default.Clear, contentDescription = "Clear search")
+                                        Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.clear_search))
                                     }
                                 }
                             }
@@ -142,24 +154,17 @@ fun HomeScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { viewModel.onIntent(HomeIntent.Refresh) }) {
-                        if (state.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                        } else {
-                            Icon(Icons.Default.Refresh, contentDescription = stringResource(com.thelastecho.reminder.R.string.refresh))
-                        }
-                    }
                     IconButton(onClick = {
                         isSearchActive = !isSearchActive
                         if (!isSearchActive) viewModel.onIntent(HomeIntent.UpdateSearch(""))
                     }) {
                         Icon(
                             imageVector = if (isSearchActive) Icons.Default.Clear else Icons.Default.Search,
-                            contentDescription = if (isSearchActive) "Close search" else "Search"
+                            contentDescription = stringResource(if (isSearchActive) com.thelastecho.reminder.R.string.close_search else com.thelastecho.reminder.R.string.search)
                         )
                     }
                     IconButton(onClick = { viewModel.onIntent(HomeIntent.OpenSettings) }) {
-                        Icon(Icons.Outlined.Settings, contentDescription = "Settings")
+                        Icon(Icons.Outlined.Settings, contentDescription = stringResource(com.thelastecho.reminder.R.string.settings))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -167,6 +172,7 @@ fun HomeScreen(
                 )
             )
         },
+        floatingActionButtonPosition = if (state.addButtonOnLeft) FabPosition.Start else FabPosition.End,
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.onIntent(HomeIntent.CreateNewReminder) },
@@ -174,7 +180,7 @@ fun HomeScreen(
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Create reminder")
+                Icon(Icons.Default.Add, contentDescription = stringResource(com.thelastecho.reminder.R.string.create_reminder))
             }
         }
     ) { innerPadding ->
@@ -244,7 +250,8 @@ fun HomeScreen(
                                 FilterChip(
                                     selected = state.selectedCategoryId == category.id,
                                     onClick = { viewModel.onIntent(HomeIntent.SelectCategory(category.id)) },
-                                    label = { Text(category.name) }
+                                    label = { Text(category.name) },
+                                    leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), Color(category.colorArgb)) }
                                 )
                             }
                         }
@@ -352,7 +359,7 @@ private fun FilterSummaryCard(
                     modifier = Modifier.size(18.dp)
                 )
                 Text(
-                    text = count.toString(),
+                    text = java.text.NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(count),
                     style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                     color = if (isSelected) {
                         MaterialTheme.colorScheme.onPrimaryContainer

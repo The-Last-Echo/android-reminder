@@ -3,9 +3,11 @@ package com.thelastecho.reminder.presentation.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thelastecho.reminder.domain.model.Reminder
+import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
+import com.thelastecho.reminder.domain.usecase.RestoreReminderUseCase
 import com.thelastecho.reminder.domain.usecase.GetRemindersUseCase
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.domain.usecase.ToggleReminderCompleteUseCase
@@ -29,7 +31,9 @@ class HomeViewModel(
     private val toggleReminderCompleteUseCase: ToggleReminderCompleteUseCase,
     private val deleteReminderUseCase: DeleteReminderUseCase,
     private val repository: ReminderRepository,
-    private val notificationManager: ReminderNotificationManager? = null
+    private val notificationManager: ReminderNotificationManager? = null,
+    preferencesRepository: UserPreferencesRepository? = null,
+    private val restoreReminderUseCase: RestoreReminderUseCase? = null
 ) : ViewModel() {
 
     private var latestReminders: List<Reminder> = emptyList()
@@ -42,6 +46,9 @@ class HomeViewModel(
 
     init {
         observeRemindersAndCategories()
+        preferencesRepository?.themeSettings?.onEach { preferences ->
+            _uiState.update { it.copy(addButtonOnLeft = preferences.addButtonOnLeft) }
+        }?.launchIn(viewModelScope)
     }
 
     private fun observeRemindersAndCategories() {
@@ -114,12 +121,13 @@ class HomeViewModel(
             }
             is HomeIntent.DeleteReminder -> {
                 viewModelScope.launch {
-                    val title = latestReminders.firstOrNull { it.id == intent.reminderId }?.title.orEmpty()
                     notificationManager?.dismissNotification(intent.reminderId)
                     deleteReminderUseCase(intent.reminderId)
-                    notificationManager?.showUndoDeleteNotification(intent.reminderId, title)
-                    _effect.send(HomeEffect.ShowSnackbar("Reminder deleted"))
+                    _effect.send(HomeEffect.ShowUndoDelete(intent.reminderId))
                 }
+            }
+            is HomeIntent.UndoDelete -> {
+                viewModelScope.launch { restoreReminderUseCase?.invoke(intent.reminderId) }
             }
             is HomeIntent.CreateNewReminder -> {
                 viewModelScope.launch {

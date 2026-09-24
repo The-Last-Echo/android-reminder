@@ -10,6 +10,7 @@ import com.thelastecho.reminder.domain.model.SubTask
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
 import com.thelastecho.reminder.domain.usecase.SaveReminderUseCase
+import com.thelastecho.reminder.domain.usecase.RestoreReminderUseCase
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +30,8 @@ class EditorViewModel(
     private val saveReminderUseCase: SaveReminderUseCase,
     private val deleteReminderUseCase: DeleteReminderUseCase,
     private val repository: ReminderRepository,
-    private val notificationManager: ReminderNotificationManager? = null
+    private val notificationManager: ReminderNotificationManager? = null,
+    private val restoreReminderUseCase: RestoreReminderUseCase? = null
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditorUiState(reminderId = reminderId))
@@ -74,7 +76,7 @@ class EditorViewModel(
     fun onIntent(intent: EditorIntent) {
         when (intent) {
             is EditorIntent.UpdateTitle -> {
-                _uiState.update { it.copy(title = intent.title, titleError = null) }
+                _uiState.update { it.copy(title = intent.title, titleErrorRes = null) }
             }
             is EditorIntent.UpdateNotes -> {
                 _uiState.update { it.copy(notes = intent.notes) }
@@ -159,16 +161,15 @@ class EditorViewModel(
             is EditorIntent.SaveReminder -> {
                 saveReminder()
             }
-            is EditorIntent.DeleteReminder -> {
-                deleteReminder()
-            }
+            is EditorIntent.DeleteReminder -> deleteReminder()
+            is EditorIntent.UndoDelete -> viewModelScope.launch { restoreReminderUseCase?.invoke(intent.reminderId) }
         }
     }
 
     private fun saveReminder() {
         val state = _uiState.value
         if (state.title.trim().isEmpty()) {
-            _uiState.update { it.copy(titleError = "Title cannot be empty") }
+            _uiState.update { it.copy(titleErrorRes = com.thelastecho.reminder.R.string.title_cannot_be_empty) }
             return
         }
 
@@ -196,7 +197,7 @@ class EditorViewModel(
                 },
                 onFailure = { error ->
                     _uiState.update { it.copy(isSaving = false) }
-                    _effect.send(EditorEffect.ShowSnackbar(error.message ?: "Failed to save"))
+                    _effect.send(EditorEffect.ShowSnackbar(com.thelastecho.reminder.R.string.save_failed))
                 }
             )
         }
@@ -205,11 +206,9 @@ class EditorViewModel(
     private fun deleteReminder() {
         val id = _uiState.value.reminderId ?: return
         viewModelScope.launch {
-            val title = _uiState.value.title
             notificationManager?.dismissNotification(id)
             deleteReminderUseCase(id)
-            notificationManager?.showUndoDeleteNotification(id, title)
-            _effect.send(EditorEffect.NavigateBack)
+            _effect.send(EditorEffect.ShowDeleteUndo(id))
         }
     }
 }

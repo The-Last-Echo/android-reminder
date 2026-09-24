@@ -26,13 +26,6 @@ class ReminderNotificationManager(
 ) {
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-    init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(UNDO_CHANNEL_ID, context.getString(R.string.undo_channel_name), NotificationManager.IMPORTANCE_LOW)
-            )
-        }
-    }
 
     private fun getSettings(): AppThemeSettings = runCatching {
         runBlocking { preferencesRepository.themeSettings.first() }
@@ -50,15 +43,40 @@ class ReminderNotificationManager(
         val style = reminderStyle?.let { runCatching { NotificationStyle.valueOf(it) }.getOrNull() }
             ?: settings.notificationStyle
         val priority = priorityLevel.coerceIn(0, 3)
-        val canBypassDnd = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            settings.allowUrgentDndBypass && priority == PRIORITY_HIGH && style != NotificationStyle.SIMPLE &&
-            notificationManager.isNotificationPolicyAccessGranted
-        val channelId = channelId(style, priority, canBypassDnd)
-        ensureReminderChannel(channelId, style, priority, canBypassDnd)
+        if (style == NotificationStyle.NONE) {
+            dismissNotification(reminderId)
+            return
+        }
+        if (style == NotificationStyle.FULL_SCREEN) {
+            try {
+                AlarmSoundService.start(context, reminderId, title, notes, photoUri)
+            } catch (_: RuntimeException) {
+                // Android may reject foreground starts; preserve the permitted notification fallback.
+                showStandardNotification(reminderId, title, notes, priority, photoUri, style)
+            }
+            return
+        }
+        showStandardNotification(reminderId, title, notes, priority, photoUri, style)
+    }
 
-        val openIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            putExtra(EXTRA_REMINDER_ID, reminderId)
+    private fun showStandardNotification(reminderId: Long, title: String, notes: String, priority: Int, photoUri: String?, style: NotificationStyle) {
+        val channelId = channelId(style, priority)
+        ensureReminderChannel(channelId, style, priority)
+
+        val openIntent = if (style == NotificationStyle.FULL_SCREEN) {
+            Intent(context, ReminderFullScreenActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                putExtra(EXTRA_REMINDER_ID, reminderId)
+                putExtra(EXTRA_REMINDER_TITLE, title)
+                putExtra(EXTRA_REMINDER_NOTES, notes)
+                putExtra(EXTRA_REMINDER_PHOTO_URI, photoUri)
+                putExtra(AlarmSoundService.EXTRA_START_FROM_VISIBLE_ACTIVITY, true)
+            }
+        } else {
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                putExtra(EXTRA_REMINDER_ID, reminderId)
+            }
         }
         val openPendingIntent = PendingIntent.getActivity(
             context, reminderId.toInt(), openIntent,
@@ -71,7 +89,7 @@ class ReminderNotificationManager(
             .setContentText(notes.ifBlank { null })
             .setStyle(if (notes.isNotBlank()) NotificationCompat.BigTextStyle().bigText(notes) else null)
             .setPriority(compatPriority(style, priority))
-            .setCategory(if (style == NotificationStyle.FULL_SCREEN && priority == PRIORITY_HIGH) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
+            .setCategory(if (style == NotificationStyle.FULL_SCREEN) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
             .setColor(priorityColor(priority))
             .setAutoCancel(true)
             .setContentIntent(openPendingIntent)
@@ -84,12 +102,13 @@ class ReminderNotificationManager(
             }
         }
 
-        if (style == NotificationStyle.FULL_SCREEN && priority == PRIORITY_HIGH && canUseFullScreenIntent()) {
+        if (style == NotificationStyle.FULL_SCREEN && canUseFullScreenIntent()) {
             val fullScreenIntent = Intent(context, ReminderFullScreenActivity::class.java).apply {
                 putExtra(EXTRA_REMINDER_ID, reminderId)
                 putExtra(EXTRA_REMINDER_TITLE, title)
                 putExtra(EXTRA_REMINDER_NOTES, notes)
                 putExtra(EXTRA_REMINDER_PHOTO_URI, photoUri)
+                putExtra(AlarmSoundService.EXTRA_START_FROM_VISIBLE_ACTIVITY, true)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             }
             val fullScreenPendingIntent = PendingIntent.getActivity(
@@ -106,35 +125,8 @@ class ReminderNotificationManager(
         }
     }
 
-    fun showUndoDeleteNotification(reminderId: Long, title: String) {
-        val undoIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = NotificationActionReceiver.ACTION_UNDO_DELETE
-            putExtra(NotificationActionReceiver.EXTRA_REMINDER_ID, reminderId)
-        }
-        val undoPendingIntent = PendingIntent.getBroadcast(
-            context,
-            reminderId.toInt() xor UNDO_REQUEST_CODE_MASK,
-            undoIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
-        val notification = NotificationCompat.Builder(context, UNDO_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(context.getString(R.string.reminder_moved_to_trash))
-            .setContentText(title)
-            .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setAutoCancel(true)
-            .setTimeoutAfter(UNDO_TIMEOUT_MILLIS)
-            .addAction(0, context.getString(R.string.undo), undoPendingIntent)
-            .build()
-        runCatching { NotificationManagerCompat.from(context).notify(undoNotificationId(reminderId), notification) }
-    }
-
     fun dismissNotification(reminderId: Long) {
         notificationManager.cancel(reminderId.toInt())
-    }
-
-    fun dismissUndoDeleteNotification(reminderId: Long) {
-        notificationManager.cancel(undoNotificationId(reminderId))
     }
 
     fun canUseFullScreenIntent(): Boolean = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
@@ -153,13 +145,14 @@ class ReminderNotificationManager(
         )
     }
 
-    private fun ensureReminderChannel(id: String, style: NotificationStyle, priority: Int, canBypassDnd: Boolean) {
+    private fun ensureReminderChannel(id: String, style: NotificationStyle, priority: Int) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         val importance = channelImportance(style, priority)
         val styleName = when (style) {
             NotificationStyle.SIMPLE -> R.string.simple_style_name
             NotificationStyle.HEADS_UP -> R.string.heads_up_style_name
             NotificationStyle.FULL_SCREEN -> R.string.full_screen_style_name
+            NotificationStyle.NONE -> R.string.notification_none_name
         }
         val name = context.getString(
             R.string.reminder_channel_name,
@@ -170,32 +163,25 @@ class ReminderNotificationManager(
             description = context.getString(R.string.reminder_channel_description)
             enableVibration(priority >= PRIORITY_MEDIUM && style != NotificationStyle.SIMPLE)
             setShowBadge(true)
-            if (canBypassDnd) setBypassDnd(true)
         }
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun channelId(style: NotificationStyle, priority: Int, canBypassDnd: Boolean): String =
-        "reminders_${style.name.lowercase()}_p$priority${if (canBypassDnd) "_dnd" else ""}"
+    private fun channelId(style: NotificationStyle, priority: Int): String =
+        "reminders_${style.name.lowercase()}"
 
     private fun channelImportance(style: NotificationStyle, priority: Int): Int = when {
-        style == NotificationStyle.SIMPLE && priority >= PRIORITY_HIGH -> NotificationManager.IMPORTANCE_DEFAULT
-        style == NotificationStyle.SIMPLE && priority == PRIORITY_MEDIUM -> NotificationManager.IMPORTANCE_LOW
-        style == NotificationStyle.SIMPLE -> NotificationManager.IMPORTANCE_MIN
-        priority >= PRIORITY_HIGH -> NotificationManager.IMPORTANCE_HIGH
-        priority == PRIORITY_MEDIUM -> NotificationManager.IMPORTANCE_DEFAULT
-        priority == PRIORITY_LOW -> NotificationManager.IMPORTANCE_LOW
-        else -> NotificationManager.IMPORTANCE_MIN
+        style == NotificationStyle.NONE -> NotificationManager.IMPORTANCE_NONE
+        style == NotificationStyle.SIMPLE -> NotificationManager.IMPORTANCE_LOW
+        style == NotificationStyle.HEADS_UP || style == NotificationStyle.FULL_SCREEN -> NotificationManager.IMPORTANCE_HIGH
+        else -> NotificationManager.IMPORTANCE_DEFAULT
     }
 
     private fun compatPriority(style: NotificationStyle, priority: Int): Int = when {
-        style == NotificationStyle.SIMPLE && priority >= PRIORITY_HIGH -> NotificationCompat.PRIORITY_DEFAULT
-        style == NotificationStyle.SIMPLE && priority == PRIORITY_MEDIUM -> NotificationCompat.PRIORITY_LOW
-        style == NotificationStyle.SIMPLE -> NotificationCompat.PRIORITY_MIN
-        priority >= PRIORITY_HIGH -> NotificationCompat.PRIORITY_MAX
-        priority == PRIORITY_MEDIUM -> NotificationCompat.PRIORITY_DEFAULT
-        priority == PRIORITY_LOW -> NotificationCompat.PRIORITY_LOW
-        else -> NotificationCompat.PRIORITY_MIN
+        style == NotificationStyle.NONE -> NotificationCompat.PRIORITY_MIN
+        style == NotificationStyle.SIMPLE -> NotificationCompat.PRIORITY_LOW
+        style == NotificationStyle.HEADS_UP || style == NotificationStyle.FULL_SCREEN -> NotificationCompat.PRIORITY_HIGH
+        else -> NotificationCompat.PRIORITY_DEFAULT
     }
 
     private fun channelPriorityName(priority: Int): Int = when (priority) {
@@ -222,17 +208,11 @@ class ReminderNotificationManager(
         context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
     }.getOrNull()
 
-    private fun undoNotificationId(reminderId: Long) = reminderId.toInt() xor UNDO_NOTIFICATION_ID_MASK
-
     companion object {
         const val EXTRA_REMINDER_ID = "reminder_id"
         const val EXTRA_REMINDER_TITLE = "reminder_title"
         const val EXTRA_REMINDER_NOTES = "reminder_notes"
         const val EXTRA_REMINDER_PHOTO_URI = "reminder_photo_uri"
-        private const val UNDO_CHANNEL_ID = "reminder_undo_channel"
-        private const val UNDO_NOTIFICATION_ID_MASK = 0x40000000
-        private const val UNDO_REQUEST_CODE_MASK = 0x20000000
-        private const val UNDO_TIMEOUT_MILLIS = 30_000L
         private const val PRIORITY_HIGH = 3
         private const val PRIORITY_MEDIUM = 2
         private const val PRIORITY_LOW = 1

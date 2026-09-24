@@ -82,6 +82,9 @@ import com.thelastecho.reminder.core.designsystem.PriorityHigh
 import com.thelastecho.reminder.core.designsystem.PriorityLow
 import com.thelastecho.reminder.core.designsystem.PriorityMedium
 import com.thelastecho.reminder.domain.model.Priority
+import com.thelastecho.reminder.presentation.components.CategoryIcon
+import com.thelastecho.reminder.presentation.components.priorityLabelResource
+import com.thelastecho.reminder.presentation.components.repeatLabelResource
 import com.thelastecho.reminder.domain.model.RepeatInterval
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -91,6 +94,8 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import androidx.compose.ui.platform.LocalConfiguration
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +125,17 @@ fun ReminderEditorScreen(
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 is EditorEffect.NavigateBack -> onNavigateBack()
-                is EditorEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is EditorEffect.ShowSnackbar -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
+                is EditorEffect.ShowDeleteUndo -> {
+                    val result = snackbarHostState.showSnackbar(
+                        message = context.getString(com.thelastecho.reminder.R.string.reminder_deleted),
+                        actionLabel = context.getString(com.thelastecho.reminder.R.string.undo)
+                    )
+                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed) {
+                        viewModel.onIntent(EditorIntent.UndoDelete(effect.reminderId))
+                    }
+                    onNavigateBack()
+                }
             }
         }
     }
@@ -138,13 +153,13 @@ fun ReminderEditorScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(com.thelastecho.reminder.R.string.back))
                     }
                 },
                 actions = {
                     if (state.reminderId != null) {
                         IconButton(onClick = { viewModel.onIntent(EditorIntent.DeleteReminder) }) {
-                            Icon(Icons.Outlined.Delete, contentDescription = "Delete")
+                            Icon(Icons.Outlined.Delete, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete))
                         }
                     }
                     TextButton(
@@ -177,8 +192,8 @@ fun ReminderEditorScreen(
                 onValueChange = { viewModel.onIntent(EditorIntent.UpdateTitle(it)) },
                 label = { Text(stringResource(com.thelastecho.reminder.R.string.what_reminded)) },
                 placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.call_doctor)) },
-                isError = state.titleError != null,
-                supportingText = state.titleError?.let { { Text(it) } },
+                isError = state.titleErrorRes != null,
+                supportingText = state.titleErrorRes?.let { id -> { Text(stringResource(id)) } },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp)
             )
@@ -226,8 +241,9 @@ fun ReminderEditorScreen(
                     } else {
                         val zone = ZoneId.systemDefault()
                         val zdt = Instant.ofEpochMilli(state.dueDateTimeEpochMillis!!).atZone(zone)
-                        val dateFormatter = DateTimeFormatter.ofPattern("EEE, d MMM yyyy")
-                        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+                        val appLocale = LocalConfiguration.current.locales[0]
+                        val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(appLocale)
+                        val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(appLocale)
 
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -259,7 +275,7 @@ fun ReminderEditorScreen(
                             }
 
                             IconButton(onClick = { viewModel.onIntent(EditorIntent.ClearDateTime) }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Clear date/time")
+                                Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.clear_date_time))
                             }
                         }
 
@@ -270,7 +286,7 @@ fun ReminderEditorScreen(
                             onExpandedChange = { repeatDropdownExpanded = !repeatDropdownExpanded }
                         ) {
                             OutlinedTextField(
-                                value = state.repeatInterval.displayName,
+                                value = stringResource(repeatLabelResource(state.repeatInterval)),
                                 onValueChange = {},
                                 readOnly = true,
                                 label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat)) },
@@ -287,7 +303,7 @@ fun ReminderEditorScreen(
                             ) {
                                 RepeatInterval.entries.forEach { interval ->
                                     DropdownMenuItem(
-                                        text = { Text(interval.displayName) },
+                                        text = { Text(stringResource(repeatLabelResource(interval))) },
                                         onClick = {
                                             viewModel.onIntent(EditorIntent.SetRepeatInterval(interval))
                                             repeatDropdownExpanded = false
@@ -321,7 +337,7 @@ fun ReminderEditorScreen(
                     FilterChip(
                         selected = isSelected,
                         onClick = { viewModel.onIntent(EditorIntent.SetPriority(p)) },
-                        label = { Text(p.displayName) },
+                        label = { Text(stringResource(priorityLabelResource(p))) },
                         modifier = Modifier.weight(1f),
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = chipColor.copy(alpha = 0.2f),
@@ -363,7 +379,8 @@ fun ReminderEditorScreen(
                         FilterChip(
                             selected = state.categoryId == category.id,
                             onClick = { viewModel.onIntent(EditorIntent.SetCategory(category.id)) },
-                            label = { Text(category.name) }
+                            label = { Text(category.name) },
+                            leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), androidx.compose.ui.graphics.Color(category.colorArgb)) }
                         )
                     }
                 }
@@ -408,7 +425,7 @@ fun ReminderEditorScreen(
                                 onClick = { viewModel.onIntent(EditorIntent.DeleteSubTask(index)) },
                                 modifier = Modifier.size(24.dp)
                             ) {
-                                Icon(Icons.Outlined.Close, contentDescription = "Delete subtask", modifier = Modifier.size(16.dp))
+                                Icon(Icons.Outlined.Close, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_subtask), modifier = Modifier.size(16.dp))
                             }
                         }
                     }
@@ -436,7 +453,7 @@ fun ReminderEditorScreen(
                                 }
                             }
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = "Add")
+                            Icon(Icons.Default.Add, contentDescription = stringResource(com.thelastecho.reminder.R.string.add))
                         }
                     }
                 }
@@ -534,12 +551,12 @@ fun ReminderEditorScreen(
                         showTimePicker = true
                     }
                 }) {
-                    Text("OK")
+                    Text(stringResource(com.thelastecho.reminder.R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             }
         ) {
@@ -568,12 +585,12 @@ fun ReminderEditorScreen(
                     viewModel.onIntent(EditorIntent.SetDueTime(timePickerState.hour, timePickerState.minute))
                     showTimePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(com.thelastecho.reminder.R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
                 }
             },
             text = {

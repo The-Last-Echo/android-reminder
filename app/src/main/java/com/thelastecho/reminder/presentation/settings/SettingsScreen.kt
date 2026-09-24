@@ -1,8 +1,8 @@
 package com.thelastecho.reminder.presentation.settings
 
 import android.Manifest
-import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.Intent
 import android.os.Build
 import android.provider.Settings as AndroidSettings
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,6 +32,7 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +50,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
+import com.thelastecho.reminder.data.local.UpdateCheckWorker
 import androidx.compose.ui.Alignment
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
@@ -65,6 +72,8 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCategories: () -> Unit,
     onNavigateToTrash: () -> Unit,
+    onNavigateToBackup: () -> Unit,
+    onNavigateToPrivacy: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -72,17 +81,24 @@ fun SettingsScreen(
     val packageVersion = remember(context) {
         runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty()
     }
-    val notificationPermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) openAppNotificationSettings(context)
+    val ringtonePicker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            val picked = if (Build.VERSION.SDK_INT >= 33) result.data?.getParcelableExtra(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI, android.net.Uri::class.java) else @Suppress("DEPRECATION") result.data?.getParcelableExtra(android.media.RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+            viewModel.onIntent(SettingsIntent.SetAlarmSound(picked?.toString()))
+        }
     }
     var showThemeDialog by remember { mutableStateOf(false) }
     var showNotificationStyleDialog by remember { mutableStateOf(false) }
+    var showRetentionDialog by remember { mutableStateOf(false) }
+    var customRetention by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
                 SettingsEffect.NavigateToCategories -> onNavigateToCategories()
                 SettingsEffect.NavigateToTrash -> onNavigateToTrash()
+                SettingsEffect.NavigateToBackup -> onNavigateToBackup()
+                SettingsEffect.NavigateToPrivacy -> onNavigateToPrivacy()
             }
         }
     }
@@ -94,7 +110,7 @@ fun SettingsScreen(
                 title = { Text(stringResource(com.thelastecho.reminder.R.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(com.thelastecho.reminder.R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -185,6 +201,17 @@ fun SettingsScreen(
                 }
             }
 
+            Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.NavigateToBackup) }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(com.thelastecho.reminder.R.string.backup_restore), style = MaterialTheme.typography.bodyLarge)
+            }
+
+            Row(Modifier.fillMaxWidth().clickable { showRetentionDialog = true }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.completed_retention), style = MaterialTheme.typography.bodyLarge)
+                    Text(if (state.completedReminderRetentionDays == 0) stringResource(com.thelastecho.reminder.R.string.retention_never) else context.resources.getQuantityString(com.thelastecho.reminder.R.plurals.retention_days, state.completedReminderRetentionDays, state.completedReminderRetentionDays), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+
             // Notifications Section
             Text(
                 text = stringResource(com.thelastecho.reminder.R.string.notifications),
@@ -216,6 +243,7 @@ fun SettingsScreen(
                                         com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> stringResource(com.thelastecho.reminder.R.string.simple_style_name)
                                         com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)
                                         com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> stringResource(com.thelastecho.reminder.R.string.heads_up_style_name)
+                                        com.thelastecho.reminder.core.preferences.NotificationStyle.NONE -> stringResource(com.thelastecho.reminder.R.string.notification_none_name)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -226,55 +254,28 @@ fun SettingsScreen(
                 }
             }
 
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(com.thelastecho.reminder.R.string.notification_access), style = MaterialTheme.typography.bodyLarge)
-                    Text(stringResource(com.thelastecho.reminder.R.string.notification_access_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(onClick = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                            ) notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                            else openAppNotificationSettings(context)
-                        }) { Text(stringResource(com.thelastecho.reminder.R.string.request_notification_permission)) }
-                        TextButton(onClick = {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                runCatching {
-                                    context.startActivity(Intent(AndroidSettings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).setData(android.net.Uri.parse("package:${context.packageName}")))
-                                }.onFailure { openAppNotificationSettings(context) }
-                            } else openAppNotificationSettings(context)
-                        }) { Text(stringResource(com.thelastecho.reminder.R.string.exact_alarm_access)) }
-                    }
-                    TextButton(onClick = {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                            runCatching {
-                                context.startActivity(Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).setData(android.net.Uri.parse("package:${context.packageName}")))
-                            }.onFailure { openAppNotificationSettings(context) }
-                        } else openAppNotificationSettings(context)
-                    }) { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_access)) }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(stringResource(com.thelastecho.reminder.R.string.allow_dnd_bypass), style = MaterialTheme.typography.bodyLarge)
-                            Text(stringResource(com.thelastecho.reminder.R.string.allow_dnd_bypass_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Switch(
-                            checked = state.allowUrgentDndBypass,
-                            onCheckedChange = { enabled ->
-                                viewModel.onIntent(SettingsIntent.SetUrgentDndBypass(enabled))
-                                if (enabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                    val manager = context.getSystemService(android.app.NotificationManager::class.java)
-                                    if (!manager.isNotificationPolicyAccessGranted) {
-                                        runCatching { context.startActivity(Intent(AndroidSettings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)) }
-                                    }
-                                }
-                            }
-                        )
-                    }
+            if (state.notificationStyle == com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()) {
+                Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.full_screen_fallback_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    TextButton(onClick = { runCatching { context.startActivity(Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).setData(android.net.Uri.parse("package:${context.packageName}"))) } }) { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_settings)) }
                 }
+            }
+            if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                TextButton(onClick = { runCatching { context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)) } }) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.open_notification_settings))
+                }
+            }
+            Row(Modifier.fillMaxWidth().clickable {
+                val intent = Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALARM)
+                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(com.thelastecho.reminder.R.string.choose_alarm_sound))
+                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, state.alarmSoundUri?.let(android.net.Uri::parse))
+                }
+                ringtonePicker.launch(intent)
+            }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(com.thelastecho.reminder.R.string.choose_alarm_sound), Modifier.weight(1f))
+                Text(if (state.alarmSoundUri == null) stringResource(com.thelastecho.reminder.R.string.system_default) else stringResource(com.thelastecho.reminder.R.string.selected), color = MaterialTheme.colorScheme.primary)
             }
 
             // Appearance Section
@@ -362,6 +363,14 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
+                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(com.thelastecho.reminder.R.string.add_button_position), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(if (state.addButtonOnLeft) com.thelastecho.reminder.R.string.position_left else com.thelastecho.reminder.R.string.position_right), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(checked = state.addButtonOnLeft, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAddButtonOnLeft(it)) })
+                    }
+
                     // Dynamic colors toggle
                     Row(
                         modifier = Modifier
@@ -400,7 +409,7 @@ fun SettingsScreen(
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.NavigateToPrivacy) }
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -445,7 +454,46 @@ fun SettingsScreen(
                     }
                 }
             }
+                        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(com.thelastecho.reminder.R.string.automatic_update_checks), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.automatic_update_checks_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Switch(checked = state.automaticUpdateChecks, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAutomaticUpdateChecks(it)) })
+                    }
+                    TextButton(onClick = {
+                        val request = OneTimeWorkRequestBuilder<UpdateCheckWorker>()
+                            .setInputData(workDataOf(UpdateCheckWorker.KEY_MANUAL to true))
+                            .setConstraints(androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build())
+                            .build()
+                        WorkManager.getInstance(context).enqueueUniqueWork(UpdateCheckWorker.UNIQUE_MANUAL, androidx.work.ExistingWorkPolicy.REPLACE, request)
+                    }) { Text(stringResource(com.thelastecho.reminder.R.string.check_updates_now)) }
+                    state.latestReleaseTag?.let { tag ->
+                        val newer = isVersionNewer(tag, packageVersion)
+                        Text(stringResource(if (newer) com.thelastecho.reminder.R.string.update_available else com.thelastecho.reminder.R.string.app_up_to_date), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(com.thelastecho.reminder.R.string.latest_release, tag), style = MaterialTheme.typography.bodySmall)
+                        state.latestReleaseUrl?.let { url -> TextButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))) } }) { Text(stringResource(com.thelastecho.reminder.R.string.open_release)) } }
+                    }
+                }
+            }
+
         }
+    }
+
+    if (showRetentionDialog) {
+        androidx.compose.material3.AlertDialog(onDismissRequest = { showRetentionDialog = false }, title = { Text(stringResource(com.thelastecho.reminder.R.string.completed_retention)) }, text = {
+            Column {
+                listOf(0, 1, 7, 30, 90).forEach { days ->
+                    Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetCompletedRetention(days)); showRetentionDialog = false }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = state.completedReminderRetentionDays == days, onClick = { viewModel.onIntent(SettingsIntent.SetCompletedRetention(days)); showRetentionDialog = false })
+                        Text(when (days) { 0 -> stringResource(com.thelastecho.reminder.R.string.retention_never); 1 -> stringResource(com.thelastecho.reminder.R.string.retention_1_day); 7 -> stringResource(com.thelastecho.reminder.R.string.retention_7_days); 30 -> stringResource(com.thelastecho.reminder.R.string.retention_30_days); else -> stringResource(com.thelastecho.reminder.R.string.retention_90_days) })
+                    }
+                }
+                OutlinedTextField(value = customRetention, onValueChange = { customRetention = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(com.thelastecho.reminder.R.string.custom_duration)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true)
+            }
+        }, confirmButton = { TextButton(onClick = { customRetention.toIntOrNull()?.takeIf { it in 1..3650 }?.let { viewModel.onIntent(SettingsIntent.SetCompletedRetention(it)) }; showRetentionDialog = false }) { Text(stringResource(com.thelastecho.reminder.R.string.save)) } }, dismissButton = { TextButton(onClick = { showRetentionDialog = false }) { Text(stringResource(com.thelastecho.reminder.R.string.cancel)) } })
     }
 
     if (showNotificationStyleDialog) {
@@ -483,6 +531,7 @@ fun SettingsScreen(
                                     com.thelastecho.reminder.core.preferences.NotificationStyle.SIMPLE -> stringResource(com.thelastecho.reminder.R.string.simple_notification)
                                     com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN -> stringResource(com.thelastecho.reminder.R.string.full_screen_notification)
                                     com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP -> stringResource(com.thelastecho.reminder.R.string.heads_up_notification)
+                                    com.thelastecho.reminder.core.preferences.NotificationStyle.NONE -> stringResource(com.thelastecho.reminder.R.string.notification_none_name)
                                 }
                             )
                         }
@@ -537,10 +586,14 @@ fun SettingsScreen(
     }
 }
 
-private fun openAppNotificationSettings(context: android.content.Context) {
-    runCatching {
-        context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName))
-    }.onFailure {
-        context.startActivity(Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}")))
+
+private fun isVersionNewer(remoteTag: String, installedVersion: String): Boolean {
+    fun parts(value: String) = value.trim().removePrefix("v").substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
+    val remote = parts(remoteTag)
+    val local = parts(installedVersion)
+    for (index in 0 until maxOf(remote.size, local.size)) {
+        val comparison = (remote.getOrElse(index) { 0 }).compareTo(local.getOrElse(index) { 0 })
+        if (comparison != 0) return comparison > 0
     }
+    return false
 }

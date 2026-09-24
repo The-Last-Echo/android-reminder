@@ -7,6 +7,8 @@ data class CategoriesUiState(
     val isDeleting: Boolean = false,
     val newCategoryName: String = "",
     val newCategoryColor: Int = 0xFF4CAF50.toInt(),
+    val newCategoryIcon: String = "label",
+    val editingCategoryId: Long? = null,
     val showAddDialog: Boolean = false
 )
 
@@ -15,10 +17,12 @@ sealed interface CategoriesIntent {
     data class DeleteCategory(val categoryId: Long) : CategoriesIntent
     data class UpdateNewCategoryName(val name: String) : CategoriesIntent
     data class UpdateNewCategoryColor(val color: Int) : CategoriesIntent
+    data class UpdateNewCategoryIcon(val icon: String) : CategoriesIntent
+    data class EditCategory(val categoryId: Long) : CategoriesIntent
     data class ShowAddDialog(val show: Boolean) : CategoriesIntent
     data object AddCategory : CategoriesIntent
 }
 
 sealed interface CategoriesEffect {
-    data class ShowSnackbar(val message: String) : CategoriesEffect
+    data class ShowSnackbar(val messageRes: Int) : CategoriesEffect
 }

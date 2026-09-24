@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -21,7 +23,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.outlined.Label
+import androidx.compose.material.icons.filled.Edit
+import com.thelastecho.reminder.presentation.components.CategoryIcon
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -48,6 +51,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -63,12 +67,13 @@ fun CategoriesScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     var showDeleteDialog by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                is CategoriesEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is CategoriesEffect.ShowSnackbar -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
             }
         }
     }
@@ -81,7 +86,7 @@ fun CategoriesScreen(
                 title = { Text(stringResource(com.thelastecho.reminder.R.string.manage_categories_title)) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(com.thelastecho.reminder.R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -96,7 +101,7 @@ fun CategoriesScreen(
                 contentColor = MaterialTheme.colorScheme.onPrimary,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add category")
+                Icon(Icons.Default.Add, contentDescription = stringResource(com.thelastecho.reminder.R.string.create_category))
             }
         }
     ) { innerPadding ->
@@ -113,6 +118,7 @@ fun CategoriesScreen(
             ) { category ->
                 CategoryItem(
                     category = category,
+                    onEdit = { viewModel.onIntent(CategoriesIntent.EditCategory(category.id)) },
                     onDelete = { showDeleteDialog = category.id }
                 )
             }
@@ -125,7 +131,7 @@ fun CategoriesScreen(
         
         AlertDialog(
             onDismissRequest = { viewModel.onIntent(CategoriesIntent.ShowAddDialog(false)) },
-            title = { Text(stringResource(com.thelastecho.reminder.R.string.add_category)) },
+            title = { Text(stringResource(if (state.editingCategoryId == null) com.thelastecho.reminder.R.string.add_category else com.thelastecho.reminder.R.string.edit_category)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
@@ -138,21 +144,14 @@ fun CategoriesScreen(
                     
                     Text(stringResource(com.thelastecho.reminder.R.string.color), style = MaterialTheme.typography.labelMedium)
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val colors = listOf(
-                            0xFF4CAF50.toInt(), // Green
-                            0xFF2196F3.toInt(), // Blue
-                            0xFFFF9800.toInt(), // Orange
-                            0xFFF44336.toInt(), // Red
-                            0xFF9C27B0.toInt(), // Purple
-                            0xFF607D8B.toInt()  // Gray
-                        )
+                        val colors = listOf(0xFF4CAF50,0xFF2196F3,0xFFFF9800,0xFFF44336,0xFF9C27B0,0xFF607D8B,0xFF009688,0xFF3F51B5,0xFFE91E63,0xFF795548,0xFFCDDC39,0xFF00BCD4,0xFF673AB7,0xFF8BC34A,0xFFFFC107,0xFF546E7A).map { it.toInt() }
                         colors.forEach { color ->
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(34.dp)
                                     .clip(CircleShape)
                                     .background(Color(color))
                                     .clickable {
@@ -172,6 +171,15 @@ fun CategoriesScreen(
                             }
                         }
                     }
+                    Text(stringResource(com.thelastecho.reminder.R.string.category_icon), style = MaterialTheme.typography.labelMedium)
+                    val icons = listOf("label", "person", "work", "shopping_cart", "home", "school", "favorite", "flight", "cafe", "grocery", "health", "build")
+                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        icons.forEach { iconName ->
+                            Box(Modifier.size(42.dp).clip(CircleShape).background(if (state.newCategoryIcon == iconName) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface).clickable { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryIcon(iconName)) }, contentAlignment = Alignment.Center) {
+                                CategoryIcon(iconName, Modifier.size(22.dp), if (state.newCategoryIcon == iconName) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -179,7 +187,7 @@ fun CategoriesScreen(
                     onClick = { viewModel.onIntent(CategoriesIntent.AddCategory) },
                     enabled = state.newCategoryName.isNotBlank()
                 ) {
-                    Text(stringResource(com.thelastecho.reminder.R.string.add))
+                    Text(stringResource(if (state.editingCategoryId == null) com.thelastecho.reminder.R.string.add else com.thelastecho.reminder.R.string.save))
                 }
             },
             dismissButton = {
@@ -218,6 +226,7 @@ fun CategoriesScreen(
 @Composable
 private fun CategoryItem(
     category: com.thelastecho.reminder.domain.model.Category,
+    onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
@@ -243,12 +252,7 @@ private fun CategoryItem(
                         .background(Color(category.colorArgb)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Label,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    CategoryIcon(category.iconName, Modifier.size(20.dp), Color.White)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -257,8 +261,9 @@ private fun CategoryItem(
                     fontWeight = FontWeight.Medium
                 )
             }
+            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = null) }
             IconButton(onClick = onDelete) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete category")
+                Icon(Icons.Default.Delete, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_category))
             }
         }
     }

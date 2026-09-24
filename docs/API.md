@@ -15,12 +15,17 @@ This Android project does not expose a network or public SDK API. This page docu
 - `GetRemindersUseCase`: streams reminders for ALL, TODAY, SCHEDULED, OVERDUE, or COMPLETED filters.
 - `SaveReminderUseCase`: saves a reminder and schedules/cancels its alarm as appropriate.
 - `DeleteReminderUseCase`: moves a reminder to Trash and cancels its alarm.
+- `RestoreReminderUseCase`: restores the same record and reschedules its future alarm.
 - `ToggleReminderCompleteUseCase`: updates completion and recurrence.
 - `SnoozeReminderUseCase`: shifts the due time and reschedules the reminder.
 
 ## Notification styles
 
-`NotificationStyle` is declared in `core/preferences/UserPreferencesRepository.kt`: `SIMPLE`, `HEADS_UP`, and `FULL_SCREEN`. Settings define the default; a reminder may override that default. Notification presentation is still constrained by Android notification channels, notification permission, and full-screen intent access.
+`NotificationStyle` is declared in `core/preferences/UserPreferencesRepository.kt`: `SIMPLE`, `HEADS_UP`, `FULL_SCREEN`, and `NONE`. Settings define the default; a reminder may override that default. Notification presentation is still constrained by Android notification channels, notification permission, and full-screen intent access. Full screen uses a `mediaPlayback` foreground service and falls back to a regular notification when Android rejects the service or full-screen intent.
+
+## Backup
+
+`data/backup/ReminderBackupRepository.kt` reads and writes format `the-last-echo-reminder-backup`, version 1. It validates all records and attachments before mutation; Replace uses a Room transaction, while Merge inserts missing IDs and retains existing rows. The JSON stores photo bytes as Base64, not temporary picker URIs.
 
 ## Database
 

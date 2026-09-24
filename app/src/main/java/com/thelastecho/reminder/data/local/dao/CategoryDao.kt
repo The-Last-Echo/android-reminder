@@ -13,6 +13,15 @@ interface CategoryDao {
     @Query("SELECT * FROM categories ORDER BY name ASC")
     fun getAllCategories(): Flow<List<CategoryEntity>>
 
+    @Query("SELECT * FROM categories")
+    suspend fun getAllCategoryEntitiesForBackup(): List<CategoryEntity>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertCategoryEntitiesForBackup(categories: List<CategoryEntity>)
+
+    @Query("DELETE FROM categories")
+    suspend fun clearCategoriesForBackup()
+
     @Query("SELECT * FROM categories WHERE id = :id")
     suspend fun getCategoryById(id: Long): CategoryEntity?
 

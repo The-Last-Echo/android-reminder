@@ -42,20 +42,24 @@ class CategoriesViewModel(
             is CategoriesIntent.DeleteCategory -> {
                 viewModelScope.launch {
                     repository.deleteCategory(intent.categoryId)
-                    _effect.send(CategoriesEffect.ShowSnackbar("Category deleted"))
+                    _effect.send(CategoriesEffect.ShowSnackbar(com.thelastecho.reminder.R.string.category_deleted))
                 }
             }
             is CategoriesIntent.UpdateNewCategoryName -> {
                 _uiState.update { it.copy(newCategoryName = intent.name) }
             }
-            is CategoriesIntent.UpdateNewCategoryColor -> {
-                _uiState.update { it.copy(newCategoryColor = intent.color) }
+            is CategoriesIntent.UpdateNewCategoryColor -> _uiState.update { it.copy(newCategoryColor = intent.color) }
+            is CategoriesIntent.UpdateNewCategoryIcon -> _uiState.update { it.copy(newCategoryIcon = intent.icon) }
+            is CategoriesIntent.EditCategory -> {
+                val category = _uiState.value.categories.firstOrNull { it.id == intent.categoryId }
+                if (category != null) _uiState.update { it.copy(showAddDialog = true, editingCategoryId = category.id, newCategoryName = category.name, newCategoryColor = category.colorArgb.toInt(), newCategoryIcon = category.iconName) }
             }
             is CategoriesIntent.ShowAddDialog -> {
                 _uiState.update { 
                     it.copy(
                         showAddDialog = intent.show,
-                        newCategoryName = if (!intent.show) "" else it.newCategoryName
+                        newCategoryName = if (!intent.show) "" else it.newCategoryName,
+                        editingCategoryId = if (!intent.show) null else it.editingCategoryId
                     )
                 }
             }
@@ -64,16 +68,19 @@ class CategoriesViewModel(
                     val state = _uiState.value
                     if (state.newCategoryName.isNotBlank()) {
                         val category = Category(
-                            name = state.newCategoryName,
+                            id = state.editingCategoryId ?: 0L,
+                            name = state.newCategoryName.trim(),
                             colorArgb = state.newCategoryColor.toLong(),
-                            iconName = "label"
+                            iconName = state.newCategoryIcon
                         )
                         repository.saveCategory(category)
-                        _effect.send(CategoriesEffect.ShowSnackbar("Category added"))
+                        _effect.send(CategoriesEffect.ShowSnackbar(com.thelastecho.reminder.R.string.category_added))
                         _uiState.update { 
                             it.copy(
                                 showAddDialog = false,
-                                newCategoryName = ""
+                                newCategoryName = "",
+                                editingCategoryId = null,
+                                newCategoryIcon = "label"
                             )
                         }
                     }

@@ -2,13 +2,34 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.4.0 - 2026-09-24
+
+### Added
+- Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic app languages, including translated UI strings and plurals, native per-app language settings, and RTL support.
+- Looping user-selected system alarm audio for Full screen reminders using an Android `mediaPlayback` foreground service, with complete, snooze, and dismiss actions.
+- Versioned backup and restore for reminders, categories, subtasks, attachments, and included preferences, with merge/replace handling and validation.
+- Three Home screen widgets for compact, today's, and upcoming reminders.
+- Optional release update checks and a dedicated Privacy page.
+- Expanded category colors and monochrome icon editing, with category icons in filters.
+- Configurable completed-reminder retention, undo for deleted reminders, and left/right placement for the Home Add button.
+
+### Changed
+- Notification presentation now supports per-reminder style overrides, photo previews, and platform-aware full-screen fallback. Full screen alarm audio starts a typed foreground service and shares the reminder notification ID to avoid a duplicate card.
+- Notification permission recovery, full-screen intent access, exact-alarm scheduling, and system notification controls follow Android APIs without DND or overlay access.
+- Completed reminders can be retained for a configurable duration; trashed reminders are permanently purged after 90 days using persisted expiration timestamps.
+- Home retains pull-to-refresh, adds search/undo and completed subtasks, and uses the configured Add button position.
+- README and technical documentation describe build variants, Android behavior, privacy, backup/restore, widgets, and security reporting.
+
+### Fixed
+- Prevent notification audio foreground services from being restarted automatically after process death; alarm scheduling is restored independently after reboot.
+- Keep notification and app-language settings aligned with native Android controls.
+
 ## 1.3.0 - 2026-09-24
 
 ### Added
-- Undo recently deleted reminders from a notification; restored scheduled reminders are rescheduled.
-- Notification styles and priority levels now use separate Android channels with behavior matched to the selected settings.
-- Optional Do Not Disturb bypass for high-priority non-simple reminders through Android Notification Policy Access.
-- Settings shortcuts for notification, exact alarm, full-screen intent, DND, and native app-language settings.
+- In-app snackbar undo for recently deleted reminders, restoring their prior record and rescheduling future alarms; restored scheduled reminders are rescheduled.
+- Notification styles map to Android channels; priority continues to affect notification appearance and vibration.
+- Settings shortcuts for notification, full-screen intent, and native app-language settings.
 - Search focus and keyboard opening, a visible refresh control, subtle list-item transitions, and tappable subtasks in reminder cards.
 - Photo preview while editing a reminder.
 - Expiration timestamps in Room and a live Trash countdown based on each stored timestamp.
@@ -33,7 +54,7 @@ Notable project changes are recorded here. Dates refer to repository release met
 - Trash search and a 90-day deletion countdown; expired entries are purged by daily background work.
 - A per-reminder notification-style override, with the settings value used as its default.
 - Photo previews in scheduled reminder notifications and a dedicated full-screen alert activity.
-- Android per-app language configuration for English and French, opened through system settings.
+- Android per-app language configuration for English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic, opened through system settings.
 - Database migration 2→3 for reminder-level notification style.
 
 ## 1.1.0 - 2026-09-23

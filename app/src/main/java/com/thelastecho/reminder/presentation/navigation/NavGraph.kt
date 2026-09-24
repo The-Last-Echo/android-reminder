@@ -1,5 +1,10 @@
 package com.thelastecho.reminder.presentation.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -17,14 +22,17 @@ import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
 import com.thelastecho.reminder.domain.usecase.GetRemindersUseCase
 import com.thelastecho.reminder.domain.usecase.SaveReminderUseCase
+import com.thelastecho.reminder.domain.usecase.RestoreReminderUseCase
 import com.thelastecho.reminder.domain.usecase.ToggleReminderCompleteUseCase
 import com.thelastecho.reminder.presentation.editor.EditorViewModel
 import com.thelastecho.reminder.presentation.editor.ReminderEditorScreen
 import com.thelastecho.reminder.presentation.home.HomeScreen
 import com.thelastecho.reminder.presentation.home.HomeViewModel
+import com.thelastecho.reminder.presentation.settings.BackupRestoreScreen
 import com.thelastecho.reminder.presentation.settings.CategoriesScreen
 import com.thelastecho.reminder.presentation.settings.CategoriesViewModel
 import com.thelastecho.reminder.presentation.settings.SettingsScreen
+import com.thelastecho.reminder.presentation.settings.PrivacyScreen
 import com.thelastecho.reminder.presentation.settings.SettingsViewModel
 import com.thelastecho.reminder.presentation.settings.TrashScreen
 import com.thelastecho.reminder.presentation.settings.TrashViewModel
@@ -44,7 +52,11 @@ fun NavGraph(
     NavHost(
         navController = navController,
         startDestination = NavDestination.Home.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { fadeIn(tween(180)) + slideInHorizontally(tween(180)) { it / 24 } },
+        exitTransition = { fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { -it / 24 } },
+        popEnterTransition = { fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -it / 24 } },
+        popExitTransition = { fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { it / 24 } }
     ) {
         composable(NavDestination.Home.route) {
             val homeViewModel = remember {
@@ -53,7 +65,9 @@ fun NavGraph(
                     toggleReminderCompleteUseCase = ToggleReminderCompleteUseCase(repository, alarmScheduler),
                     deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
                     repository = repository,
-                    notificationManager = notificationManager
+                    notificationManager = notificationManager,
+                    preferencesRepository = preferencesRepository,
+                    restoreReminderUseCase = RestoreReminderUseCase(repository, alarmScheduler)
                 )
             }
             HomeScreen(
@@ -85,7 +99,8 @@ fun NavGraph(
                     saveReminderUseCase = SaveReminderUseCase(repository, alarmScheduler),
                     deleteReminderUseCase = DeleteReminderUseCase(repository, alarmScheduler),
                     repository = repository,
-                    notificationManager = notificationManager
+                    notificationManager = notificationManager,
+                    restoreReminderUseCase = RestoreReminderUseCase(repository, alarmScheduler)
                 )
             }
 
@@ -105,9 +120,9 @@ fun NavGraph(
                 onNavigateToCategories = {
                     navController.navigate(NavDestination.Categories.route)
                 },
-                onNavigateToTrash = {
-                    navController.navigate(NavDestination.Trash.route)
-                }
+                onNavigateToTrash = { navController.navigate(NavDestination.Trash.route) },
+                onNavigateToBackup = { navController.navigate(NavDestination.BackupRestore.route) },
+                onNavigateToPrivacy = { navController.navigate(NavDestination.Privacy.route) }
             )
         }
 
@@ -119,6 +134,14 @@ fun NavGraph(
                 viewModel = categoriesViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
+        }
+
+        composable(NavDestination.Privacy.route) {
+            PrivacyScreen(onNavigateBack = { navController.popBackStack() })
+        }
+
+        composable(NavDestination.BackupRestore.route) {
+            BackupRestoreScreen(onNavigateBack = { navController.popBackStack() })
         }
 
         composable(NavDestination.Trash.route) {

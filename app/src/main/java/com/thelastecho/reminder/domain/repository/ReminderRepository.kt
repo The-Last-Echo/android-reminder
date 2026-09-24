@@ -18,6 +18,7 @@ interface ReminderRepository {
     suspend fun deleteReminder(reminderId: Long)
     suspend fun softDeleteReminder(reminderId: Long)
     suspend fun restoreReminder(reminderId: Long)
+    suspend fun getDeletedReminderByIdOnce(reminderId: Long): Reminder?
     suspend fun permanentlyDeleteReminder(reminderId: Long)
     suspend fun permanentlyDeleteAllDeletedReminders()
     suspend fun permanentlyDeleteExpiredReminders(nowMillis: Long)

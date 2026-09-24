@@ -43,14 +43,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -61,6 +61,7 @@ fun TrashScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
     var showEmptyTrashDialog by remember { mutableStateOf(false) }
     var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(Unit) {
@@ -74,7 +75,7 @@ fun TrashScreen(
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
             when (effect) {
-                is TrashEffect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                is TrashEffect.ShowSnackbar -> snackbarHostState.showSnackbar(context.getString(effect.messageRes))
             }
         }
     }
@@ -209,8 +210,9 @@ private fun DeletedReminderItem(
     onPermanentlyDelete: () -> Unit,
     nowMillis: Long
 ) {
-    val dateFormat = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
-    val deletedDate = reminder.deletedAt?.let { dateFormat.format(Date(it)) } ?: "Unknown"
+    val context = LocalContext.current
+    val dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, context.resources.configuration.locales[0])
+    val deletedDate = reminder.deletedAt?.let { dateFormat.format(Date(it)) } ?: stringResource(com.thelastecho.reminder.R.string.unknown)
     val remainingDays = reminder.expiresAt?.let { expiresAt ->
         ((expiresAt - nowMillis).coerceAtLeast(0) + 86_399_999) / 86_400_000
     } ?: 0

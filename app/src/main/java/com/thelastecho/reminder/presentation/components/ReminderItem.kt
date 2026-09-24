@@ -42,11 +42,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalConfiguration
 import com.thelastecho.reminder.domain.model.Reminder
 import com.thelastecho.reminder.domain.model.SubTask
 import com.thelastecho.reminder.domain.model.RepeatInterval
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -93,7 +93,7 @@ fun ReminderItem(
                     } else {
                         Icons.Outlined.RadioButtonUnchecked
                     },
-                    contentDescription = if (reminder.isCompleted) "Completed" else "Mark complete",
+                    contentDescription = stringResource(if (reminder.isCompleted) com.thelastecho.reminder.R.string.completed else com.thelastecho.reminder.R.string.mark_complete),
                     tint = if (reminder.isCompleted) {
                         MaterialTheme.colorScheme.primary
                     } else {
@@ -140,7 +140,7 @@ fun ReminderItem(
                 ) {
                     // Due Date / Time
                     if (reminder.dueDateTimeEpochMillis != null) {
-                        val dateFormatted = formatDueDateTime(reminder.dueDateTimeEpochMillis)
+                        val dateFormatted = formatDueDateTime(reminder.dueDateTimeEpochMillis, LocalConfiguration.current.locales[0])
                         val isOverdue = reminder.isOverdue
                         val dateColor = if (isOverdue) {
                             MaterialTheme.colorScheme.error
@@ -179,7 +179,7 @@ fun ReminderItem(
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = reminder.repeatInterval.displayName,
+                                text = stringResource(repeatLabelResource(reminder.repeatInterval)),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -241,7 +241,7 @@ fun ReminderItem(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,
-                    contentDescription = "Delete reminder",
+                    contentDescription = stringResource(com.thelastecho.reminder.R.string.delete),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                     modifier = Modifier.size(18.dp)
                 )
@@ -250,26 +250,7 @@ fun ReminderItem(
     }
 }
 
-private fun formatDueDateTime(epochMillis: Long): String {
-    val zone = ZoneId.systemDefault()
-    val dueZdt = Instant.ofEpochMilli(epochMillis).atZone(zone)
-    val today = LocalDate.now(zone)
-    val dueDate = dueZdt.toLocalDate()
-
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
-    val timeStr = dueZdt.format(timeFormatter)
-
-    return when {
-        dueDate.isEqual(today) -> "Today, $timeStr"
-        dueDate.isEqual(today.plusDays(1)) -> "Tomorrow, $timeStr"
-        dueDate.isEqual(today.minusDays(1)) -> "Yesterday, $timeStr"
-        dueDate.year == today.year -> {
-            val dateFormatter = DateTimeFormatter.ofPattern("d MMM")
-            "${dueZdt.format(dateFormatter)}, $timeStr"
-        }
-        else -> {
-            val dateFormatter = DateTimeFormatter.ofPattern("d MMM yyyy")
-            "${dueZdt.format(dateFormatter)}, $timeStr"
-        }
-    }
+private fun formatDueDateTime(epochMillis: Long, locale: java.util.Locale): String {
+    val dateTime = Instant.ofEpochMilli(epochMillis).atZone(ZoneId.systemDefault())
+    return dateTime.format(DateTimeFormatter.ofLocalizedDateTime(java.time.format.FormatStyle.MEDIUM).withLocale(locale))
 }

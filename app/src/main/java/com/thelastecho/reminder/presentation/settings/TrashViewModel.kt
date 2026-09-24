@@ -47,20 +47,20 @@ class TrashViewModel(
             is TrashIntent.RestoreReminder -> {
                 viewModelScope.launch {
                     repository.restoreReminder(intent.reminderId)
-                    _effect.send(TrashEffect.ShowSnackbar("Reminder restored"))
+                    _effect.send(TrashEffect.ShowSnackbar(com.thelastecho.reminder.R.string.reminder_restored))
                 }
             }
             is TrashIntent.PermanentlyDeleteReminder -> {
                 viewModelScope.launch {
                     repository.permanentlyDeleteReminder(intent.reminderId)
-                    _effect.send(TrashEffect.ShowSnackbar("Reminder permanently deleted"))
+                    _effect.send(TrashEffect.ShowSnackbar(com.thelastecho.reminder.R.string.reminder_permanently_deleted))
                 }
             }
             is TrashIntent.UpdateSearch -> _uiState.update { it.copy(searchQuery = intent.query) }
             TrashIntent.EmptyTrash -> {
                 viewModelScope.launch {
                     repository.permanentlyDeleteAllDeletedReminders()
-                    _effect.send(TrashEffect.ShowSnackbar("Trash emptied"))
+                    _effect.send(TrashEffect.ShowSnackbar(com.thelastecho.reminder.R.string.trash_emptied))
                 }
             }
         }

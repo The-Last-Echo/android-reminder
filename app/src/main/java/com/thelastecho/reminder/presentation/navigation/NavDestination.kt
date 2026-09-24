@@ -9,4 +9,6 @@ sealed class NavDestination(val route: String) {
     data object Settings : NavDestination("settings")
     data object Categories : NavDestination("categories")
     data object Trash : NavDestination("trash")
+    data object BackupRestore : NavDestination("backup_restore")
+    data object Privacy : NavDestination("privacy")
 }

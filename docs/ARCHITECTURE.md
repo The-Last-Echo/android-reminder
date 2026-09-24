@@ -17,18 +17,20 @@ One-off navigation and snackbar events are emitted separately from persistent UI
 - `presentation/home`, `editor`, `settings`: Compose UI and screen state contracts.
 - `presentation/navigation`: Navigation Compose routes and manual object construction.
 - `domain/model`: Reminder, category, priority, repeat interval, and checklist models.
-- `domain/usecase`: Save, delete, query, completion, and snooze operations.
+- `domain/usecase`: Save, delete, query, completion, snooze, and restore operations.
 - `domain/repository`: Repository interface used by the domain and presentation layers.
-- `data/local`: Room database, DAOs, and persistence entities.
+- `data/local`: Room database, DAOs, persistence entities, Trash retention worker, and optional release-check worker.
+- `data/backup`: validated versioned JSON export/restore with Room transactions and attachment staging.
+- `presentation/widget`: Jetpack Glance home-screen widgets.
 - `data/repository`: maps entities to domain models and implements repository operations.
 - `core/alarm`: schedules exact alarms when Android permits them and restores alarms on boot/package replacement.
-- `core/notification`: channels, alert styles, photo previews, and complete/snooze actions.
-- `core/preferences`: DataStore preferences for appearance and default notification style, including optional DND bypass.
+- `core/notification`: style-specific channels, photo previews, notification actions, and the optional `mediaPlayback` foreground service for Full screen mode.
+- `core/preferences`: DataStore preferences for appearance, notification style/sound, retention, button position, and optional update checks.
 - `core/designsystem`: Compose Material 3 colors, typography, and theme.
 
 ## Persistence
 
-Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted`, `deletedAt`, and `expiresAt` (90 days after deletion); expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup.
+Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted`, `deletedAt`, and `expiresAt` (90 days after deletion); expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup. Completed reminders are moved into Trash only when the configured retention period elapses.
 
 ## Notifications
 
@@ -36,7 +38,9 @@ Room database schema version is declared in `ReminderDatabase`. Migrations prese
 
 ## Theme and language
 
-`MainActivity` keeps the Android splash screen visible until DataStore emits appearance preferences, so the first Compose frame uses the saved theme. Light/dark and AMOLED appearance are applied by `ReminderTheme`. English and French are declared in the app locale configuration; Android 13+ provides the native per-app language settings UI.
+`MainActivity` keeps the Android splash screen visible until DataStore emits appearance preferences, so the first Compose frame uses the saved theme. Light/dark and AMOLED appearance are applied by `ReminderTheme`. English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic are declared in the app locale configuration; Android 13+ provides the native per-app language settings UI. Arabic follows the system RTL layout direction.
+
+See [Android behavior and user data](ANDROID_BEHAVIOR.md) for notification restrictions, backup semantics, optional network behavior, Trash retention, and widget details.
 
 ## Build configuration
 

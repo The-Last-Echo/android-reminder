@@ -41,6 +41,21 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND isDeleted = 0 AND dueDateTimeEpochMillis > :currentMillis")
     suspend fun getActiveScheduledReminders(currentMillis: Long): List<ReminderEntity>
 
+    @Query("SELECT * FROM reminders")
+    suspend fun getAllReminderEntitiesForBackup(): List<ReminderEntity>
+
+    @Query("SELECT * FROM subtasks")
+    suspend fun getAllSubTaskEntitiesForBackup(): List<SubTaskEntity>
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertReminderEntitiesForBackup(reminders: List<ReminderEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertSubTaskEntitiesForBackup(subtasks: List<SubTaskEntity>)
+
+    @Query("DELETE FROM reminders")
+    suspend fun clearReminderDataForBackup()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertReminder(reminder: ReminderEntity): Long
 
@@ -60,6 +75,10 @@ interface ReminderDao {
     suspend fun snoozeReminder(id: Long, newDueTime: Long)
 
     @Transaction
+    @Query("SELECT * FROM reminders WHERE id = :id AND isDeleted = 1")
+    suspend fun getDeletedReminderWithSubTasksById(id: Long): ReminderWithSubTasks?
+
+    @Transaction
     @Query("SELECT * FROM reminders WHERE isDeleted = 1 ORDER BY deletedAt DESC")
     fun getDeletedRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
@@ -74,6 +93,9 @@ interface ReminderDao {
 
     @Query("DELETE FROM reminders WHERE isDeleted = 1")
     suspend fun permanentlyDeleteAllDeletedReminders()
+
+    @Query("UPDATE reminders SET isDeleted = 1, deletedAt = :nowMillis, expiresAt = :expiresAtMillis WHERE isDeleted = 0 AND isCompleted = 1 AND completedAt IS NOT NULL AND completedAt <= :completionCutoffMillis")
+    suspend fun moveExpiredCompletedRemindersToTrash(completionCutoffMillis: Long, nowMillis: Long, expiresAtMillis: Long)
 
     @Query("DELETE FROM reminders WHERE isDeleted = 1 AND expiresAt IS NOT NULL AND expiresAt <= :nowMillis")
     suspend fun permanentlyDeleteExpiredReminders(nowMillis: Long)

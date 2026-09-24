@@ -17,5 +17,5 @@ sealed interface TrashIntent {
 }
 
 sealed interface TrashEffect {
-    data class ShowSnackbar(val message: String) : TrashEffect
+    data class ShowSnackbar(val messageRes: Int) : TrashEffect
 }

@@ -48,7 +48,7 @@ class MainActivity : ComponentActivity() {
             androidx.compose.runtime.SideEffect { themeSettingsLoaded = loadedThemeSettings != null }
 
             // Request POST_NOTIFICATIONS runtime permission on Android 13+ (API 33+)
-            RequestNotificationPermissionIfNeeded()
+            RequestNotificationPermissionIfNeeded(userPreferences, loadedThemeSettings?.notificationPermissionAsked)
 
             val isDark = when (themeSettings.darkThemeConfig) {
                 DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
@@ -76,7 +76,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun ComponentActivity.RequestNotificationPermissionIfNeeded() {
+private fun ComponentActivity.RequestNotificationPermissionIfNeeded(preferences: UserPreferencesRepository, alreadyAsked: Boolean?) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val permissionState = ContextCompat.checkSelfPermission(
             this,
@@ -86,8 +86,9 @@ private fun ComponentActivity.RequestNotificationPermissionIfNeeded() {
             contract = ActivityResultContracts.RequestPermission()
         ) { /* Granted or denied handled gracefully */ }
 
-        LaunchedEffect(Unit) {
-            if (permissionState != PackageManager.PERMISSION_GRANTED) {
+        LaunchedEffect(permissionState, alreadyAsked) {
+            if (permissionState != PackageManager.PERMISSION_GRANTED && alreadyAsked == false) {
+                preferences.markNotificationPermissionAsked()
                 launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
             }
         }

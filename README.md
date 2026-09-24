@@ -9,7 +9,10 @@ Reminder is an offline-first Android app for scheduled reminders and checklists.
 - Choose a default notification presentation or override it per reminder. Android may limit heads-up and full-screen presentation according to notification channel settings, permissions, and device policy.
 - Search and filter reminders, including completed items.
 - Soft-delete reminders, restore them from Trash, and permanently remove them after 90 days.
-- Choose light, dark, system, or AMOLED appearance. The app supports English and French using Android per-app language settings.
+- Choose light, dark, system, or AMOLED appearance. English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic use Android per-app language settings.
+- Use category colors and monochrome icons, configure automatic completed-item retention, and move the Home Add button left or right.
+- Set an alarm sound for Full screen mode, export versioned backups, and add Today, Upcoming, or Compact home-screen widgets.
+- Optionally check public GitHub release metadata for app updates. Reminder content is not included in update requests.
 
 ## Requirements
 
@@ -31,9 +34,7 @@ Set `appVersionCode` and `appVersionName` in `gradle.properties` before making a
 
 ## Android behavior
 
-Notifications and exact alarms require Android permissions or user settings depending on OS version. Full-screen intents are restricted by Android and may require explicit user enablement; this app does not request display-over-other-apps permission. DND bypass is optional and requires Android notification policy access. Notification channels are controlled by users after creation.
-
-On Android 13 and later, choose the app language from Android’s per-app language settings. On older versions the app follows the system language.
+Reminder schedules keep the existing exact/inexact AlarmManager behavior. Full-screen reminders follow Android's full-screen intent access rules, and ongoing alarm-like sound uses a typed media-playback foreground service. See [Android behavior and user data](docs/ANDROID_BEHAVIOR.md) for platform restrictions, backup format, privacy, retention, widgets, and update-check details. On Android 13 and later, choose any of the eight supported languages from Android’s per-app language settings. On older versions the app follows the system language.
 
 ## Project layout
 
@@ -43,7 +44,7 @@ On Android 13 and later, choose the app language from Android’s per-app langua
 - `app/src/main/java/.../presentation`: Compose screens and view models.
 - `docs/`: architecture, API/data model notes, and changelog.
 
-See [Architecture](docs/ARCHITECTURE.md), [API and data model](docs/API.md), [Changelog](docs/CHANGELOG.md), and [Contributing](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
+See [Architecture](docs/ARCHITECTURE.md), [Android behavior](docs/ANDROID_BEHAVIOR.md), [API and data model](docs/API.md), [Changelog](docs/CHANGELOG.md), and [Contributing](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
 
 ## License
 

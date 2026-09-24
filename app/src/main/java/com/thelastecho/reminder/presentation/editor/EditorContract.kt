@@ -19,7 +19,7 @@ data class EditorUiState(
     val categories: List<Category> = emptyList(),
     val isCompleted: Boolean = false,
     val isSaving: Boolean = false,
-    val titleError: String? = null
+    val titleErrorRes: Int? = null
 )
 
 sealed interface EditorIntent {
@@ -38,9 +38,11 @@ sealed interface EditorIntent {
     data class DeleteSubTask(val index: Int) : EditorIntent
     data object SaveReminder : EditorIntent
     data object DeleteReminder : EditorIntent
+    data class UndoDelete(val reminderId: Long) : EditorIntent
 }
 
 sealed interface EditorEffect {
     data object NavigateBack : EditorEffect
-    data class ShowSnackbar(val message: String) : EditorEffect
+    data class ShowSnackbar(val messageRes: Int) : EditorEffect
+    data class ShowDeleteUndo(val reminderId: Long) : EditorEffect
 }
