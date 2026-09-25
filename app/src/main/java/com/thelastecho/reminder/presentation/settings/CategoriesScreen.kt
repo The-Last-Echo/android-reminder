@@ -5,26 +5,32 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Category
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.presentation.components.CategoryIcon
+import com.thelastecho.reminder.presentation.components.SectionHeading
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,15 +56,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import kotlinx.coroutines.flow.collectLatest
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun CategoriesScreen(
     viewModel: CategoriesViewModel,
@@ -112,6 +122,40 @@ fun CategoriesScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (state.categories.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(320.dp).padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Outlined.Category,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                stringResource(com.thelastecho.reminder.R.string.categories_empty_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                stringResource(com.thelastecho.reminder.R.string.categories_empty_details),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
+                }
+            } else {
+                item {
+                    SectionHeading(stringResource(com.thelastecho.reminder.R.string.categories))
+                }
+            }
             items(
                 items = state.categories,
                 key = { it.id }
@@ -127,13 +171,43 @@ fun CategoriesScreen(
 
     // Add Category Dialog
     if (state.showAddDialog) {
-        var selectedColor by remember { mutableStateOf(state.newCategoryColor) }
-        
         AlertDialog(
             onDismissRequest = { viewModel.onIntent(CategoriesIntent.ShowAddDialog(false)) },
             title = { Text(stringResource(if (state.editingCategoryId == null) com.thelastecho.reminder.R.string.add_category else com.thelastecho.reminder.R.string.edit_category)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(
+                    modifier = Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Card(
+                        shape = ReminderShapes.Card,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier.size(44.dp).clip(CircleShape).background(Color(state.newCategoryColor)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CategoryIcon(
+                                    state.newCategoryIcon,
+                                    Modifier.size(22.dp),
+                                    if (Color(state.newCategoryColor).luminance() > 0.45f) Color.Black else Color.White
+                                )
+                            }
+                            Text(
+                                state.newCategoryName.ifBlank {
+                                    context.getString(com.thelastecho.reminder.R.string.category_name)
+                                },
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 2
+                            )
+                        }
+                    }
+
                     OutlinedTextField(
                         value = state.newCategoryName,
                         onValueChange = { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryName(it)) },
@@ -141,42 +215,66 @@ fun CategoriesScreen(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    
-                    Text(stringResource(com.thelastecho.reminder.R.string.color), style = MaterialTheme.typography.labelMedium)
-                    Row(
-                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+
+                    Text(stringResource(com.thelastecho.reminder.R.string.color), style = MaterialTheme.typography.labelLarge)
+                    val colors = listOf(
+                        0xFF6750A4, 0xFF386A20, 0xFF0061A4, 0xFF9C4146,
+                        0xFF7D5260, 0xFF006B5E, 0xFF805500, 0xFF526070,
+                        0xFF984061, 0xFF65558F, 0xFF4F6354, 0xFF7A5900
+                    ).map { it.toInt() }
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val colors = listOf(0xFF4CAF50,0xFF2196F3,0xFFFF9800,0xFFF44336,0xFF9C27B0,0xFF607D8B,0xFF009688,0xFF3F51B5,0xFFE91E63,0xFF795548,0xFFCDDC39,0xFF00BCD4,0xFF673AB7,0xFF8BC34A,0xFFFFC107,0xFF546E7A).map { it.toInt() }
                         colors.forEach { color ->
                             Box(
                                 modifier = Modifier
-                                    .size(34.dp)
+                                    .size(40.dp)
                                     .clip(CircleShape)
                                     .background(Color(color))
-                                    .clickable {
-                                        selectedColor = color
-                                        viewModel.onIntent(CategoriesIntent.UpdateNewCategoryColor(color))
-                                    },
+                                    .selectable(
+                                        selected = state.newCategoryColor == color,
+                                        role = Role.RadioButton,
+                                        onClick = { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryColor(color)) }
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (selectedColor == color) {
+                                if (state.newCategoryColor == color) {
                                     Box(
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .clip(CircleShape)
-                                            .background(Color.White)
+                                        Modifier.size(14.dp).clip(CircleShape)
+                                            .background(if (Color(color).luminance() > 0.45f) Color.Black else Color.White)
                                     )
                                 }
                             }
                         }
                     }
-                    Text(stringResource(com.thelastecho.reminder.R.string.category_icon), style = MaterialTheme.typography.labelMedium)
+
+                    Text(stringResource(com.thelastecho.reminder.R.string.category_icon), style = MaterialTheme.typography.labelLarge)
                     val icons = listOf("label", "person", "work", "shopping_cart", "home", "school", "favorite", "flight", "cafe", "grocery", "health", "build")
-                    Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         icons.forEach { iconName ->
-                            Box(Modifier.size(42.dp).clip(CircleShape).background(if (state.newCategoryIcon == iconName) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface).clickable { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryIcon(iconName)) }, contentAlignment = Alignment.Center) {
-                                CategoryIcon(iconName, Modifier.size(22.dp), if (state.newCategoryIcon == iconName) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
+                            val selected = state.newCategoryIcon == iconName
+                            Box(
+                                Modifier.size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
+                                    .selectable(
+                                        selected = selected,
+                                        role = Role.RadioButton,
+                                        onClick = { viewModel.onIntent(CategoriesIntent.UpdateNewCategoryIcon(iconName)) }
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CategoryIcon(
+                                    iconName,
+                                    Modifier.size(22.dp),
+                                    if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -230,7 +328,7 @@ private fun CategoryItem(
     onDelete: () -> Unit
 ) {
     Card(
-        shape = RoundedCornerShape(12.dp),
+        shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -252,16 +350,18 @@ private fun CategoryItem(
                         .background(Color(category.colorArgb)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CategoryIcon(category.iconName, Modifier.size(20.dp), Color.White)
+                    CategoryIcon(category.iconName, Modifier.size(20.dp), if (Color(category.colorArgb).luminance() > 0.45f) Color.Black else Color.White)
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = null) }
+            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(com.thelastecho.reminder.R.string.edit_category)) }
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_category))
             }

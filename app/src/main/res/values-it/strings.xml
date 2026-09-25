@@ -7,6 +7,7 @@
     <string name="action_snooze">Posticipa di 10 min</string>
     <string name="reminders">Promemoria</string>
     <string name="search_reminders">Cerca promemoria…</string>
+    <string name="general">Generali</string>
     <string name="settings">Impostazioni</string>
     <string name="today">Oggi</string>
     <string name="scheduled">Programmati</string>
@@ -22,6 +23,8 @@
     <string name="call_doctor">es. Chiama il medico</string>
     <string name="notes_optional">Note (facoltative)</string>
     <string name="add_extra_details">Aggiungi dettagli o link…</string>
+    <string name="basic_information">Informazioni di base</string>
+    <string name="advanced_options">Altre opzioni</string>
     <string name="schedule_alarm">Programmazione e allarme</string>
     <string name="set_date">Imposta data</string>
     <string name="repeat">Ripeti</string>
@@ -50,12 +53,12 @@
     <string name="amoled_description">Usa uno sfondo #000000 in modalità scura per massimo contrasto e risparmio energetico</string>
     <string name="dynamic_colors">Dinamici colori</string>
     <string name="dynamic_colors_description">Adatta i colori allo sfondo di sistema (Android 12+)</string>
-    <string name="data_management">Gestione dati</string>
+    <string name="data_management">Dati e backup</string>
     <string name="trash">Cestino</string>
     <string name="view_restore_deleted">Visualizza e ripristina i promemoria eliminati</string>
     <string name="notifications">Notifiche</string>
     <string name="notification_style">Stile di notifica</string>
-    <string name="privacy_freedom">Privacy e libertà</string>
+    <string name="privacy_freedom">Privacy e sicurezza</string>
     <string name="foss_description">100% gratuito e open source (FOSS)</string>
     <string name="foss_details">I dati dei promemoria sono salvati localmente. Gli aggiornamenti facoltativi contattano GitHub; i promemoria non vengono inviati.</string>
     <string name="about">Informazioni</string>
@@ -63,12 +66,15 @@
     <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
     <string name="manage_categories_title">Gestisci categorie</string>
     <string name="add_category">Aggiungi categoria</string>
+    <string name="categories_empty_title">Nessuna categoria</string>
+    <string name="categories_empty_details">Crea categorie per raggruppare promemoria correlati.</string>
     <string name="category_name">Nome categoria</string>
     <string name="color">Colore</string>
     <string name="delete_category">Elimina categoria</string>
     <string name="delete_category_confirmation">Vuoi eliminare questa categoria? I promemoria associati non verranno eliminati.</string>
     <string name="category_added">Categoria aggiunta</string>
     <string name="category_deleted">Categoria eliminata</string>
+    <string name="trash_expiration_details">I promemoria nel cestino vengono eliminati automaticamente dopo 90 giorni.</string>
     <string name="trash_title">Cestino</string>
     <string name="trash_empty">Il cestino è vuoto</string>
     <string name="trash_empty_details">I promemoria eliminati appariranno qui</string>

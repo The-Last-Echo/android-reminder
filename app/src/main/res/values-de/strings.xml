@@ -7,6 +7,7 @@
     <string name="action_snooze">10 Min. verschieben</string>
     <string name="reminders">Erinnerungen</string>
     <string name="search_reminders">Erinnerungen suchen…</string>
+    <string name="general">Allgemein</string>
     <string name="settings">Einstellungen</string>
     <string name="today">Heute</string>
     <string name="scheduled">Geplant</string>
@@ -22,6 +23,8 @@
     <string name="call_doctor">z. B. Arzt anrufen</string>
     <string name="notes_optional">Notizen (optional)</string>
     <string name="add_extra_details">Weitere Details oder Links hinzufügen…</string>
+    <string name="basic_information">Grundlegende Informationen</string>
+    <string name="advanced_options">Weitere Optionen</string>
     <string name="schedule_alarm">Zeitplan und Alarm</string>
     <string name="set_date">Datum festlegen</string>
     <string name="repeat">Wiederholen</string>
@@ -50,12 +53,12 @@
     <string name="amoled_description">Verwendet im Dunkelmodus einen #000000-Hintergrund für maximalen Kontrast und geringeren Akkuverbrauch</string>
     <string name="dynamic_colors">Dynamische Farben</string>
     <string name="dynamic_colors_description">Passt Farben an den Systemhintergrund an (Android 12+)</string>
-    <string name="data_management">Datenverwaltung</string>
+    <string name="data_management">Daten und Sicherung</string>
     <string name="trash">Papierkorb</string>
     <string name="view_restore_deleted">Gelöschte Erinnerungen ansehen und wiederherstellen</string>
     <string name="notifications">Benachrichtigungen</string>
     <string name="notification_style">Benachrichtigungsstil</string>
-    <string name="privacy_freedom">Datenschutz und Freiheit</string>
+    <string name="privacy_freedom">Datenschutz und Sicherheit</string>
     <string name="foss_description">100 % kostenlos und quelloffen (FOSS)</string>
     <string name="foss_details">Erinnerungen werden lokal gespeichert. Optionale Update-Prüfungen kontaktieren GitHub; Erinnerungen werden nicht übertragen.</string>
     <string name="about">Über</string>
@@ -63,12 +66,15 @@
     <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
     <string name="manage_categories_title">Kategorien verwalten</string>
     <string name="add_category">Kategorie hinzufügen</string>
+    <string name="categories_empty_title">Noch keine Kategorien</string>
+    <string name="categories_empty_details">Erstelle Kategorien, um zusammengehörige Erinnerungen zu ordnen.</string>
     <string name="category_name">Kategoriename</string>
     <string name="color">Farbe</string>
     <string name="delete_category">Kategorie löschen</string>
     <string name="delete_category_confirmation">Möchtest du diese Kategorie löschen? Zugehörige Erinnerungen bleiben erhalten.</string>
     <string name="category_added">Kategorie hinzugefügt</string>
     <string name="category_deleted">Kategorie gelöscht</string>
+    <string name="trash_expiration_details">Erinnerungen im Papierkorb werden nach 90 Tagen automatisch gelöscht.</string>
     <string name="trash_title">Papierkorb</string>
     <string name="trash_empty">Der Papierkorb ist leer</string>
     <string name="trash_empty_details">Gelöschte Erinnerungen erscheinen hier</string>

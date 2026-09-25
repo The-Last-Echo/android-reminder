@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeleteForever
@@ -47,6 +46,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.delay
 import java.text.DateFormat
@@ -113,6 +113,14 @@ fun TrashScreen(
                 singleLine = true,
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.search_trash)) }
+            )
+        }
+        if (state.deletedReminders.isNotEmpty()) {
+            Text(
+                text = stringResource(com.thelastecho.reminder.R.string.trash_expiration_details),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
         if (state.isLoading) {
@@ -218,7 +226,7 @@ private fun DeletedReminderItem(
     } ?: 0
 
     Card(
-        shape = RoundedCornerShape(12.dp),
+        shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -242,7 +250,12 @@ private fun DeletedReminderItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(stringResource(com.thelastecho.reminder.R.string.days_until_deletion, remainingDays.toInt()), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+            Text(
+                stringResource(com.thelastecho.reminder.R.string.days_until_deletion, remainingDays.toInt()),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = if (remainingDays <= 7) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            )
             Spacer(modifier = Modifier.height(12.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),

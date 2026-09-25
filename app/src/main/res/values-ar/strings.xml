@@ -7,6 +7,7 @@
     <string name="action_snooze">غفوة ١٠ دقائق</string>
     <string name="reminders">التذكيرات</string>
     <string name="search_reminders">البحث في التذكيرات…</string>
+    <string name="general">عام</string>
     <string name="settings">الإعدادات</string>
     <string name="today">اليوم</string>
     <string name="scheduled">المجدولة</string>
@@ -22,6 +23,8 @@
     <string name="call_doctor">مثال: اتصل بالطبيب</string>
     <string name="notes_optional">ملاحظات (اختيارية)</string>
     <string name="add_extra_details">أضف تفاصيل أو روابط…</string>
+    <string name="basic_information">معلومات أساسية</string>
+    <string name="advanced_options">خيارات إضافية</string>
     <string name="schedule_alarm">الجدولة والتنبيه</string>
     <string name="set_date">تحديد التاريخ</string>
     <string name="repeat">تكرار</string>
@@ -50,12 +53,12 @@
     <string name="amoled_description">يستخدم خلفية ‎#000000 في الوضع الداكن لزيادة التباين وتوفير البطارية</string>
     <string name="dynamic_colors">الألوان الديناميكية</string>
     <string name="dynamic_colors_description">تكييف الألوان مع خلفية النظام (Android 12+)</string>
-    <string name="data_management">إدارة البيانات</string>
+    <string name="data_management">البيانات والنسخ الاحتياطي</string>
     <string name="trash">سلة المهملات</string>
     <string name="view_restore_deleted">عرض التذكيرات المحذوفة واستعادتها</string>
     <string name="notifications">الإشعارات</string>
     <string name="notification_style">نمط الإشعار</string>
-    <string name="privacy_freedom">الخصوصية والحرية</string>
+    <string name="privacy_freedom">الخصوصية والأمان</string>
     <string name="foss_description">مجاني ومفتوح المصدر بالكامل (FOSS)</string>
     <string name="foss_details">تُحفظ التذكيرات محليًا. تتصل عمليات التحقق الاختيارية من التحديثات بـ GitHub ولا تُرسل التذكيرات.</string>
     <string name="about">حول التطبيق</string>
@@ -63,12 +66,15 @@
     <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
     <string name="manage_categories_title">إدارة الفئات</string>
     <string name="add_category">إضافة فئة</string>
+    <string name="categories_empty_title">لا توجد فئات بعد</string>
+    <string name="categories_empty_details">أنشئ فئات لجمع التذكيرات المرتبطة معًا.</string>
     <string name="category_name">اسم الفئة</string>
     <string name="color">اللون</string>
     <string name="delete_category">حذف الفئة</string>
     <string name="delete_category_confirmation">هل تريد حذف هذه الفئة؟ لن تُحذف التذكيرات التابعة لها.</string>
     <string name="category_added">تمت إضافة الفئة</string>
     <string name="category_deleted">تم حذف الفئة</string>
+    <string name="trash_expiration_details">تُحذف التذكيرات في سلة المهملات تلقائيًا بعد ٩٠ يومًا.</string>
     <string name="trash_title">سلة المهملات</string>
     <string name="trash_empty">سلة المهملات فارغة</string>
     <string name="trash_empty_details">ستظهر التذكيرات المحذوفة هنا</string>

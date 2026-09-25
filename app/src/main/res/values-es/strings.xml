@@ -7,6 +7,7 @@
     <string name="action_snooze">Posponer 10 min</string>
     <string name="reminders">Recordatorios</string>
     <string name="search_reminders">Buscar recordatorios…</string>
+    <string name="general">General</string>
     <string name="settings">Ajustes</string>
     <string name="today">Hoy</string>
     <string name="scheduled">Programados</string>
@@ -22,6 +23,8 @@
     <string name="call_doctor">p. ej., llamar al médico</string>
     <string name="notes_optional">Notas (opcional)</string>
     <string name="add_extra_details">Añade detalles o enlaces…</string>
+    <string name="basic_information">Información básica</string>
+    <string name="advanced_options">Más opciones</string>
     <string name="schedule_alarm">Programación y alarma</string>
     <string name="set_date">Establecer fecha</string>
     <string name="repeat">Repetir</string>
@@ -50,12 +53,12 @@
     <string name="amoled_description">Usa un fondo #000000 en modo oscuro para máximo contraste y ahorro de batería</string>
     <string name="dynamic_colors">Colores dinámicos</string>
     <string name="dynamic_colors_description">Adapta los colores al fondo del sistema (Android 12+)</string>
-    <string name="data_management">Gestión de datos</string>
+    <string name="data_management">Datos y copias de seguridad</string>
     <string name="trash">Papelera</string>
     <string name="view_restore_deleted">Ver y restaurar recordatorios eliminados</string>
     <string name="notifications">Notificaciones</string>
     <string name="notification_style">Estilo de notificación</string>
-    <string name="privacy_freedom">Privacidad y libertad</string>
+    <string name="privacy_freedom">Privacidad y seguridad</string>
     <string name="foss_description">100 % gratuito y de código abierto (FOSS)</string>
     <string name="foss_details">Los recordatorios se guardan localmente. Las comprobaciones opcionales contactan con GitHub; no se envían recordatorios.</string>
     <string name="about">Acerca de</string>
@@ -63,12 +66,15 @@
     <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
     <string name="manage_categories_title">Administrar categorías</string>
     <string name="add_category">Añadir categoría</string>
+    <string name="categories_empty_title">Aún no hay categorías</string>
+    <string name="categories_empty_details">Crea categorías para agrupar recordatorios relacionados.</string>
     <string name="category_name">Nombre de categoría</string>
     <string name="color">Color</string>
     <string name="delete_category">Eliminar categoría</string>
     <string name="delete_category_confirmation">¿Quieres eliminar esta categoría? Los recordatorios asociados no se eliminarán.</string>
     <string name="category_added">Categoría añadida</string>
     <string name="category_deleted">Categoría eliminada</string>
+    <string name="trash_expiration_details">Los recordatorios de la papelera se eliminan automáticamente después de 90 días.</string>
     <string name="trash_title">Papelera</string>
     <string name="trash_empty">La papelera está vacía</string>
     <string name="trash_empty_details">Los recordatorios eliminados aparecerán aquí</string>

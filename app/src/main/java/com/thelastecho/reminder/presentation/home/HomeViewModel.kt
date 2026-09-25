@@ -163,19 +163,22 @@ class HomeViewModel(
 
     private fun reloadReminders() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val allReminders = repository.getAllReminders().first()
-            latestReminders = allReminders
-            _uiState.update { current ->
-                current.copy(
-                    reminders = applyFilterAndSearch(
-                        allReminders = allReminders,
-                        filter = current.selectedFilter,
-                        categoryId = current.selectedCategoryId,
-                        query = current.searchQuery
-                    ),
-                    isLoading = false
-                )
+            _uiState.update { it.copy(isRefreshing = true) }
+            try {
+                val allReminders = repository.getAllReminders().first()
+                latestReminders = allReminders
+                _uiState.update { current ->
+                    current.copy(
+                        reminders = applyFilterAndSearch(
+                            allReminders = allReminders,
+                            filter = current.selectedFilter,
+                            categoryId = current.selectedCategoryId,
+                            query = current.searchQuery
+                        )
+                    )
+                }
+            } finally {
+                _uiState.update { it.copy(isRefreshing = false) }
             }
         }
     }

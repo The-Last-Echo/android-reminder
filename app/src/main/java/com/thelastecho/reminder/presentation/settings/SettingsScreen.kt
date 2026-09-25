@@ -61,9 +61,10 @@ import androidx.core.content.ContextCompat
 import androidx.compose.ui.res.stringResource
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.presentation.components.SectionHeading
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -88,6 +89,7 @@ fun SettingsScreen(
         }
     }
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showAddPositionDialog by remember { mutableStateOf(false) }
     var showNotificationStyleDialog by remember { mutableStateOf(false) }
     var showRetentionDialog by remember { mutableStateOf(false) }
     var customRetention by remember { mutableStateOf("") }
@@ -127,15 +129,55 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Categories Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.categories),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.general))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            val localeIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                Intent(AndroidSettings.ACTION_APP_LOCALE_SETTINGS).setData(android.net.Uri.parse("package:${context.packageName}"))
+                            } else {
+                                Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}"))
+                            }
+                            runCatching { context.startActivity(localeIntent) }
+                        }.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_language), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(com.thelastecho.reminder.R.string.app_language_details), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        Modifier.fillMaxWidth().clickable { showAddPositionDialog = true }.padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(stringResource(com.thelastecho.reminder.R.string.add_button_position), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                stringResource(if (state.addButtonOnLeft) com.thelastecho.reminder.R.string.position_left else com.thelastecho.reminder.R.string.position_right),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Categories Section
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.categories))
+
+            Card(
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -164,63 +206,82 @@ fun SettingsScreen(
                 }
             }
 
-            // Data Management Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.data_management),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.reminders))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { viewModel.onIntent(SettingsIntent.NavigateToTrash) }
-                            .padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                            .padding(vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(stringResource(com.thelastecho.reminder.R.string.trash), style = MaterialTheme.typography.bodyLarge)
-                                Text(
-                                    stringResource(com.thelastecho.reminder.R.string.view_restore_deleted),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
+                        Icon(Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column {
+                            Text(stringResource(com.thelastecho.reminder.R.string.trash), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                stringResource(com.thelastecho.reminder.R.string.view_restore_deleted),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showRetentionDialog = true }
+                            .padding(vertical = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(stringResource(com.thelastecho.reminder.R.string.completed_retention), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                if (state.completedReminderRetentionDays == 0) {
+                                    stringResource(com.thelastecho.reminder.R.string.retention_never)
+                                } else {
+                                    context.resources.getQuantityString(
+                                        com.thelastecho.reminder.R.plurals.retention_days,
+                                        state.completedReminderRetentionDays,
+                                        state.completedReminderRetentionDays
+                                    )
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
             }
 
-            Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.NavigateToBackup) }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(com.thelastecho.reminder.R.string.backup_restore), style = MaterialTheme.typography.bodyLarge)
-            }
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.data_management))
 
-            Row(Modifier.fillMaxWidth().clickable { showRetentionDialog = true }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(com.thelastecho.reminder.R.string.completed_retention), style = MaterialTheme.typography.bodyLarge)
-                    Text(if (state.completedReminderRetentionDays == 0) stringResource(com.thelastecho.reminder.R.string.retention_never) else context.resources.getQuantityString(com.thelastecho.reminder.R.plurals.retention_days, state.completedReminderRetentionDays, state.completedReminderRetentionDays), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.NavigateToBackup) }
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.backup_restore), style = MaterialTheme.typography.bodyLarge)
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        stringResource(com.thelastecho.reminder.R.string.backup_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 
             // Notifications Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.notifications),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.notifications))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -265,51 +326,44 @@ fun SettingsScreen(
                     Text(stringResource(com.thelastecho.reminder.R.string.open_notification_settings))
                 }
             }
-            Row(Modifier.fillMaxWidth().clickable {
-                val intent = Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER).apply {
-                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALARM)
-                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(com.thelastecho.reminder.R.string.choose_alarm_sound))
-                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-                    putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, state.alarmSoundUri?.let(android.net.Uri::parse))
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth().clickable {
+                    val intent = Intent(android.media.RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                        putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TYPE, android.media.RingtoneManager.TYPE_ALARM)
+                        putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_TITLE, context.getString(com.thelastecho.reminder.R.string.choose_alarm_sound))
+                        putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                        putExtra(android.media.RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, state.alarmSoundUri?.let(android.net.Uri::parse))
+                    }
+                    ringtonePicker.launch(intent)
                 }
-                ringtonePicker.launch(intent)
-            }.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(com.thelastecho.reminder.R.string.choose_alarm_sound), Modifier.weight(1f))
-                Text(if (state.alarmSoundUri == null) stringResource(com.thelastecho.reminder.R.string.system_default) else stringResource(com.thelastecho.reminder.R.string.selected), color = MaterialTheme.colorScheme.primary)
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(com.thelastecho.reminder.R.string.choose_alarm_sound), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            if (state.alarmSoundUri == null) stringResource(com.thelastecho.reminder.R.string.system_default) else stringResource(com.thelastecho.reminder.R.string.selected),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Icon(Icons.Outlined.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                }
             }
 
             // Appearance Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.appearance),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.appearance))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().clickable {
-                            val localeIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                Intent(AndroidSettings.ACTION_APP_LOCALE_SETTINGS).setData(android.net.Uri.parse("package:${context.packageName}"))
-                            } else {
-                                Intent(AndroidSettings.ACTION_APPLICATION_DETAILS_SETTINGS, android.net.Uri.parse("package:${context.packageName}"))
-                            }
-                            runCatching { context.startActivity(localeIntent) }
-                        }.padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(stringResource(com.thelastecho.reminder.R.string.app_language), style = MaterialTheme.typography.bodyLarge)
-                            Text(stringResource(com.thelastecho.reminder.R.string.app_language_details), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
                     // Theme selector item
                     Row(
                         modifier = Modifier
@@ -363,13 +417,7 @@ fun SettingsScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text(stringResource(com.thelastecho.reminder.R.string.add_button_position), style = MaterialTheme.typography.bodyLarge)
-                            Text(stringResource(if (state.addButtonOnLeft) com.thelastecho.reminder.R.string.position_left else com.thelastecho.reminder.R.string.position_right), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Switch(checked = state.addButtonOnLeft, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAddButtonOnLeft(it)) })
-                    }
+
 
                     // Dynamic colors toggle
                     Row(
@@ -400,14 +448,10 @@ fun SettingsScreen(
             }
 
             // Privacy & Freedom Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.privacy_freedom),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.privacy_freedom))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.NavigateToPrivacy) }
             ) {
@@ -428,22 +472,18 @@ fun SettingsScreen(
             }
 
             // About Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.about),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = MaterialTheme.colorScheme.primary
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.about))
 
             Card(
-                shape = RoundedCornerShape(16.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().clickable { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/The-Last-Echo/android-reminder"))) } }
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(16.dp))
-                        Column(modifier = Modifier.clickable { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, android.net.Uri.parse("https://github.com/The-Last-Echo/android-reminder"))) } }) {
+                        Column {
                             Text(stringResource(com.thelastecho.reminder.R.string.app_version, packageVersion), style = MaterialTheme.typography.bodyLarge)
                             Text(
                                 stringResource(com.thelastecho.reminder.R.string.about_details),
@@ -454,7 +494,7 @@ fun SettingsScreen(
                     }
                 }
             }
-                        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = Modifier.fillMaxWidth()) {
+                        Card(shape = ReminderShapes.Card, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) {
@@ -494,6 +534,43 @@ fun SettingsScreen(
                 OutlinedTextField(value = customRetention, onValueChange = { customRetention = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(com.thelastecho.reminder.R.string.custom_duration)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true)
             }
         }, confirmButton = { TextButton(onClick = { customRetention.toIntOrNull()?.takeIf { it in 1..3650 }?.let { viewModel.onIntent(SettingsIntent.SetCompletedRetention(it)) }; showRetentionDialog = false }) { Text(stringResource(com.thelastecho.reminder.R.string.save)) } }, dismissButton = { TextButton(onClick = { showRetentionDialog = false }) { Text(stringResource(com.thelastecho.reminder.R.string.cancel)) } })
+    }
+
+    if (showAddPositionDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { showAddPositionDialog = false },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.add_button_position)) },
+            text = {
+                Column {
+                    listOf(true, false).forEach { onLeft ->
+                        Row(
+                            Modifier.fillMaxWidth()
+                                .clickable {
+                                    viewModel.onIntent(SettingsIntent.SetAddButtonOnLeft(onLeft))
+                                    showAddPositionDialog = false
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = state.addButtonOnLeft == onLeft,
+                                onClick = {
+                                    viewModel.onIntent(SettingsIntent.SetAddButtonOnLeft(onLeft))
+                                    showAddPositionDialog = false
+                                }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(if (onLeft) com.thelastecho.reminder.R.string.position_left else com.thelastecho.reminder.R.string.position_right))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showAddPositionDialog = false }) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.ok))
+                }
+            }
+        )
     }
 
     if (showNotificationStyleDialog) {

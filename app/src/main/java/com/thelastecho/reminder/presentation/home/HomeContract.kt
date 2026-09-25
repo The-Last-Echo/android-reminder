@@ -11,6 +11,7 @@ data class HomeUiState(
     val selectedCategoryId: Long? = null,
     val searchQuery: String = "",
     val isLoading: Boolean = true,
+    val isRefreshing: Boolean = false,
     val allCount: Int = 0,
     val todayCount: Int = 0,
     val scheduledCount: Int = 0,

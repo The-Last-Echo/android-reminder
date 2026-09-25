@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -43,7 +44,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalConfiguration
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.domain.model.Reminder
+import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.model.SubTask
 import com.thelastecho.reminder.domain.model.RepeatInterval
 import java.time.Instant
@@ -54,6 +57,7 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun ReminderItem(
     reminder: Reminder,
+    category: Category? = null,
     onToggleComplete: () -> Unit,
     onClick: () -> Unit,
     onDelete: () -> Unit,
@@ -66,7 +70,7 @@ fun ReminderItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(
             containerColor = if (reminder.isCompleted) {
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
@@ -85,7 +89,7 @@ fun ReminderItem(
             // Completion Toggle Checkbox
             IconButton(
                 onClick = onToggleComplete,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = if (reminder.isCompleted) {
@@ -110,7 +114,7 @@ fun ReminderItem(
             ) {
                 Text(
                     text = reminder.title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
                     color = if (reminder.isCompleted) {
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     } else {
@@ -121,23 +125,31 @@ fun ReminderItem(
                     overflow = TextOverflow.Ellipsis
                 )
 
-                if (reminder.notes.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = reminder.notes,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
                 // Metadata Badges (Date, Repeat, Subtasks, Priority)
                 Spacer(modifier = Modifier.height(8.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    if (category != null) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(
+                                modifier = Modifier.size(8.dp).background(
+                                    androidx.compose.ui.graphics.Color(category.colorArgb),
+                                    RoundedCornerShape(50)
+                                )
+                            )
+                            Spacer(modifier = Modifier.width(5.dp))
+                            Text(
+                                text = category.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
                     // Due Date / Time
                     if (reminder.dueDateTimeEpochMillis != null) {
                         val dateFormatted = formatDueDateTime(reminder.dueDateTimeEpochMillis, LocalConfiguration.current.locales[0])
@@ -160,8 +172,10 @@ fun ReminderItem(
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = dateFormatted,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = dateColor
+                                style = MaterialTheme.typography.labelMedium,
+                                color = dateColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
@@ -205,6 +219,17 @@ fun ReminderItem(
                     PriorityBadge(priority = reminder.priority)
                 }
 
+                if (reminder.notes.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = reminder.notes,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
                 AnimatedVisibility(
                     visible = checklistExpanded && reminder.subTasks.isNotEmpty(),
                     enter = fadeIn(),
@@ -237,7 +262,7 @@ fun ReminderItem(
             // Quick Delete Button
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(40.dp)
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Delete,

@@ -2,6 +2,21 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.5.0 - 2026-09-25
+
+### Changed
+- Redesigned Home with clearer reminder filters, category context, and improved empty and refresh states.
+- Reorganized Add/Edit Reminder into clearer sections for information, scheduling, categories, subtasks, attachments, and advanced options.
+- Reorganized Settings into grouped sections for general behavior, reminders, backup, notifications, appearance, privacy, and app information.
+- Refined category management with a curated color palette, improved icon contrast, and clearer editing controls.
+- Improved reminder items with clearer hierarchy for titles, dates, categories, notes, priority, and completion actions.
+- Improved Trash with clearer retention guidance and urgency for reminders nearing permanent deletion.
+- Grouped Backup/Restore and Privacy content into more readable, scrollable layouts while retaining existing actions and restore modes.
+- Introduced shared design-system card/input shapes and section headings across redesigned screens.
+- Applied saved Light, Dark, AMOLED, and dynamic color preferences to the full-screen alarm; refined its actions and long-text handling.
+- Improved localization across all supported languages, including Arabic RTL layouts and newly translated redesign labels.
+- Improved usability and accessibility with clearer action labels, larger reminder-item actions, selectable controls, and more consistent spacing and contrast.
+
 ## 1.4.0 - 2026-09-24
 
 ### Added

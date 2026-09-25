@@ -7,6 +7,7 @@
     <string name="action_snooze">延后 10 分钟</string>
     <string name="reminders">提醒</string>
     <string name="search_reminders">搜索提醒…</string>
+    <string name="general">常规</string>
     <string name="settings">设置</string>
     <string name="today">今天</string>
     <string name="scheduled">已安排</string>
@@ -22,6 +23,8 @@
     <string name="call_doctor">例如：给医生打电话</string>
     <string name="notes_optional">备注（可选）</string>
     <string name="add_extra_details">添加详情或链接…</string>
+    <string name="basic_information">基本信息</string>
+    <string name="advanced_options">更多选项</string>
     <string name="schedule_alarm">时间与提醒</string>
     <string name="set_date">设置日期</string>
     <string name="repeat">重复</string>
@@ -50,12 +53,12 @@
     <string name="amoled_description">深色模式使用 #000000 背景，以提升对比度并节省电量</string>
     <string name="dynamic_colors">动态取色</string>
     <string name="dynamic_colors_description">根据系统壁纸调整颜色（Android 12 及更高版本）</string>
-    <string name="data_management">数据管理</string>
+    <string name="data_management">数据与备份</string>
     <string name="trash">回收站</string>
     <string name="view_restore_deleted">查看并恢复已删除的提醒</string>
     <string name="notifications">通知</string>
     <string name="notification_style">通知样式</string>
-    <string name="privacy_freedom">隐私与自由</string>
+    <string name="privacy_freedom">隐私与安全</string>
     <string name="foss_description">100% 免费开源软件（FOSS）</string>
     <string name="foss_details">提醒数据保存在本地。可选的更新检查会连接 GitHub，但不会发送提醒内容。</string>
     <string name="about">关于</string>
@@ -63,12 +66,15 @@
     <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
     <string name="manage_categories_title">管理类别</string>
     <string name="add_category">添加类别</string>
+    <string name="categories_empty_title">还没有类别</string>
+    <string name="categories_empty_details">创建类别，将相关提醒归类在一起。</string>
     <string name="category_name">类别名称</string>
     <string name="color">颜色</string>
     <string name="delete_category">删除类别</string>
     <string name="delete_category_confirmation">确定删除此类别吗？该类别中的提醒不会被删除。</string>
     <string name="category_added">已添加类别</string>
     <string name="category_deleted">已删除类别</string>
+    <string name="trash_expiration_details">回收站中的提醒会在 90 天后自动删除。</string>
     <string name="trash_title">回收站</string>
     <string name="trash_empty">回收站为空</string>
     <string name="trash_empty_details">已删除的提醒会显示在这里</string>

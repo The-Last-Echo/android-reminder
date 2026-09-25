@@ -7,8 +7,9 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -33,7 +34,6 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Image
-import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material3.Button
@@ -78,11 +78,13 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.core.designsystem.PriorityHigh
 import com.thelastecho.reminder.core.designsystem.PriorityLow
 import com.thelastecho.reminder.core.designsystem.PriorityMedium
 import com.thelastecho.reminder.domain.model.Priority
 import com.thelastecho.reminder.presentation.components.CategoryIcon
+import com.thelastecho.reminder.presentation.components.SectionHeading
 import com.thelastecho.reminder.presentation.components.priorityLabelResource
 import com.thelastecho.reminder.presentation.components.repeatLabelResource
 import com.thelastecho.reminder.domain.model.RepeatInterval
@@ -97,7 +99,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import androidx.compose.ui.platform.LocalConfiguration
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ReminderEditorScreen(
     viewModel: EditorViewModel,
@@ -186,6 +188,8 @@ fun ReminderEditorScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.basic_information))
+
             // Title Input
             OutlinedTextField(
                 value = state.title,
@@ -195,7 +199,7 @@ fun ReminderEditorScreen(
                 isError = state.titleErrorRes != null,
                 supportingText = state.titleErrorRes?.let { id -> { Text(stringResource(id)) } },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = ReminderShapes.Input
             )
 
             // Notes / Description Input
@@ -207,17 +211,14 @@ fun ReminderEditorScreen(
                 minLines = 3,
                 maxLines = 6,
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp)
+                shape = ReminderShapes.Input
             )
 
             // Date & Time Scheduling Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.schedule_alarm),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.schedule_alarm))
 
             Card(
-                shape = RoundedCornerShape(14.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -316,59 +317,13 @@ fun ReminderEditorScreen(
                 }
             }
 
-            // Priority Selector
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.priority),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Priority.entries.forEach { p ->
-                    val isSelected = state.priority == p
-                    val chipColor = when (p) {
-                        Priority.HIGH -> PriorityHigh
-                        Priority.MEDIUM -> PriorityMedium
-                        Priority.LOW -> PriorityLow
-                        Priority.NONE -> MaterialTheme.colorScheme.outline
-                    }
-
-                    FilterChip(
-                        selected = isSelected,
-                        onClick = { viewModel.onIntent(EditorIntent.SetPriority(p)) },
-                        label = { Text(stringResource(priorityLabelResource(p))) },
-                        modifier = Modifier.weight(1f),
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = chipColor.copy(alpha = 0.2f),
-                            selectedLabelColor = chipColor
-                        )
-                    )
-                }
-            }
-
-            Text(stringResource(com.thelastecho.reminder.R.string.notification_style), style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
-            Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(null to stringResource(com.thelastecho.reminder.R.string.notification_default), "SIMPLE" to stringResource(com.thelastecho.reminder.R.string.simple_style_name), "HEADS_UP" to stringResource(com.thelastecho.reminder.R.string.heads_up_style_name), "FULL_SCREEN" to stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)).forEach { (style, label) ->
-                    FilterChip(
-                        selected = state.notificationStyle == style,
-                        onClick = { viewModel.onIntent(EditorIntent.SetNotificationStyle(style)) },
-                        label = { Text(label) }
-                    )
-                }
-            }
-
             // Categories Selector
             if (state.categories.isNotEmpty()) {
-                Text(
-                    text = stringResource(com.thelastecho.reminder.R.string.category),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                SectionHeading(stringResource(com.thelastecho.reminder.R.string.category))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     FilterChip(
                         selected = state.categoryId == null,
@@ -387,13 +342,10 @@ fun ReminderEditorScreen(
             }
 
             // Checklist / Subtasks Section
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.subtasks_checklist),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.subtasks_checklist))
 
             Card(
-                shape = RoundedCornerShape(14.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -407,7 +359,7 @@ fun ReminderEditorScreen(
                         ) {
                             IconButton(
                                 onClick = { viewModel.onIntent(EditorIntent.ToggleSubTask(index)) },
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(40.dp)
                             ) {
                                 Icon(
                                     imageVector = if (subTask.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
@@ -423,7 +375,7 @@ fun ReminderEditorScreen(
                             )
                             IconButton(
                                 onClick = { viewModel.onIntent(EditorIntent.DeleteSubTask(index)) },
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(40.dp)
                             ) {
                                 Icon(Icons.Outlined.Close, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_subtask), modifier = Modifier.size(16.dp))
                             }
@@ -476,13 +428,10 @@ fun ReminderEditorScreen(
             }
 
             // Image Attachment via System PhotoPicker
-            Text(
-                text = stringResource(com.thelastecho.reminder.R.string.attachment),
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
-            )
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.attachment))
 
             Card(
-                shape = RoundedCornerShape(14.dp),
+                shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -527,6 +476,73 @@ fun ReminderEditorScreen(
                         modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp).clip(RoundedCornerShape(10.dp))
                     )
                 }
+                }
+            }
+
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.advanced_options))
+
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        stringResource(com.thelastecho.reminder.R.string.priority),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Priority.entries.forEach { priority ->
+                            val isSelected = state.priority == priority
+                            val chipColor = when (priority) {
+                                Priority.HIGH -> PriorityHigh
+                                Priority.MEDIUM -> PriorityMedium
+                                Priority.LOW -> PriorityLow
+                                Priority.NONE -> MaterialTheme.colorScheme.outline
+                            }
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.onIntent(EditorIntent.SetPriority(priority)) },
+                                label = { Text(stringResource(priorityLabelResource(priority))) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = chipColor.copy(alpha = 0.2f),
+                                    selectedLabelColor = chipColor
+                                )
+                            )
+                        }
+                    }
+
+                    Text(
+                        stringResource(com.thelastecho.reminder.R.string.notification_style),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        listOf(
+                            null to stringResource(com.thelastecho.reminder.R.string.notification_default),
+                            "SIMPLE" to stringResource(com.thelastecho.reminder.R.string.simple_style_name),
+                            "HEADS_UP" to stringResource(com.thelastecho.reminder.R.string.heads_up_style_name),
+                            "FULL_SCREEN" to stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)
+                        ).forEach { (style, label) ->
+                            FilterChip(
+                                selected = state.notificationStyle == style,
+                                onClick = { viewModel.onIntent(EditorIntent.SetNotificationStyle(style)) },
+                                label = { Text(label) }
+                            )
+                        }
+                    }
                 }
             }
 

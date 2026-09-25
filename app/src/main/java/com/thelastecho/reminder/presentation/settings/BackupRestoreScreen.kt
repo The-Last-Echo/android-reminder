@@ -5,6 +5,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -12,7 +15,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -34,6 +39,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.presentation.components.SectionHeading
 import com.thelastecho.reminder.data.backup.ReminderBackupRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
@@ -68,26 +75,66 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
 
     Scaffold(modifier = modifier.fillMaxSize(), snackbarHost = { SnackbarHost(snackbar) }, topBar = {
         TopAppBar(title = { Text(stringResource(com.thelastecho.reminder.R.string.backup_restore)) }, navigationIcon = {
-            IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
+            IconButton(onClick = onNavigateBack) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(com.thelastecho.reminder.R.string.back)
+                )
+            }
         })
     }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(com.thelastecho.reminder.R.string.backup_description), style = MaterialTheme.typography.bodyLarge)
-            Button(enabled = !busy, onClick = { export.launch("Reminder-backup.json") }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(com.thelastecho.reminder.R.string.export_backup))
-            }
-            Text(stringResource(com.thelastecho.reminder.R.string.restore_mode), style = MaterialTheme.typography.titleMedium)
-            ReminderBackupRepository.RestoreMode.entries.forEach { mode ->
-                Row(Modifier.fillMaxWidth(), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    RadioButton(selected = mode == restoreMode, onClick = { restoreMode = mode })
-                    Text(if (mode == ReminderBackupRepository.RestoreMode.MERGE) stringResource(com.thelastecho.reminder.R.string.merge_backup) else stringResource(com.thelastecho.reminder.R.string.replace_backup))
+        Column(
+            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
+
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.backup_description), style = MaterialTheme.typography.bodyLarge)
+                    Button(enabled = !busy, onClick = { export.launch("Reminder-backup.json") }, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(com.thelastecho.reminder.R.string.export_backup))
+                    }
                 }
             }
-            Text(stringResource(com.thelastecho.reminder.R.string.backup_merge_replace_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Button(enabled = !busy, onClick = { import.launch(arrayOf("application/json", "text/json", "application/octet-stream")) }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(com.thelastecho.reminder.R.string.choose_backup_file))
+
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.restore_mode))
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+            ) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ReminderBackupRepository.RestoreMode.entries.forEach { mode ->
+                        val label = if (mode == ReminderBackupRepository.RestoreMode.MERGE) {
+                            stringResource(com.thelastecho.reminder.R.string.merge_backup)
+                        } else {
+                            stringResource(com.thelastecho.reminder.R.string.replace_backup)
+                        }
+                        Row(
+                            Modifier.fillMaxWidth().clickable { restoreMode = mode },
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = mode == restoreMode, onClick = { restoreMode = mode })
+                            Text(label)
+                        }
+                    }
+                    Text(
+                        stringResource(com.thelastecho.reminder.R.string.backup_merge_replace_details),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Button(
+                        enabled = !busy,
+                        onClick = { import.launch(arrayOf("application/json", "text/json", "application/octet-stream")) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(stringResource(com.thelastecho.reminder.R.string.choose_backup_file))
+                    }
+                }
             }
-            if (busy) CircularProgressIndicator()
         }
     }
     importUri?.let { uri ->

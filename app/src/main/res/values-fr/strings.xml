@@ -9,6 +9,7 @@
     <!-- Home Screen -->
     <string name="reminders">Rappels</string>
     <string name="search_reminders">Rechercher des rappels…</string>
+    <string name="general">Général</string>
     <string name="settings">Paramètres</string>
     <string name="today">Aujourd\'hui</string>
     <string name="scheduled">Planifiés</string>
@@ -26,6 +27,8 @@
     <string name="call_doctor">ex: Appeler le médecin</string>
     <string name="notes_optional">Notes (optionnel)</string>
     <string name="add_extra_details">Ajouter des détails ou des liens…</string>
+    <string name="basic_information">Informations de base</string>
+    <string name="advanced_options">Options avancées</string>
     <string name="schedule_alarm">Planification &amp; Alarme</string>
     <string name="set_date">Définir la date</string>
     <string name="repeat">Répéter</string>
@@ -56,12 +59,12 @@
     <string name="amoled_description">Utilise un arrière-plan #000000 en mode sombre pour un contraste maximal et des économies de batterie</string>
     <string name="dynamic_colors">Couleurs dynamiques</string>
     <string name="dynamic_colors_description">Adapte les couleurs au papier peint du système (Android 12+)</string>
-    <string name="data_management">Gestion des données</string>
+    <string name="data_management">Données et sauvegarde</string>
     <string name="trash">Corbeille</string>
     <string name="view_restore_deleted">Voir et restaurer les rappels supprimés</string>
     <string name="notifications">Notifications</string>
     <string name="notification_style">Style de notification</string>
-    <string name="privacy_freedom">Confidentialité &amp; Liberté</string>
+    <string name="privacy_freedom">Confidentialité et sécurité</string>
     <string name="foss_description">100% Libre &amp; Open Source (FOSS)</string>
     <string name="foss_details">Les données des rappels sont stockées localement. Les vérifications facultatives contactent GitHub ; aucun rappel n’est envoyé.</string>
     <string name="about">À propos</string>
@@ -71,6 +74,8 @@
     <!-- Categories Screen -->
     <string name="manage_categories_title">Gérer les catégories</string>
     <string name="add_category">Ajouter une catégorie</string>
+    <string name="categories_empty_title">Aucune catégorie</string>
+    <string name="categories_empty_details">Créez des catégories pour regrouper les rappels associés.</string>
     <string name="category_name">Nom de la catégorie</string>
     <string name="color">Couleur</string>
     <string name="delete_category">Supprimer la catégorie</string>
@@ -79,6 +84,7 @@
     <string name="category_deleted">Catégorie supprimée</string>
 
     <!-- Trash Screen -->
+    <string name="trash_expiration_details">Les rappels de la corbeille sont supprimés automatiquement après 90 jours.</string>
     <string name="trash_title">Corbeille</string>
     <string name="trash_empty">La corbeille est vide</string>
     <string name="trash_empty_details">Les rappels supprimés apparaîtront ici</string>

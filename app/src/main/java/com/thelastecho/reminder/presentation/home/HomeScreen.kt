@@ -29,7 +29,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material.icons.outlined.Notifications
@@ -89,6 +88,7 @@ fun HomeScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.uiState.collectAsState()
+    val categoriesById = remember(state.categories) { state.categories.associateBy { it.id } }
     val snackbarHostState = remember { SnackbarHostState() }
     var isSearchActive by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
@@ -185,7 +185,7 @@ fun HomeScreen(
         }
     ) { innerPadding ->
         PullToRefreshBox(
-            isRefreshing = state.isLoading,
+            isRefreshing = state.isRefreshing,
             onRefresh = { viewModel.onIntent(HomeIntent.Refresh) },
             state = pullToRefreshState,
             modifier = Modifier.fillMaxSize()
@@ -196,42 +196,46 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 item {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        FilterSummaryCard(
-                            title = stringResource(com.thelastecho.reminder.R.string.today),
-                            count = state.todayCount,
-                            icon = Icons.Outlined.Today,
-                            isSelected = state.selectedFilter == ReminderFilter.TODAY,
-                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.TODAY)) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterSummaryCard(
-                            title = stringResource(com.thelastecho.reminder.R.string.scheduled),
-                            count = state.scheduledCount,
-                            icon = Icons.Outlined.Event,
-                            isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
-                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.SCHEDULED)) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterSummaryCard(
-                            title = stringResource(com.thelastecho.reminder.R.string.all),
-                            count = state.allCount,
-                            icon = Icons.Outlined.Notifications,
-                            isSelected = state.selectedFilter == ReminderFilter.ALL,
-                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.ALL)) },
-                            modifier = Modifier.weight(1f)
-                        )
-                        FilterSummaryCard(
-                            title = stringResource(com.thelastecho.reminder.R.string.done),
-                            count = state.completedCount,
-                            icon = Icons.Outlined.CheckCircle,
-                            isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
-                            onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.COMPLETED)) },
-                            modifier = Modifier.weight(1f)
-                        )
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterSummaryCard(
+                                title = stringResource(com.thelastecho.reminder.R.string.today),
+                                count = state.todayCount,
+                                icon = Icons.Outlined.Today,
+                                isSelected = state.selectedFilter == ReminderFilter.TODAY,
+                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.TODAY)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterSummaryCard(
+                                title = stringResource(com.thelastecho.reminder.R.string.scheduled),
+                                count = state.scheduledCount,
+                                icon = Icons.Outlined.Event,
+                                isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
+                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.SCHEDULED)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            FilterSummaryCard(
+                                title = stringResource(com.thelastecho.reminder.R.string.all),
+                                count = state.allCount,
+                                icon = Icons.Outlined.Notifications,
+                                isSelected = state.selectedFilter == ReminderFilter.ALL,
+                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.ALL)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            FilterSummaryCard(
+                                title = stringResource(com.thelastecho.reminder.R.string.done),
+                                count = state.completedCount,
+                                icon = Icons.Outlined.CheckCircle,
+                                isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
+                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.COMPLETED)) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
                 }
 
@@ -280,20 +284,22 @@ fun HomeScreen(
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = if (state.selectedFilter == ReminderFilter.COMPLETED) {
-                                        stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
-                                    } else {
-                                        stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
+                                    text = when {
+                                        state.searchQuery.isNotBlank() -> stringResource(com.thelastecho.reminder.R.string.trash_no_matches)
+                                        state.selectedFilter == ReminderFilter.COMPLETED -> stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
+                                        else -> stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
                                     },
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                                )
+                                if (state.searchQuery.isBlank() && state.selectedFilter != ReminderFilter.COMPLETED) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                    )
+                                }
                             }
                         }
                     }
@@ -301,6 +307,7 @@ fun HomeScreen(
                     items(items = state.reminders, key = { it.id }) { reminder ->
                         ReminderItem(
                             reminder = reminder,
+                            category = reminder.categoryId?.let(categoriesById::get),
                             modifier = Modifier.animateItem(),
                             onToggleComplete = {
                                 viewModel.onIntent(HomeIntent.ToggleComplete(reminder.id, !reminder.isCompleted))
