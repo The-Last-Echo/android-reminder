@@ -13,6 +13,7 @@
     <string name="settings">Impostazioni</string>
     <string name="today">Oggi</string>
     <string name="scheduled">Programmati</string>
+    <string name="overdue">In ritardo</string>
     <string name="all">Tutti</string>
     <string name="done">Completati</string>
     <string name="all_categories">Tutte le categorie</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">Concesso</string>
     <string name="full_screen_access_not_granted">Non concesso</string>
 <string name="reminder_action_failed">Impossibile completare l’azione del promemoria.</string>
+    <string name="settings_group_general_title">Generali</string>
+    <string name="settings_group_general_description">Lingua e impostazioni dell’app</string>
+    <string name="settings_group_appearance_title">Aspetto</string>
+    <string name="settings_group_appearance_description">Tema, colori e visualizzazione</string>
+    <string name="settings_group_reminders_title">Promemoria</string>
+    <string name="settings_group_reminders_description">Categorie e impostazioni predefinite</string>
+    <string name="settings_group_notifications_title">Notifiche e sveglie</string>
+    <string name="settings_group_notifications_description">Stile delle notifiche e suono della sveglia</string>
+    <string name="settings_group_data_title">Dati</string>
+    <string name="settings_group_data_description">Backup, ripristino e promemoria eliminati</string>
+    <string name="settings_group_privacy_title">Privacy e sicurezza</string>
+    <string name="settings_group_privacy_description">Come vengono archiviati e utilizzati i dati</string>
+    <string name="settings_group_about_title">Informazioni</string>
+    <string name="settings_group_about_description">Versione, aggiornamenti e informazioni sul progetto</string>
 </resources>

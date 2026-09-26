@@ -25,15 +25,4 @@ sealed interface SettingsIntent {
     data class SetCompletedRetention(val days: Int) : SettingsIntent
     data class SetAddButtonOnLeft(val enabled: Boolean) : SettingsIntent
     data class SetAutomaticUpdateChecks(val enabled: Boolean) : SettingsIntent
-    data object NavigateToCategories : SettingsIntent
-    data object NavigateToTrash : SettingsIntent
-    data object NavigateToBackup : SettingsIntent
-    data object NavigateToPrivacy : SettingsIntent
-}
-
-sealed interface SettingsEffect {
-    data object NavigateToCategories : SettingsEffect
-    data object NavigateToTrash : SettingsEffect
-    data object NavigateToBackup : SettingsEffect
-    data object NavigateToPrivacy : SettingsEffect
 }

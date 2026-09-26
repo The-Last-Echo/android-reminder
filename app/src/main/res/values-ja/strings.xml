@@ -13,6 +13,7 @@
     <string name="settings">設定</string>
     <string name="today">今日</string>
     <string name="scheduled">予定</string>
+    <string name="overdue">期限切れ</string>
     <string name="all">すべて</string>
     <string name="done">完了</string>
     <string name="all_categories">すべてのカテゴリ</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">許可されています</string>
     <string name="full_screen_access_not_granted">許可されていません</string>
 <string name="reminder_action_failed">リマインダーの操作を完了できませんでした。</string>
+    <string name="settings_group_general_title">一般</string>
+    <string name="settings_group_general_description">言語とアプリの設定</string>
+    <string name="settings_group_appearance_title">外観</string>
+    <string name="settings_group_appearance_description">テーマ、色、表示</string>
+    <string name="settings_group_reminders_title">リマインダー</string>
+    <string name="settings_group_reminders_description">カテゴリと既定の動作</string>
+    <string name="settings_group_notifications_title">通知とアラーム</string>
+    <string name="settings_group_notifications_description">通知スタイルとアラーム音</string>
+    <string name="settings_group_data_title">データ</string>
+    <string name="settings_group_data_description">バックアップ、復元、削除済みリマインダー</string>
+    <string name="settings_group_privacy_title">プライバシーとセキュリティ</string>
+    <string name="settings_group_privacy_description">データの保存方法と利用方法</string>
+    <string name="settings_group_about_title">アプリについて</string>
+    <string name="settings_group_about_description">バージョン、更新、プロジェクト情報</string>
 </resources>

@@ -13,6 +13,7 @@
     <string name="settings">الإعدادات</string>
     <string name="today">اليوم</string>
     <string name="scheduled">المجدولة</string>
+    <string name="overdue">متأخرة</string>
     <string name="all">الكل</string>
     <string name="done">مكتملة</string>
     <string name="all_categories">كل الفئات</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">ممنوح</string>
     <string name="full_screen_access_not_granted">غير ممنوح</string>
 <string name="reminder_action_failed">تعذّر تنفيذ إجراء التذكير.</string>
+    <string name="settings_group_general_title">عام</string>
+    <string name="settings_group_general_description">اللغة وإعدادات التطبيق</string>
+    <string name="settings_group_appearance_title">المظهر</string>
+    <string name="settings_group_appearance_description">السمة والألوان والعرض</string>
+    <string name="settings_group_reminders_title">التذكيرات</string>
+    <string name="settings_group_reminders_description">الفئات والسلوك الافتراضي</string>
+    <string name="settings_group_notifications_title">الإشعارات والمنبهات</string>
+    <string name="settings_group_notifications_description">نمط الإشعارات ونغمة المنبه</string>
+    <string name="settings_group_data_title">البيانات</string>
+    <string name="settings_group_data_description">النسخ الاحتياطي والاستعادة والتذكيرات المحذوفة</string>
+    <string name="settings_group_privacy_title">الخصوصية والأمان</string>
+    <string name="settings_group_privacy_description">كيفية تخزين بياناتك واستخدامها</string>
+    <string name="settings_group_about_title">حول التطبيق</string>
+    <string name="settings_group_about_description">الإصدار والتحديثات ومعلومات المشروع</string>
 </resources>

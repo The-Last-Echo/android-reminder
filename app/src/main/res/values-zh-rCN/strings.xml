@@ -13,6 +13,7 @@
     <string name="settings">设置</string>
     <string name="today">今天</string>
     <string name="scheduled">已安排</string>
+    <string name="overdue">已过期</string>
     <string name="all">全部</string>
     <string name="done">已完成</string>
     <string name="all_categories">所有类别</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">已授权</string>
     <string name="full_screen_access_not_granted">未授权</string>
 <string name="reminder_action_failed">无法完成此提醒操作。</string>
+    <string name="settings_group_general_title">常规</string>
+    <string name="settings_group_general_description">语言和应用设置</string>
+    <string name="settings_group_appearance_title">外观</string>
+    <string name="settings_group_appearance_description">主题、颜色和显示</string>
+    <string name="settings_group_reminders_title">提醒</string>
+    <string name="settings_group_reminders_description">类别和默认行为</string>
+    <string name="settings_group_notifications_title">通知与闹钟</string>
+    <string name="settings_group_notifications_description">通知样式和闹钟声音</string>
+    <string name="settings_group_data_title">数据</string>
+    <string name="settings_group_data_description">备份、恢复和已删除提醒</string>
+    <string name="settings_group_privacy_title">隐私与安全</string>
+    <string name="settings_group_privacy_description">数据的存储和使用方式</string>
+    <string name="settings_group_about_title">关于</string>
+    <string name="settings_group_about_description">版本、更新和项目信息</string>
 </resources>

@@ -15,6 +15,7 @@
     <string name="settings">Settings</string>
     <string name="today">Today</string>
     <string name="scheduled">Scheduled</string>
+    <string name="overdue">Overdue</string>
     <string name="all">All</string>
     <string name="done">Done</string>
     <string name="all_categories">All Categories</string>
@@ -214,4 +215,18 @@
     <string name="full_screen_access_granted">Granted</string>
     <string name="full_screen_access_not_granted">Not granted</string>
 <string name="reminder_action_failed">The reminder action could not be completed.</string>
+    <string name="settings_group_general_title">General</string>
+    <string name="settings_group_general_description">Language and app controls</string>
+    <string name="settings_group_appearance_title">Appearance</string>
+    <string name="settings_group_appearance_description">Theme, colors and display</string>
+    <string name="settings_group_reminders_title">Reminders</string>
+    <string name="settings_group_reminders_description">Categories and reminder defaults</string>
+    <string name="settings_group_notifications_title">Notifications &amp; alarms</string>
+    <string name="settings_group_notifications_description">Notification style and alarm sound</string>
+    <string name="settings_group_data_title">Data</string>
+    <string name="settings_group_data_description">Backups, restores and deleted reminders</string>
+    <string name="settings_group_privacy_title">Privacy &amp; security</string>
+    <string name="settings_group_privacy_description">How your data is stored and used</string>
+    <string name="settings_group_about_title">About</string>
+    <string name="settings_group_about_description">Version, updates and project information</string>
 </resources>

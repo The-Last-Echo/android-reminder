@@ -13,6 +13,7 @@
     <string name="settings">Ajustes</string>
     <string name="today">Hoy</string>
     <string name="scheduled">Programados</string>
+    <string name="overdue">Atrasados</string>
     <string name="all">Todos</string>
     <string name="done">Completados</string>
     <string name="all_categories">Todas las categorías</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">Concedido</string>
     <string name="full_screen_access_not_granted">No concedido</string>
 <string name="reminder_action_failed">No se pudo completar la acción del recordatorio.</string>
+    <string name="settings_group_general_title">General</string>
+    <string name="settings_group_general_description">Idioma y ajustes de la aplicación</string>
+    <string name="settings_group_appearance_title">Apariencia</string>
+    <string name="settings_group_appearance_description">Tema, colores y visualización</string>
+    <string name="settings_group_reminders_title">Recordatorios</string>
+    <string name="settings_group_reminders_description">Categorías y opciones predeterminadas</string>
+    <string name="settings_group_notifications_title">Notificaciones y alarmas</string>
+    <string name="settings_group_notifications_description">Estilo de notificación y sonido de alarma</string>
+    <string name="settings_group_data_title">Datos</string>
+    <string name="settings_group_data_description">Copias de seguridad, restauración y recordatorios eliminados</string>
+    <string name="settings_group_privacy_title">Privacidad y seguridad</string>
+    <string name="settings_group_privacy_description">Cómo se almacenan y utilizan tus datos</string>
+    <string name="settings_group_about_title">Acerca de</string>
+    <string name="settings_group_about_description">Versión, actualizaciones e información del proyecto</string>
 </resources>

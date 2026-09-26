@@ -1,10 +1,9 @@
 package com.thelastecho.reminder.presentation.home
 
-import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,12 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Event
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Today
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -44,6 +38,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -64,17 +59,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.thelastecho.reminder.R
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.presentation.components.ReminderItem
+import com.thelastecho.reminder.presentation.components.CounterBadge
 import com.thelastecho.reminder.presentation.components.CategoryIcon
 import kotlinx.coroutines.flow.collectLatest
 
@@ -184,140 +180,118 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh = { viewModel.onIntent(HomeIntent.Refresh) },
-            state = pullToRefreshState,
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+            HomeFilterTabs(
+                selectedFilter = state.selectedFilter,
+                todayCount = state.todayCount,
+                overdueCount = state.overdueCount,
+                scheduledCount = state.scheduledCount,
+                allCount = state.allCount,
+                completedCount = state.completedCount,
+                onFilterSelected = { filter ->
+                    viewModel.onIntent(HomeIntent.SelectFilter(filter))
+                }
+            )
+
+            if (state.categories.isNotEmpty()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterChip(
+                        selected = state.selectedCategoryId == null,
+                        onClick = { viewModel.onIntent(HomeIntent.SelectCategory(null)) },
+                        label = { Text(stringResource(R.string.all_categories)) }
+                    )
+                    state.categories.forEach { category ->
+                        FilterChip(
+                            selected = state.selectedCategoryId == category.id,
+                            onClick = { viewModel.onIntent(HomeIntent.SelectCategory(category.id)) },
+                            label = { Text(category.name) },
+                            leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), Color(category.colorArgb)) }
+                        )
+                    }
+                }
+            }
+
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { viewModel.onIntent(HomeIntent.Refresh) },
+                state = pullToRefreshState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
             ) {
-                item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            FilterSummaryCard(
-                                title = stringResource(com.thelastecho.reminder.R.string.today),
-                                count = state.todayCount,
-                                icon = Icons.Outlined.Today,
-                                isSelected = state.selectedFilter == ReminderFilter.TODAY,
-                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.TODAY)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterSummaryCard(
-                                title = stringResource(com.thelastecho.reminder.R.string.scheduled),
-                                count = state.scheduledCount,
-                                icon = Icons.Outlined.Event,
-                                isSelected = state.selectedFilter == ReminderFilter.SCHEDULED,
-                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.SCHEDULED)) },
-                                modifier = Modifier.weight(1f)
-                            )
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 88.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    if (state.isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().height(280.dp),
+                                contentAlignment = Alignment.Center
+                            ) { CircularProgressIndicator() }
                         }
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            FilterSummaryCard(
-                                title = stringResource(com.thelastecho.reminder.R.string.all),
-                                count = state.allCount,
-                                icon = Icons.Outlined.Notifications,
-                                isSelected = state.selectedFilter == ReminderFilter.ALL,
-                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.ALL)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                            FilterSummaryCard(
-                                title = stringResource(com.thelastecho.reminder.R.string.done),
-                                count = state.completedCount,
-                                icon = Icons.Outlined.CheckCircle,
-                                isSelected = state.selectedFilter == ReminderFilter.COMPLETED,
-                                onClick = { viewModel.onIntent(HomeIntent.SelectFilter(ReminderFilter.COMPLETED)) },
-                                modifier = Modifier.weight(1f)
-                            )
-                        }
-                    }
-                }
-
-                if (state.categories.isNotEmpty()) {
-                    item {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            FilterChip(
-                                selected = state.selectedCategoryId == null,
-                                onClick = { viewModel.onIntent(HomeIntent.SelectCategory(null)) },
-                                label = { Text(stringResource(com.thelastecho.reminder.R.string.all_categories)) }
-                            )
-                            state.categories.forEach { category ->
-                                FilterChip(
-                                    selected = state.selectedCategoryId == category.id,
-                                    onClick = { viewModel.onIntent(HomeIntent.SelectCategory(category.id)) },
-                                    label = { Text(category.name) },
-                                    leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), Color(category.colorArgb)) }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (state.isLoading) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().height(280.dp),
-                            contentAlignment = Alignment.Center
-                        ) { CircularProgressIndicator() }
-                    }
-                } else if (state.reminders.isEmpty()) {
-                    item {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().height(300.dp).padding(32.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Icon(
-                                    imageVector = Icons.Outlined.NotificationsActive,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = when {
-                                        state.searchQuery.isNotBlank() -> stringResource(com.thelastecho.reminder.R.string.trash_no_matches)
-                                        state.selectedFilter == ReminderFilter.COMPLETED -> stringResource(com.thelastecho.reminder.R.string.no_completed_reminders)
-                                        else -> stringResource(com.thelastecho.reminder.R.string.no_reminders_here)
-                                    },
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                if (state.searchQuery.isBlank() && state.selectedFilter != ReminderFilter.COMPLETED) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Text(
-                                        text = stringResource(com.thelastecho.reminder.R.string.tap_plus_button),
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    } else if (state.reminders.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxWidth().height(300.dp).padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.NotificationsActive,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                                        modifier = Modifier.size(64.dp)
                                     )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Text(
+                                        text = when {
+                                            state.searchQuery.isNotBlank() -> stringResource(R.string.trash_no_matches)
+                                            state.selectedFilter == ReminderFilter.COMPLETED -> stringResource(
+                                                R.string.no_completed_reminders)
+                                            else -> stringResource(R.string.no_reminders_here)
+                                        },
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    if (state.searchQuery.isBlank() && state.selectedFilter != ReminderFilter.COMPLETED) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.tap_plus_button),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                        )
+                                    }
                                 }
                             }
                         }
-                    }
-                } else {
-                    items(items = state.reminders, key = { it.id }) { reminder ->
-                        ReminderItem(
-                            reminder = reminder,
-                            category = reminder.categoryId?.let(categoriesById::get),
-                            modifier = Modifier.animateItem(),
-                            onToggleComplete = {
-                                viewModel.onIntent(HomeIntent.ToggleComplete(reminder.id, !reminder.isCompleted))
-                            },
-                            onClick = { viewModel.onIntent(HomeIntent.EditReminder(reminder.id)) },
-                            onDelete = { viewModel.onIntent(HomeIntent.DeleteReminder(reminder.id)) },
-                            onToggleSubTask = { subTask ->
-                                viewModel.onIntent(HomeIntent.ToggleSubTask(reminder.id, subTask.id, !subTask.isCompleted))
-                            }
-                        )
+                    } else {
+                        items(items = state.reminders, key = { it.id }) { reminder ->
+                            ReminderItem(
+                                reminder = reminder,
+                                category = reminder.categoryId?.let(categoriesById::get),
+                                modifier = Modifier.animateItem(),
+                                onToggleComplete = {
+                                    viewModel.onIntent(HomeIntent.ToggleComplete(reminder.id, !reminder.isCompleted))
+                                },
+                                onClick = { viewModel.onIntent(HomeIntent.EditReminder(reminder.id)) },
+                                onDelete = { viewModel.onIntent(HomeIntent.DeleteReminder(reminder.id)) },
+                                onToggleSubTask = { subTask ->
+                                    viewModel.onIntent(HomeIntent.ToggleSubTask(reminder.id, subTask.id, !subTask.isCompleted))
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -325,65 +299,125 @@ fun HomeScreen(
     }
 }
 
+private data class FilterTabItem(
+    val filter: ReminderFilter,
+    val labelRes: Int
+)
+
 @Composable
-private fun FilterSummaryCard(
+private fun HomeFilterTabs(
+    selectedFilter: ReminderFilter,
+    todayCount: Int,
+    overdueCount: Int,
+    scheduledCount: Int,
+    allCount: Int,
+    completedCount: Int,
+    onFilterSelected: (ReminderFilter) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val filters = remember {
+        listOf(
+            FilterTabItem(ReminderFilter.TODAY, com.thelastecho.reminder.R.string.today),
+            FilterTabItem(ReminderFilter.OVERDUE, R.string.overdue),
+            FilterTabItem(ReminderFilter.SCHEDULED, com.thelastecho.reminder.R.string.scheduled),
+            FilterTabItem(ReminderFilter.ALL, com.thelastecho.reminder.R.string.all),
+            FilterTabItem(ReminderFilter.COMPLETED, com.thelastecho.reminder.R.string.done)
+        )
+    }
+
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 6.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            filters.forEach { item ->
+                val count = when (item.filter) {
+                    ReminderFilter.TODAY -> todayCount
+                    ReminderFilter.OVERDUE -> overdueCount
+                    ReminderFilter.SCHEDULED -> scheduledCount
+                    ReminderFilter.ALL -> allCount
+                    ReminderFilter.COMPLETED -> completedCount
+                }
+                val isSelected = selectedFilter == item.filter
+
+                FilterChipItem(
+                    title = stringResource(item.labelRes),
+                    count = count,
+                    isSelected = isSelected,
+                    onClick = { onFilterSelected(item.filter) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FilterChipItem(
     title: String,
     count: Int,
-    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val backgroundColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerHigh
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "ChipBackgroundColor"
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) {
+            MaterialTheme.colorScheme.onPrimary
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "ChipContentColor"
+    )
+
     Surface(
         onClick = onClick,
-        modifier = modifier.height(72.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = if (isSelected) {
-            MaterialTheme.colorScheme.primaryContainer
-        } else {
-            MaterialTheme.colorScheme.surfaceContainer
-        }
+        modifier = modifier.height(48.dp),
+        shape = RoundedCornerShape(12.dp),
+        color = backgroundColor,
+        contentColor = contentColor
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = java.text.NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(count),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                    color = if (isSelected) {
-                        MaterialTheme.colorScheme.onPrimaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
-                )
-            }
             Text(
                 text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                }
+                style = MaterialTheme.typography.titleSmall.copy(
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                ),
+                color = contentColor,
+                maxLines = 1
+            )
+            CounterBadge(
+                count = count,
+                isSelected = isSelected,
+                parentContentColor = contentColor
             )
         }
-	}
     }
+}

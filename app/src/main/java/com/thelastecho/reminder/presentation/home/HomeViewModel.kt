@@ -63,6 +63,9 @@ class HomeViewModel(
 
             val allCount = allReminders.count { !it.isCompleted }
             val completedCount = allReminders.count { it.isCompleted }
+            val overdueCount = allReminders.count {
+                !it.isCompleted && it.dueDateTimeEpochMillis != null && it.dueDateTimeEpochMillis < nowMillis
+            }
             val scheduledCount = allReminders.count {
                 !it.isCompleted && it.dueDateTimeEpochMillis != null && it.dueDateTimeEpochMillis >= nowMillis
             }
@@ -88,6 +91,7 @@ class HomeViewModel(
                     isLoading = false,
                     allCount = allCount,
                     todayCount = todayCount,
+                    overdueCount = overdueCount,
                     scheduledCount = scheduledCount,
                     completedCount = completedCount
                 )

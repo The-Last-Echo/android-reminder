@@ -14,6 +14,7 @@ data class HomeUiState(
     val isRefreshing: Boolean = false,
     val allCount: Int = 0,
     val todayCount: Int = 0,
+    val overdueCount: Int = 0,
     val scheduledCount: Int = 0,
     val completedCount: Int = 0,
     val addButtonOnLeft: Boolean = false

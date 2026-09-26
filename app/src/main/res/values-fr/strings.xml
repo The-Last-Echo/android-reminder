@@ -15,6 +15,7 @@
     <string name="settings">Paramètres</string>
     <string name="today">Aujourd\'hui</string>
     <string name="scheduled">Planifiés</string>
+    <string name="overdue">En retard</string>
     <string name="all">Tous</string>
     <string name="done">Terminés</string>
     <string name="all_categories">Toutes les catégories</string>
@@ -214,4 +215,18 @@
     <string name="full_screen_access_granted">Accordé</string>
     <string name="full_screen_access_not_granted">Non accordé</string>
 <string name="reminder_action_failed">L’action sur le rappel n’a pas pu être effectuée.</string>
+    <string name="settings_group_general_title">Général</string>
+    <string name="settings_group_general_description">Langue et réglages de l’application</string>
+    <string name="settings_group_appearance_title">Apparence</string>
+    <string name="settings_group_appearance_description">Thème, couleurs et affichage</string>
+    <string name="settings_group_reminders_title">Rappels</string>
+    <string name="settings_group_reminders_description">Catégories et comportement par défaut</string>
+    <string name="settings_group_notifications_title">Notifications et alarmes</string>
+    <string name="settings_group_notifications_description">Style des notifications et son de l’alarme</string>
+    <string name="settings_group_data_title">Données</string>
+    <string name="settings_group_data_description">Sauvegardes, restaurations et rappels supprimés</string>
+    <string name="settings_group_privacy_title">Confidentialité et sécurité</string>
+    <string name="settings_group_privacy_description">Stockage et utilisation de vos données</string>
+    <string name="settings_group_about_title">À propos</string>
+    <string name="settings_group_about_description">Version, mises à jour et informations sur le projet</string>
 </resources>

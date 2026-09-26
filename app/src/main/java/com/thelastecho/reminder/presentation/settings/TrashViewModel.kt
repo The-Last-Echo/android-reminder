@@ -3,6 +3,7 @@ package com.thelastecho.reminder.presentation.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.thelastecho.reminder.domain.repository.ReminderRepository
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,15 +23,17 @@ class TrashViewModel(
 
     private val _effect = Channel<TrashEffect>(Channel.BUFFERED)
     val effect = _effect.receiveAsFlow()
+    private var deletedRemindersObservation: Job? = null
 
     init {
         observeDeletedReminders()
     }
 
     private fun observeDeletedReminders() {
+        if (deletedRemindersObservation?.isActive == true) return
         viewModelScope.launch { repository.permanentlyDeleteExpiredReminders(System.currentTimeMillis()) }
-        repository.getDeletedReminders().onEach { reminders ->
-            _uiState.update { 
+        deletedRemindersObservation = repository.getDeletedReminders().onEach { reminders ->
+            _uiState.update {
                 it.copy(
                     deletedReminders = reminders,
                     isLoading = false

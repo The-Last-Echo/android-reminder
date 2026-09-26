@@ -13,6 +13,7 @@
     <string name="settings">Einstellungen</string>
     <string name="today">Heute</string>
     <string name="scheduled">Geplant</string>
+    <string name="overdue">Überfällig</string>
     <string name="all">Alle</string>
     <string name="done">Erledigt</string>
     <string name="all_categories">Alle Kategorien</string>
@@ -198,4 +199,18 @@
     <string name="full_screen_access_granted">Erteilt</string>
     <string name="full_screen_access_not_granted">Nicht erteilt</string>
 <string name="reminder_action_failed">Die Erinnerungsaktion konnte nicht ausgeführt werden.</string>
+    <string name="settings_group_general_title">Allgemein</string>
+    <string name="settings_group_general_description">Sprache und App-Einstellungen</string>
+    <string name="settings_group_appearance_title">Darstellung</string>
+    <string name="settings_group_appearance_description">Design, Farben und Anzeige</string>
+    <string name="settings_group_reminders_title">Erinnerungen</string>
+    <string name="settings_group_reminders_description">Kategorien und Standardeinstellungen</string>
+    <string name="settings_group_notifications_title">Benachrichtigungen und Alarme</string>
+    <string name="settings_group_notifications_description">Benachrichtigungsstil und Alarmton</string>
+    <string name="settings_group_data_title">Daten</string>
+    <string name="settings_group_data_description">Sicherungen, Wiederherstellung und gelöschte Erinnerungen</string>
+    <string name="settings_group_privacy_title">Datenschutz und Sicherheit</string>
+    <string name="settings_group_privacy_description">Speicherung und Verwendung deiner Daten</string>
+    <string name="settings_group_about_title">Über die App</string>
+    <string name="settings_group_about_description">Version, Updates und Projektinformationen</string>
 </resources>

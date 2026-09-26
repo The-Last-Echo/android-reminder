@@ -6,9 +6,18 @@ sealed class NavDestination(val route: String) {
         fun createRoute(reminderId: Long? = null): String =
             if (reminderId != null && reminderId > 0) "editor?reminderId=$reminderId" else "editor?reminderId=-1"
     }
+
+    data object SettingsGraph : NavDestination("settings_graph")
     data object Settings : NavDestination("settings")
-    data object Categories : NavDestination("categories")
-    data object Trash : NavDestination("trash")
-    data object BackupRestore : NavDestination("backup_restore")
-    data object Privacy : NavDestination("privacy")
+    data object SettingsGeneral : NavDestination("settings/general")
+    data object SettingsAppearance : NavDestination("settings/appearance")
+    data object SettingsReminders : NavDestination("settings/reminders")
+    data object SettingsNotifications : NavDestination("settings/notifications")
+    data object SettingsData : NavDestination("settings/data")
+    data object SettingsAbout : NavDestination("settings/about")
+
+    data object Categories : NavDestination("settings/reminders/categories")
+    data object Trash : NavDestination("settings/data/trash")
+    data object BackupRestore : NavDestination("settings/data/backup_restore")
+    data object Privacy : NavDestination("settings/privacy")
 }
