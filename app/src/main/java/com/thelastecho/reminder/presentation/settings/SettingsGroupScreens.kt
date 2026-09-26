@@ -527,20 +527,22 @@ fun AboutSettingsScreen(viewModel: SettingsViewModel, updateChecks: UpdateCheckC
                 onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/The-Last-Echo/android-reminder"))) } }
             )
         }
-        SettingsCard {
-            SettingRow(
-                title = stringResource(R.string.automatic_update_checks),
-                description = stringResource(R.string.automatic_update_checks_details),
-                trailing = { Switch(checked = state.automaticUpdateChecks, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAutomaticUpdateChecks(it)) }) }
-            )
-            TextButton(onClick = updateChecks::enqueueManualCheck) {
-                Text(stringResource(R.string.check_updates_now))
-            }
-            state.latestReleaseTag?.let { tag ->
-                val newer = isVersionNewer(tag, packageVersion)
-                Text(stringResource(if (newer) R.string.update_available else R.string.app_up_to_date), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
-                Text(stringResource(R.string.latest_release, tag), style = MaterialTheme.typography.bodySmall)
-                state.latestReleaseUrl?.let { url -> TextButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } }) { Text(stringResource(R.string.open_release)) } }
+        if (updateChecks.isAvailable) {
+            SettingsCard {
+                SettingRow(
+                    title = stringResource(R.string.automatic_update_checks),
+                    description = stringResource(R.string.automatic_update_checks_details),
+                    trailing = { Switch(checked = state.automaticUpdateChecks, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAutomaticUpdateChecks(it)) }) }
+                )
+                TextButton(onClick = updateChecks::enqueueManualCheck) {
+                    Text(stringResource(R.string.check_updates_now))
+                }
+                state.latestReleaseTag?.let { tag ->
+                    val newer = isVersionNewer(tag, packageVersion)
+                    Text(stringResource(if (newer) R.string.update_available else R.string.app_up_to_date), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.latest_release, tag), style = MaterialTheme.typography.bodySmall)
+                    state.latestReleaseUrl?.let { url -> TextButton(onClick = { runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } }) { Text(stringResource(R.string.open_release)) } }
+                }
             }
         }
     }
