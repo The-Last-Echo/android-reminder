@@ -1,0 +1,21 @@
+<resources>
+    <string name="developer_tools">開発者向けツール</string>
+    <string name="app_notifications_enabled">アプリの通知</string>
+    <string name="diagnostic_allowed">許可</string>
+    <string name="diagnostic_blocked">ブロック</string>
+    <string name="diagnostic_channel_details">重要度: %1$s · 音: %2$s · バイブレーション: %3$s</string>
+    <string name="diagnostic_channel_unavailable">チャンネルが未作成、またはこの Android バージョンでは利用できません</string>
+    <string name="diagnostic_disabled">無効</string>
+    <string name="diagnostic_enabled">有効</string>
+    <string name="diagnostic_importance_default">デフォルト</string>
+    <string name="diagnostic_importance_high">高</string>
+    <string name="diagnostic_importance_low">低</string>
+    <string name="diagnostic_importance_max">最大</string>
+    <string name="diagnostic_importance_min">最小</string>
+    <string name="diagnostic_importance_none">なし</string>
+    <string name="diagnostic_not_available">利用不可</string>
+    <string name="diagnostic_not_required">不要</string>
+    <string name="effective_channels_label">有効な通知チャンネル</string>
+    <string name="notification_diagnostics">通知の診断</string>
+    <string name="post_notifications_permission">POST_NOTIFICATIONS 権限</string>
+</resources>

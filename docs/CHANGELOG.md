@@ -2,6 +2,20 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.6.0 - 2026-09-26
+
+### Added
+- Added an in-app Debug diagnostics panel for notification permission, effective reminder channels, channel settings, and full-screen intent access. Diagnostic UI and translations are excluded from Release builds.
+- Added a direct Settings shortcut for granting Android full-screen notification access when the system reports it is unavailable.
+- Added Delete to the active full-screen alarm controls and localized the alarm status, stop action, and permission guidance across supported languages.
+
+### Changed
+- Register all stable reminder notification channels at application startup while preserving existing user-configured channel settings.
+- Use the full-screen reminder channel for the actionable alarm notification and keep the foreground-service channel separate.
+- Move full-screen alarm screen state and actions into an MVI ViewModel, with reminder actions handled through the existing notification receiver flow.
+- Harden alarm playback and notification handling for concurrent reminders, stale actions, asynchronous sound preparation, and service lifecycle changes.
+- Ensure alarm delivery and reboot rescheduling receivers finish asynchronous work reliably, including initialization failures.
+
 ## 1.5.0 - 2026-09-25
 
 ### Changed

@@ -5,6 +5,8 @@
     <string name="channel_reminders_desc">计划提醒的通知</string>
     <string name="action_complete">完成</string>
     <string name="action_snooze">延后 10 分钟</string>
+    <string name="alarm_active">提醒正在响铃</string>
+    <string name="stop_alarm">停止提醒</string>
     <string name="reminders">提醒</string>
     <string name="search_reminders">搜索提醒…</string>
     <string name="general">常规</string>
@@ -170,7 +172,7 @@
     <string name="open_notification_settings">打开通知设置</string>
     <string name="update_available">有新版本可用</string>
     <string name="app_up_to_date">你正在使用最新版本。</string>
-    <string name="full_screen_fallback_details">Android 可能会限制全屏提醒；系统将使用可用的通知方式。</string>
+    <string name="full_screen_fallback_details">全屏提醒需要在 Android 设置中单独授权。如果未授权，Reminder 会改用横幅通知。打开全屏通知设置即可授权。</string>
     <string name="title_cannot_be_empty">请输入提醒标题。</string>
     <string name="save_failed">无法保存提醒。</string>
     <string name="clear_search">清除搜索</string>
@@ -190,4 +192,10 @@
     <string name="completed">已完成</string>
     <string name="mark_complete">标记为已完成</string>
     <string name="unknown">未知</string>
+
+    <!-- Notification diagnostics -->
+<string name="full_screen_access_label">全屏意图访问权限</string>
+    <string name="full_screen_access_granted">已授权</string>
+    <string name="full_screen_access_not_granted">未授权</string>
+<string name="reminder_action_failed">无法完成此提醒操作。</string>
 </resources>

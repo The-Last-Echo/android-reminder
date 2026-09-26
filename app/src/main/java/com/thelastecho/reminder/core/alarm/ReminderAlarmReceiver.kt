@@ -4,6 +4,11 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
+import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 
 class ReminderAlarmReceiver : BroadcastReceiver() {
 
@@ -17,17 +22,26 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         val photoUri = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_PHOTO_URI)
         val style = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTIFICATION_STYLE)
 
-        val notificationManager = ReminderNotificationManager(
-            context,
-            com.thelastecho.reminder.core.preferences.UserPreferencesRepository(context)
-        )
-        notificationManager.showReminderNotification(
-            reminderId = reminderId,
-            title = title,
-            notes = notes,
-            priorityLevel = priority,
-            photoUri = photoUri,
-            reminderStyle = style
-        )
+        val pendingResult = goAsync()
+        val appContext = context.applicationContext
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val userPreferences = UserPreferencesRepository(appContext)
+                val defaultStyle = userPreferences.themeSettings.first().notificationStyle
+                val notificationManager = ReminderNotificationManager(appContext, userPreferences)
+                notificationManager.showReminderNotification(
+                    reminderId = reminderId,
+                    title = title,
+                    notes = notes,
+                    priorityLevel = priority,
+                    photoUri = photoUri,
+                    reminderStyle = style,
+                    defaultStyle = defaultStyle
+                )
+            } finally {
+                pendingResult.finish()
+            }
+        }
     }
 }

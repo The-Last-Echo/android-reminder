@@ -4,53 +4,63 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
+import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
+import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
 import com.thelastecho.reminder.domain.usecase.SnoozeReminderUseCase
 import com.thelastecho.reminder.domain.usecase.ToggleReminderCompleteUseCase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 class NotificationActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val reminderId = intent.getLongExtra(EXTRA_REMINDER_ID, -1L)
         if (reminderId == -1L) return
-
-        val notificationManager = ReminderNotificationManager(
-            context,
-            com.thelastecho.reminder.core.preferences.UserPreferencesRepository(context)
-        )
-        notificationManager.dismissNotification(reminderId)
-        context.stopService(Intent(context, AlarmSoundService::class.java))
-
+        val action = intent.action
         val pendingResult = goAsync()
-        val database = ReminderDatabase.getInstance(context)
-        val repository = ReminderRepositoryImpl(database.reminderDao(), database.categoryDao())
-        val alarmScheduler = AndroidAlarmScheduler(context)
+        val resultFinished = AtomicBoolean(false)
+        fun finishPendingResult() {
+            if (resultFinished.compareAndSet(false, true)) pendingResult.finish()
+        }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                when (intent.action) {
-                    ACTION_COMPLETE -> {
-                        val toggleUseCase = ToggleReminderCompleteUseCase(repository, alarmScheduler)
-                        toggleUseCase(reminderId, isCompleted = true)
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val appContext = context.applicationContext
+                    val notificationManager = ReminderNotificationManager(
+                        appContext,
+                        UserPreferencesRepository(appContext)
+                    )
+                    notificationManager.dismissNotification(reminderId)
+                    AlarmSoundService.stopIfPlaying(appContext, reminderId)
+
+                    val database = ReminderDatabase.getInstance(appContext)
+                    val repository = ReminderRepositoryImpl(database.reminderDao(), database.categoryDao())
+                    val alarmScheduler = AndroidAlarmScheduler(appContext)
+                    when (action) {
+                        ACTION_COMPLETE -> ToggleReminderCompleteUseCase(repository, alarmScheduler)(reminderId, isCompleted = true)
+                        ACTION_SNOOZE -> SnoozeReminderUseCase(repository, alarmScheduler)(reminderId)
+                        ACTION_DELETE -> DeleteReminderUseCase(repository, alarmScheduler)(reminderId)
                     }
-                    ACTION_SNOOZE -> {
-                        val snoozeUseCase = SnoozeReminderUseCase(repository, alarmScheduler)
-                        snoozeUseCase(reminderId) // Snoozes 10 minutes by default
-                    }
+                } finally {
+                    finishPendingResult()
                 }
-            } finally {
-                pendingResult.finish()
             }
+        } catch (failure: Throwable) {
+            finishPendingResult()
+            throw failure
         }
     }
 
     companion object {
         const val ACTION_COMPLETE = "com.thelastecho.reminder.ACTION_COMPLETE"
         const val ACTION_SNOOZE = "com.thelastecho.reminder.ACTION_SNOOZE"
+        const val ACTION_DELETE = "com.thelastecho.reminder.ACTION_DELETE"
         const val EXTRA_REMINDER_ID = "com.thelastecho.reminder.EXTRA_REMINDER_ID"
     }
 }

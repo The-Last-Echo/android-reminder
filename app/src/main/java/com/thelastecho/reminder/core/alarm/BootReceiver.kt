@@ -9,29 +9,38 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+import java.util.concurrent.atomic.AtomicBoolean
+
 class BootReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-        if (action == Intent.ACTION_BOOT_COMPLETED ||
-            action == Intent.ACTION_MY_PACKAGE_REPLACED ||
-            action == "android.intent.action.QUICKBOOT_POWERON"
-        ) {
-            val pendingResult = goAsync()
-            val database = ReminderDatabase.getInstance(context)
-            val repository = ReminderRepositoryImpl(database.reminderDao(), database.categoryDao())
-            val alarmScheduler = AndroidAlarmScheduler(context)
+        if (action != Intent.ACTION_BOOT_COMPLETED &&
+            action != Intent.ACTION_MY_PACKAGE_REPLACED &&
+            action != "android.intent.action.QUICKBOOT_POWERON"
+        ) return
 
+        val pendingResult = goAsync()
+        val resultFinished = AtomicBoolean(false)
+        fun finishPendingResult() {
+            if (resultFinished.compareAndSet(false, true)) pendingResult.finish()
+        }
+        try {
             CoroutineScope(Dispatchers.IO).launch {
                 try {
+                    val appContext = context.applicationContext
+                    val database = ReminderDatabase.getInstance(appContext)
+                    val repository = ReminderRepositoryImpl(database.reminderDao(), database.categoryDao())
+                    val alarmScheduler = AndroidAlarmScheduler(appContext)
                     val activeReminders = repository.getActiveScheduledReminders()
-                    activeReminders.forEach { reminder ->
-                        alarmScheduler.schedule(reminder)
-                    }
+                    activeReminders.forEach(alarmScheduler::schedule)
                 } finally {
-                    pendingResult.finish()
+                    finishPendingResult()
                 }
             }
+        } catch (failure: Throwable) {
+            finishPendingResult()
+            throw failure
         }
     }
 }

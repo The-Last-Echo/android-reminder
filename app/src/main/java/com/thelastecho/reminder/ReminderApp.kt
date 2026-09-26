@@ -17,9 +17,8 @@ class ReminderApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Initialize notification channels at application startup
         val preferencesRepository = UserPreferencesRepository(this)
-        ReminderNotificationManager(this, preferencesRepository)
+        ReminderNotificationManager(this, preferencesRepository).ensureReminderChannels()
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "trash-retention-purge",
             ExistingPeriodicWorkPolicy.KEEP,

@@ -1,0 +1,21 @@
+<resources>
+    <string name="developer_tools">أدوات المطورين</string>
+    <string name="app_notifications_enabled">إشعارات التطبيق</string>
+    <string name="diagnostic_allowed">مسموح</string>
+    <string name="diagnostic_blocked">محظور</string>
+    <string name="diagnostic_channel_details">الأهمية: %1$s · الصوت: %2$s · الاهتزاز: %3$s</string>
+    <string name="diagnostic_channel_unavailable">القناة غير منشأة أو غير متاحة في إصدار Android هذا</string>
+    <string name="diagnostic_disabled">معطّل</string>
+    <string name="diagnostic_enabled">مفعّل</string>
+    <string name="diagnostic_importance_default">افتراضي</string>
+    <string name="diagnostic_importance_high">مرتفع</string>
+    <string name="diagnostic_importance_low">منخفض</string>
+    <string name="diagnostic_importance_max">أقصى</string>
+    <string name="diagnostic_importance_min">أدنى</string>
+    <string name="diagnostic_importance_none">بدون</string>
+    <string name="diagnostic_not_available">غير متاح</string>
+    <string name="diagnostic_not_required">غير مطلوب</string>
+    <string name="effective_channels_label">قنوات الإشعارات الفعلية</string>
+    <string name="notification_diagnostics">تشخيص الإشعارات</string>
+    <string name="post_notifications_permission">إذن POST_NOTIFICATIONS</string>
+</resources>

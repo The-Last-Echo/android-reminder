@@ -5,6 +5,8 @@
     <string name="channel_reminders_desc">Notificaciones de recordatorios programados</string>
     <string name="action_complete">Completar</string>
     <string name="action_snooze">Posponer 10 min</string>
+    <string name="alarm_active">Alarma activa</string>
+    <string name="stop_alarm">Detener alarma</string>
     <string name="reminders">Recordatorios</string>
     <string name="search_reminders">Buscar recordatorios…</string>
     <string name="general">General</string>
@@ -170,7 +172,7 @@
     <string name="open_notification_settings">Abrir ajustes de notificaciones</string>
     <string name="update_available">Hay una versión nueva disponible</string>
     <string name="app_up_to_date">Tienes la versión más reciente.</string>
-    <string name="full_screen_fallback_details">Android puede restringir las alertas a pantalla completa. El sistema usará la notificación disponible.</string>
+    <string name="full_screen_fallback_details">Las alertas a pantalla completa necesitan un permiso independiente en los ajustes de Android. Si está desactivado, Reminder usará una notificación destacada. Abre los ajustes de notificaciones a pantalla completa para activarlo.</string>
     <string name="title_cannot_be_empty">Escribe un título para el recordatorio.</string>
     <string name="save_failed">No se pudo guardar el recordatorio.</string>
     <string name="clear_search">Borrar búsqueda</string>
@@ -190,4 +192,10 @@
     <string name="completed">Completado</string>
     <string name="mark_complete">Marcar como completado</string>
     <string name="unknown">Desconocido</string>
+
+    <!-- Notification diagnostics -->
+<string name="full_screen_access_label">Acceso a pantalla completa</string>
+    <string name="full_screen_access_granted">Concedido</string>
+    <string name="full_screen_access_not_granted">No concedido</string>
+<string name="reminder_action_failed">No se pudo completar la acción del recordatorio.</string>
 </resources>

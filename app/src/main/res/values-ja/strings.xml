@@ -5,6 +5,8 @@
     <string name="channel_reminders_desc">予定されたリマインダーの通知</string>
     <string name="action_complete">完了</string>
     <string name="action_snooze">10分後に再通知</string>
+    <string name="alarm_active">アラーム作動中</string>
+    <string name="stop_alarm">アラームを停止</string>
     <string name="reminders">リマインダー</string>
     <string name="search_reminders">リマインダーを検索…</string>
     <string name="general">一般</string>
@@ -170,7 +172,7 @@
     <string name="open_notification_settings">通知設定を開く</string>
     <string name="update_available">新しいバージョンがあります</string>
     <string name="app_up_to_date">最新バージョンを使用しています。</string>
-    <string name="full_screen_fallback_details">Android が全画面アラートを制限する場合、利用可能な通知形式に切り替わります。</string>
+    <string name="full_screen_fallback_details">全画面アラートには Android 設定で個別の許可が必要です。許可されていない場合、Reminder は代わりにヘッドアップ通知を表示します。全画面通知の設定を開いて許可してください。</string>
     <string name="title_cannot_be_empty">リマインダーのタイトルを入力してください。</string>
     <string name="save_failed">リマインダーを保存できませんでした。</string>
     <string name="clear_search">検索を消去</string>
@@ -190,4 +192,10 @@
     <string name="completed">完了</string>
     <string name="mark_complete">完了にする</string>
     <string name="unknown">不明</string>
+
+    <!-- Notification diagnostics -->
+<string name="full_screen_access_label">全画面インテントへのアクセス</string>
+    <string name="full_screen_access_granted">許可されています</string>
+    <string name="full_screen_access_not_granted">許可されていません</string>
+<string name="reminder_action_failed">リマインダーの操作を完了できませんでした。</string>
 </resources>

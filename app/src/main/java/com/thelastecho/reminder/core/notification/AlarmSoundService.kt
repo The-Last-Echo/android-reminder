@@ -1,7 +1,6 @@
 package com.thelastecho.reminder.core.notification
 
 import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -14,23 +13,27 @@ import android.media.MediaPlayer
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Build
-import android.os.IBinder
 import android.os.Handler
+import android.os.IBinder
 import android.os.Looper
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.thelastecho.reminder.R
+import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.ReminderFullScreenActivity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 
-/** Plays the user's alarm tone for a highest-mode reminder. Its ongoing notification reuses
- * the reminder's notification ID, so it replaces rather than duplicates the reminder card. */
+/** Plays the alarm tone while its actionable alarm notification keeps the service in the foreground. */
 class AlarmSoundService : Service() {
     private var player: MediaPlayer? = null
     private var reminderId: Long = -1L
     private var lastNotificationContent: NotificationContent? = null
+    private var playbackGeneration = 0
     private data class NotificationContent(val title: String, val notes: String, val photoUri: String?)
     private val mainHandler = Handler(Looper.getMainLooper())
     private val preparationTimeout = Runnable { stopPlayback(showFallback = true) }
@@ -45,25 +48,56 @@ class AlarmSoundService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
-            stopPlayback()
+            val requestedReminderId = intent.getLongExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, -1L)
+            if (reminderId == requestedReminderId) {
+                stopPlayback()
+            } else {
+                // A stale alarm card may outlive the currently playing reminder; dismiss only that card.
+                if (requestedReminderId >= 0L) {
+                    getSystemService(NotificationManager::class.java).cancel(requestedReminderId.toInt())
+                }
+                if (reminderId < 0L) stopSelf(startId)
+            }
             return START_NOT_STICKY
         }
-        reminderId = intent?.getLongExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, -1L) ?: -1L
-        if (reminderId < 0L) {
-            stopSelf()
+        val command = intent ?: run { stopSelf(startId); return START_NOT_STICKY }
+        val newReminderId = command.getLongExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, -1L)
+        if (newReminderId < 0L) {
+            stopSelf(startId)
             return START_NOT_STICKY
         }
-        val command = intent ?: run { stopSelf(); return START_NOT_STICKY }
+        if (reminderId >= 0L && reminderId != newReminderId) {
+            detachPreviousAlarmNotification()
+        } else if (reminderId == newReminderId) {
+            invalidatePlaybackRequest()
+            releasePlayer()
+        }
+        reminderId = newReminderId
+        activeReminderId = reminderId
         val title = command.getStringExtra(ReminderNotificationManager.EXTRA_REMINDER_TITLE).orEmpty()
         val notes = command.getStringExtra(ReminderNotificationManager.EXTRA_REMINDER_NOTES).orEmpty()
         val photoUri = command.getStringExtra(ReminderNotificationManager.EXTRA_REMINDER_PHOTO_URI)
+        val priority = command.getIntExtra(EXTRA_REMINDER_PRIORITY, 3)
         lastNotificationContent = NotificationContent(title, notes, photoUri)
-        createChannel()
-        val notification = buildNotification(reminderId, title, notes, photoUri)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ServiceCompat.startForeground(this, reminderId.toInt(), notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        } else {
-            startForeground(reminderId.toInt(), notification)
+        try {
+            postAlarmNotification(reminderId, title, notes, photoUri, foreground = true)
+        } catch (_: Exception) {
+            // If FGS start fails, post a standard Full-Screen notification fallback.
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            val notificationManager = ReminderNotificationManager(
+                applicationContext,
+                UserPreferencesRepository(applicationContext)
+            )
+            notificationManager.showStandardNotification(
+                reminderId = reminderId,
+                title = title,
+                notes = notes,
+                priority = priority,
+                photoUri = photoUri,
+                style = NotificationStyle.FULL_SCREEN
+            )
+            stopSelf(startId)
+            return START_NOT_STICKY
         }
         startPlayback()
         // Decode photos off the service thread so a large image cannot delay alarm audio.
@@ -73,8 +107,7 @@ class AlarmSoundService : Service() {
                 val bitmap = decodeNotificationPhoto(raw) ?: return@Thread
                 mainHandler.post {
                     if (reminderId == currentReminderId && player != null) {
-                        val withPhoto = buildNotification(currentReminderId, title, notes, raw, bitmap)
-                        getSystemService(NotificationManager::class.java).notify(currentReminderId.toInt(), withPhoto)
+                        postAlarmNotification(currentReminderId, title, notes, raw, bitmap, foreground = true)
                     }
                 }
             }, "reminder-notification-photo").apply { isDaemon = true }.start()
@@ -82,16 +115,59 @@ class AlarmSoundService : Service() {
         return START_NOT_STICKY
     }
 
-    private fun createChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(
-                NotificationChannel(CHANNEL_ID, getString(R.string.full_screen_style_name), NotificationManager.IMPORTANCE_HIGH).apply {
-                    description = getString(R.string.alarm_sound_channel_description)
-                    setSound(null, null)
-                    enableVibration(false)
-                }
+    private fun postAlarmNotification(
+        id: Long,
+        title: String,
+        notes: String,
+        photoUri: String?,
+        photo: android.graphics.Bitmap? = null,
+        foreground: Boolean = false,
+        allowFullScreenIntent: Boolean = true
+    ) {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        val fullScreenAllowed = allowFullScreenIntent && (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+                notificationManager.canUseFullScreenIntent()
             )
+        if (!fullScreenAllowed) {
+            Log.w(TAG, "Full-screen intent access unavailable at post time for reminder $id; posting the high-importance alarm fallback")
+        }
+        var notification = buildNotification(
+            id = id,
+            title = title,
+            notes = notes,
+            photoUri = photoUri,
+            photo = photo,
+            foreground = foreground,
+            fullScreenAllowed = fullScreenAllowed
+        )
+        // Recheck immediately before posting; users can revoke full-screen access at any time.
+        val accessAtPostTime = allowFullScreenIntent && (
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+                notificationManager.canUseFullScreenIntent()
+            )
+        if (accessAtPostTime != fullScreenAllowed) {
+            notification = buildNotification(
+                id = id,
+                title = title,
+                notes = notes,
+                photoUri = photoUri,
+                photo = photo,
+                foreground = foreground,
+                fullScreenAllowed = accessAtPostTime
+            )
+        }
+        if (!accessAtPostTime) {
+            Log.w(TAG, "Full-screen intent access unavailable at post time for reminder $id; posting the high-importance alarm fallback")
+        }
+        if (foreground) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                ServiceCompat.startForeground(this, id.toInt(), notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+            } else {
+                startForeground(id.toInt(), notification)
+            }
+        } else {
+            notificationManager.notify(id.toInt(), notification)
         }
     }
 
@@ -101,7 +177,8 @@ class AlarmSoundService : Service() {
         notes: String,
         photoUri: String?,
         photo: android.graphics.Bitmap? = null,
-        foreground: Boolean = true
+        foreground: Boolean = false,
+        fullScreenAllowed: Boolean
     ): Notification {
         val open = Intent(this, ReminderFullScreenActivity::class.java).apply {
             putExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, id)
@@ -111,11 +188,13 @@ class AlarmSoundService : Service() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         val openIntent = PendingIntent.getActivity(this, id.toInt(), open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        val stop = Intent(this, AlarmSoundService::class.java).setAction(ACTION_STOP)
+        val stop = Intent(this, AlarmSoundService::class.java).setAction(ACTION_STOP).apply {
+            putExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, id)
+        }
         val stopIntent = PendingIntent.getService(this, id.toInt(), stop, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val complete = actionPendingIntent(id, NotificationActionReceiver.ACTION_COMPLETE)
         val snooze = actionPendingIntent(id, NotificationActionReceiver.ACTION_SNOOZE)
-        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+        val notification = NotificationCompat.Builder(this, ReminderNotificationManager.CHANNEL_ID_FULL_SCREEN)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(notes.ifBlank { getString(R.string.app_name) })
@@ -127,10 +206,10 @@ class AlarmSoundService : Service() {
             .setDeleteIntent(stopIntent)
             .addAction(0, getString(R.string.action_complete), complete)
             .addAction(0, getString(R.string.action_snooze), snooze)
+            .addAction(0, getString(R.string.delete), actionPendingIntent(id, NotificationActionReceiver.ACTION_DELETE))
             .addAction(0, getString(R.string.dismiss), stopIntent)
         photo?.let { notification.setStyle(NotificationCompat.BigPictureStyle().bigPicture(it)) }
-        val manager = getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || manager.canUseFullScreenIntent()) {
+        if (fullScreenAllowed) {
             notification.setFullScreenIntent(openIntent, true)
         }
         return notification.build()
@@ -157,28 +236,42 @@ class AlarmSoundService : Service() {
     private fun startPlayback() {
         mainHandler.removeCallbacks(preparationTimeout)
         mainHandler.removeCallbacks(playbackWatchdog)
-        val saved = runCatching {
-            runBlocking { UserPreferencesRepository(applicationContext).themeSettings.first().alarmSoundUri }
-        }.getOrNull()
-        val uri = saved?.let(Uri::parse) ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-        runCatching {
-            player?.release()
-            player = MediaPlayer().apply {
-                setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).build())
-                setDataSource(this@AlarmSoundService, uri)
-                isLooping = true
-                setOnErrorListener { _, _, _ -> stopPlayback(showFallback = true); true }
-                setOnPreparedListener { mediaPlayer ->
-                    mainHandler.removeCallbacks(preparationTimeout)
-                    runCatching {
-                        mediaPlayer.start()
-                        mainHandler.postDelayed(playbackWatchdog, PLAYBACK_WATCHDOG_MS)
-                    }.onFailure { stopPlayback(showFallback = true) }
-                }
-                prepareAsync()
+        releasePlayer()
+        val generation = ++playbackGeneration
+        val playbackReminderId = reminderId
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val saved = runCatching {
+                UserPreferencesRepository(applicationContext).themeSettings.first().alarmSoundUri
+            }.getOrNull()
+            val uri = saved?.let(Uri::parse) ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+
+            mainHandler.post {
+                if (generation != playbackGeneration || playbackReminderId != reminderId) return@post
+                runCatching {
+                    player = MediaPlayer().apply {
+                        setAudioAttributes(
+                            AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_ALARM)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                                .build()
+                        )
+                        setDataSource(this@AlarmSoundService, uri)
+                        isLooping = true
+                        setOnErrorListener { _, _, _ -> stopPlayback(showFallback = true); true }
+                        setOnPreparedListener { mediaPlayer ->
+                            mainHandler.removeCallbacks(preparationTimeout)
+                            runCatching {
+                                mediaPlayer.start()
+                                mainHandler.postDelayed(playbackWatchdog, PLAYBACK_WATCHDOG_MS)
+                            }.onFailure { stopPlayback(showFallback = true) }
+                        }
+                        prepareAsync()
+                    }
+                    mainHandler.postDelayed(preparationTimeout, PREPARE_TIMEOUT_MS)
+                }.onFailure { stopPlayback(showFallback = true) }
             }
-            mainHandler.postDelayed(preparationTimeout, PREPARE_TIMEOUT_MS)
-        }.onFailure { stopPlayback(showFallback = true) }
+        }
     }
 
     private fun releasePlayer() {
@@ -187,17 +280,46 @@ class AlarmSoundService : Service() {
         player = null
     }
 
-    private fun stopPlayback(showFallback: Boolean = false) {
+    private fun invalidatePlaybackRequest() {
+        playbackGeneration++
         mainHandler.removeCallbacks(preparationTimeout)
         mainHandler.removeCallbacks(playbackWatchdog)
+    }
+
+    private fun detachPreviousAlarmNotification() {
+        val previousId = reminderId
+        val previousContent = lastNotificationContent
+        invalidatePlaybackRequest()
+        releasePlayer()
+        stopForeground(STOP_FOREGROUND_DETACH)
+        if (previousId >= 0L && previousContent != null) {
+            postAlarmNotification(
+                previousId,
+                previousContent.title,
+                previousContent.notes,
+                previousContent.photoUri,
+                foreground = false,
+                allowFullScreenIntent = false
+            )
+        }
+    }
+
+    private fun stopPlayback(showFallback: Boolean = false) {
+        invalidatePlaybackRequest()
         releasePlayer()
         if (reminderId >= 0L) {
             if (showFallback) {
                 val extras = lastNotificationContent
-                stopForeground(STOP_FOREGROUND_DETACH)
+                stopForeground(STOP_FOREGROUND_REMOVE)
                 if (extras != null) {
-                    val fallback = buildNotification(reminderId, extras.title, extras.notes, extras.photoUri, foreground = false)
-                    getSystemService(NotificationManager::class.java).notify(reminderId.toInt(), fallback)
+                    postAlarmNotification(
+                        reminderId,
+                        extras.title,
+                        extras.notes,
+                        extras.photoUri,
+                        foreground = false,
+                        allowFullScreenIntent = false
+                    )
                 } else {
                     getSystemService(NotificationManager::class.java).cancel(reminderId.toInt())
                 }
@@ -206,31 +328,39 @@ class AlarmSoundService : Service() {
                 stopForeground(STOP_FOREGROUND_REMOVE)
             }
         }
+        if (activeReminderId == reminderId) activeReminderId = -1L
         stopSelf()
     }
 
     override fun onDestroy() {
-        mainHandler.removeCallbacks(preparationTimeout)
-        mainHandler.removeCallbacks(playbackWatchdog)
+        invalidatePlaybackRequest()
         runCatching { player?.stop() }
         player?.release()
         player = null
+        if (activeReminderId == reminderId) activeReminderId = -1L
         super.onDestroy()
     }
 
     companion object {
         const val ACTION_STOP = "com.thelastecho.reminder.STOP_ALARM_SOUND"
         const val EXTRA_START_FROM_VISIBLE_ACTIVITY = "start_alarm_sound_from_visible_activity"
-        private const val CHANNEL_ID = "alarm_sound_foreground"
+        const val EXTRA_REMINDER_PRIORITY = "extra_reminder_priority"
+        private const val TAG = "AlarmSoundService"
         private const val PREPARE_TIMEOUT_MS = 15_000L
         private const val PLAYBACK_WATCHDOG_MS = 30_000L
+        @Volatile private var activeReminderId: Long = -1L
 
-        fun start(context: Context, reminderId: Long, title: String, notes: String, photoUri: String?) {
+        fun stopIfPlaying(context: Context, reminderId: Long) {
+            if (activeReminderId == reminderId) context.stopService(Intent(context, AlarmSoundService::class.java))
+        }
+
+        fun start(context: Context, reminderId: Long, title: String, notes: String, photoUri: String?, priority: Int = 3) {
             val intent = Intent(context, AlarmSoundService::class.java).apply {
                 putExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, reminderId)
                 putExtra(ReminderNotificationManager.EXTRA_REMINDER_TITLE, title)
                 putExtra(ReminderNotificationManager.EXTRA_REMINDER_NOTES, notes)
                 putExtra(ReminderNotificationManager.EXTRA_REMINDER_PHOTO_URI, photoUri)
+                putExtra(EXTRA_REMINDER_PRIORITY, priority)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) context.startForegroundService(intent) else context.startService(intent)
         }

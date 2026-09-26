@@ -5,6 +5,8 @@
     <string name="channel_reminders_desc">Notifications for scheduled reminders</string>
     <string name="action_complete">Complete</string>
     <string name="action_snooze">Snooze 10m</string>
+    <string name="alarm_active">Alarm active</string>
+    <string name="stop_alarm">Stop alarm</string>
 
     <!-- Home Screen -->
     <string name="reminders">Reminders</string>
@@ -186,7 +188,7 @@
     <string name="open_notification_settings">Open notification settings</string>
     <string name="update_available">A newer version is available</string>
     <string name="app_up_to_date">You are using the latest version.</string>
-    <string name="full_screen_fallback_details">Android may restrict full-screen alerts for this app. The system will use the available notification fallback.</string>
+    <string name="full_screen_fallback_details">Full-screen alerts require separate access in Android settings. If access is off, Reminder uses a Heads-Up notification instead. Open full-screen notification settings to enable it.</string>
     <string name="title_cannot_be_empty">Enter a reminder title.</string>
     <string name="save_failed">The reminder could not be saved.</string>
     <string name="clear_search">Clear search</string>
@@ -206,4 +208,10 @@
     <string name="completed">Completed</string>
     <string name="mark_complete">Mark complete</string>
     <string name="unknown">Unknown</string>
+
+    <!-- Notification diagnostics -->
+<string name="full_screen_access_label">Full-screen intent access</string>
+    <string name="full_screen_access_granted">Granted</string>
+    <string name="full_screen_access_not_granted">Not granted</string>
+<string name="reminder_action_failed">The reminder action could not be completed.</string>
 </resources>

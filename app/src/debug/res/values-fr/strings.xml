@@ -1,0 +1,21 @@
+<resources>
+    <string name="developer_tools">Outils développeur</string>
+    <string name="app_notifications_enabled">Notifications de l’application</string>
+    <string name="diagnostic_allowed">Autorisé</string>
+    <string name="diagnostic_blocked">Bloqué</string>
+    <string name="diagnostic_channel_details">Importance : %1$s · Son : %2$s · Vibration : %3$s</string>
+    <string name="diagnostic_channel_unavailable">Canal non créé ou indisponible sur cette version d’Android</string>
+    <string name="diagnostic_disabled">Désactivé</string>
+    <string name="diagnostic_enabled">Activé</string>
+    <string name="diagnostic_importance_default">Par défaut</string>
+    <string name="diagnostic_importance_high">Élevée</string>
+    <string name="diagnostic_importance_low">Faible</string>
+    <string name="diagnostic_importance_max">Maximale</string>
+    <string name="diagnostic_importance_min">Minimale</string>
+    <string name="diagnostic_importance_none">Aucune</string>
+    <string name="diagnostic_not_available">Indisponible</string>
+    <string name="diagnostic_not_required">Non requis</string>
+    <string name="effective_channels_label">Canaux de notification effectifs</string>
+    <string name="notification_diagnostics">Diagnostic des notifications</string>
+    <string name="post_notifications_permission">Permission POST_NOTIFICATIONS</string>
+</resources>

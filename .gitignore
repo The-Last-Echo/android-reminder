@@ -20,3 +20,12 @@
 captures/
 .externalNativeBuild
 .cxx/
+# Local IDE state and credentials
+.idea/
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.pem
+*.key

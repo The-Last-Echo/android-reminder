@@ -93,6 +93,13 @@ fun SettingsScreen(
     var showNotificationStyleDialog by remember { mutableStateOf(false) }
     var showRetentionDialog by remember { mutableStateOf(false) }
     var customRetention by remember { mutableStateOf("") }
+    var fullScreenIntentAccess by remember(context) {
+        mutableStateOf(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent())
+    }
+    val fullScreenSettingsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        fullScreenIntentAccess = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -315,10 +322,19 @@ fun SettingsScreen(
                 }
             }
 
-            if (state.notificationStyle == com.thelastecho.reminder.core.preferences.NotificationStyle.FULL_SCREEN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE && !context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()) {
+            DeveloperNotificationDiagnostics()
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(
+                        stringResource(com.thelastecho.reminder.R.string.full_screen_access_label) + ": " +
+                            stringResource(if (fullScreenIntentAccess) com.thelastecho.reminder.R.string.full_screen_access_granted else com.thelastecho.reminder.R.string.full_screen_access_not_granted),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                     Text(stringResource(com.thelastecho.reminder.R.string.full_screen_fallback_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    TextButton(onClick = { runCatching { context.startActivity(Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).setData(android.net.Uri.parse("package:${context.packageName}"))) } }) { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_settings)) }
+                    TextButton(onClick = { runCatching { fullScreenSettingsLauncher.launch(fullScreenIntentSettingsIntent(context)) } }) {
+                        Text(stringResource(com.thelastecho.reminder.R.string.full_screen_settings))
+                    }
                 }
             }
             if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -674,3 +690,9 @@ private fun isVersionNewer(remoteTag: String, installedVersion: String): Boolean
     }
     return false
 }
+
+
+private fun fullScreenIntentSettingsIntent(context: android.content.Context): Intent =
+    Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
+        data = android.net.Uri.parse("package:${context.packageName}")
+    }
