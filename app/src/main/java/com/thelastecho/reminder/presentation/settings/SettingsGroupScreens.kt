@@ -9,8 +9,10 @@ import android.media.RingtoneManager
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -66,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.border
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -118,7 +121,10 @@ private fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().border(
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+            ReminderShapes.Card
+        )
     ) { Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) { content() } }
 }
 
@@ -249,32 +255,42 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
                             AccentColor.PINK -> R.string.accent_pink
                         }
                         val accentLabel = stringResource(accentName)
-                        Surface(
-                            modifier = Modifier.size(32.dp).selectable(
+                        Box(
+                            modifier = Modifier.size(48.dp).selectable(
                                 selected = selected,
                                 enabled = !state.useDynamicColors,
                                 role = Role.RadioButton,
                                 onClick = { viewModel.onIntent(SettingsIntent.SetAccentColor(accent)) }
                             ).semantics { contentDescription = accentLabel },
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            color = swatch.copy(alpha = if (state.useDynamicColors) 0.35f else 1f),
-                            border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (state.useDynamicColors) 0.5f else 1f)) else null
-                        ) {}
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Surface(
+                                modifier = Modifier.size(32.dp),
+                                shape = androidx.compose.foundation.shape.CircleShape,
+                                color = swatch.copy(alpha = if (state.useDynamicColors) 0.35f else 1f),
+                                border = if (selected) BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (state.useDynamicColors) 0.5f else 1f)) else null
+                            ) {}
+                        }
                     }
                     val customPreview = state.customAccentColor?.let { Color(it) } ?: Color(0xFF6750A4)
                     val customLabel = stringResource(R.string.accent_custom)
-                    Surface(
-                        modifier = Modifier.size(32.dp).selectable(
+                    Box(
+                        modifier = Modifier.size(48.dp).selectable(
                             selected = state.useCustomAccent,
                             enabled = !state.useDynamicColors,
                             role = Role.RadioButton,
                             onClick = { showCustomColorDialog = true }
                         ).semantics { contentDescription = customLabel },
-                        shape = androidx.compose.foundation.shape.CircleShape,
-                        color = customPreview.copy(alpha = if (state.useDynamicColors) 0.35f else 1f),
-                        border = if (state.useCustomAccent) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (state.useDynamicColors) 0.5f else 1f)) else null
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Outlined.Palette, contentDescription = null, tint = Color.White.copy(alpha = if (state.useDynamicColors) 0.45f else 1f), modifier = Modifier.padding(7.dp))
+                        Surface(
+                            modifier = Modifier.size(32.dp),
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = customPreview.copy(alpha = if (state.useDynamicColors) 0.35f else 1f),
+                            border = if (state.useCustomAccent) BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (state.useDynamicColors) 0.5f else 1f)) else null
+                        ) {
+                            Icon(Icons.Outlined.Palette, contentDescription = null, tint = Color.White.copy(alpha = if (state.useDynamicColors) 0.45f else 1f), modifier = Modifier.padding(7.dp))
+                        }
                     }
                 }
             }

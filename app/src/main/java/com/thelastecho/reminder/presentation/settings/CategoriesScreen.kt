@@ -257,7 +257,7 @@ fun CategoriesScreen(
                                 shape = ReminderShapes.Input,
                                 color = if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
                                 border = if (selected) BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary) else null,
-                                modifier = Modifier.size(44.dp),
+                                modifier = Modifier.size(48.dp),
                                 contentColor = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -402,7 +402,7 @@ private fun CategoryColorPickerDialog(
                         val selected = selectedColor == color
                         val colorValue = Color(color)
                         Surface(
-                            modifier = Modifier.size(44.dp).selectable(
+                            modifier = Modifier.size(48.dp).selectable(
                                 selected = selected,
                                 role = Role.RadioButton,
                                 onClick = { onSelect(color) }

@@ -5,6 +5,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.graphics.BitmapFactory
 import android.net.Uri
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -71,6 +72,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.border
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -219,7 +221,10 @@ fun ReminderEditorScreen(
             Card(
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     if (state.dueDateTimeEpochMillis == null) {
@@ -346,7 +351,10 @@ fun ReminderEditorScreen(
             Card(
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     state.subTasks.forEachIndexed { index, subTask ->
@@ -358,7 +366,7 @@ fun ReminderEditorScreen(
                         ) {
                             IconButton(
                                 onClick = { viewModel.onIntent(EditorIntent.ToggleSubTask(index)) },
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(
                                     imageVector = if (subTask.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
@@ -374,7 +382,7 @@ fun ReminderEditorScreen(
                             )
                             IconButton(
                                 onClick = { viewModel.onIntent(EditorIntent.DeleteSubTask(index)) },
-                                modifier = Modifier.size(40.dp)
+                                modifier = Modifier.size(48.dp)
                             ) {
                                 Icon(Icons.Outlined.Close, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_subtask), modifier = Modifier.size(16.dp))
                             }
@@ -432,7 +440,10 @@ fun ReminderEditorScreen(
             Card(
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
             ) {
                 Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Row(
@@ -483,7 +494,10 @@ fun ReminderEditorScreen(
             Card(
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
