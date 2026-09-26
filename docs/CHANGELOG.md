@@ -2,6 +2,14 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.0 - 2026-09-26
+
+### Architecture
+- Split Android distribution into `offline` and `online` Gradle flavors, each with Debug and Release variants, while keeping the existing production application ID on `onlineRelease`.
+- Both flavors continue to provide the same local reminder, alarm, notification, widget, and backup/restore behavior. No remote synchronization or WebDAV functionality is included yet.
+- `online` retains the existing optional GitHub release checks. `offline` omits those controls and worker and declares neither `INTERNET` nor `ACCESS_NETWORK_STATE` in its merged manifest.
+- CI now tests and builds both flavors and checks the packaged Offline manifests for network permissions.
+
 ## 1.7.0 - 2026-09-26
 
 ### Added
