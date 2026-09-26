@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
@@ -67,6 +66,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.presentation.components.ReminderItem
@@ -329,7 +329,7 @@ private fun HomeFilterTabs(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = RoundedCornerShape(16.dp),
+        shape = ReminderShapes.Card,
         color = MaterialTheme.colorScheme.surfaceContainer,
         border = BorderStroke(
             width = 1.dp,
@@ -377,7 +377,7 @@ private fun FilterChipItem(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primary
         } else {
-            MaterialTheme.colorScheme.surfaceContainerHigh
+            MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = tween(durationMillis = 200),
         label = "ChipBackgroundColor"
@@ -396,7 +396,7 @@ private fun FilterChipItem(
     Surface(
         onClick = onClick,
         modifier = modifier.height(48.dp),
-        shape = RoundedCornerShape(12.dp),
+        shape = ReminderShapes.Input,
         color = backgroundColor,
         contentColor = contentColor
     ) {
