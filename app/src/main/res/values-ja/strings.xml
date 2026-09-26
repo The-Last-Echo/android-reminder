@@ -239,6 +239,7 @@
 
     <string name="accent_custom">カスタムカラー</string>
     <string name="custom_color_title">カスタムカラー</string>
+    <string name="custom_category_color_description">色相と彩度のカラーホイールでカテゴリの色を選択します。</string>
     <string name="custom_color_description">色相と彩度のホイールでアクセントカラーを選択します。</string>
     <string name="brightness">明るさ</string>
     <string name="apply">適用</string>

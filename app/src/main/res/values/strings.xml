@@ -255,6 +255,7 @@
 
     <string name="accent_custom">Custom color</string>
     <string name="custom_color_title">Custom color</string>
+    <string name="custom_category_color_description">Choose a custom category color with the hue and saturation wheel.</string>
     <string name="custom_color_description">Choose a custom accent color using the hue and saturation wheel.</string>
     <string name="brightness">Brightness</string>
     <string name="apply">Apply</string>

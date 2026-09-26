@@ -239,6 +239,7 @@
 
     <string name="accent_custom">Colore personalizzato</string>
     <string name="custom_color_title">Colore personalizzato</string>
+    <string name="custom_category_color_description">Scegli un colore per la categoria con la ruota di tonalità e saturazione.</string>
     <string name="custom_color_description">Scegli un colore di accento con la ruota di tonalità e saturazione.</string>
     <string name="brightness">Luminosità</string>
     <string name="apply">Applica</string>

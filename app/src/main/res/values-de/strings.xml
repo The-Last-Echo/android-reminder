@@ -239,6 +239,7 @@
 
     <string name="accent_custom">Benutzerdefinierte Farbe</string>
     <string name="custom_color_title">Benutzerdefinierte Farbe</string>
+    <string name="custom_category_color_description">Wähle eine Kategoriefarbe mit dem Farbton- und Sättigungsrad.</string>
     <string name="custom_color_description">Wähle mit dem Farbton- und Sättigungsrad eine Akzentfarbe.</string>
     <string name="brightness">Helligkeit</string>
     <string name="apply">Anwenden</string>

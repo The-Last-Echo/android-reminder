@@ -25,11 +25,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
@@ -73,6 +75,7 @@ import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.presentation.components.CategoryIcon
 import com.thelastecho.reminder.presentation.components.SectionHeading
+import com.thelastecho.reminder.presentation.components.CustomColorPickerDialog
 import kotlinx.coroutines.flow.collectLatest
 
 private val CategoryColors = listOf(
@@ -101,6 +104,7 @@ fun CategoriesScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     var showDeleteDialog by remember { mutableStateOf<Long?>(null) }
     var showColorPicker by remember { mutableStateOf(false) }
+    var showCustomColorPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -287,7 +291,24 @@ fun CategoriesScreen(
                 viewModel.onIntent(CategoriesIntent.UpdateNewCategoryColor(color))
                 showColorPicker = false
             },
+            onCustomColorClick = {
+                showColorPicker = false
+                showCustomColorPicker = true
+            },
             onDismiss = { showColorPicker = false }
+        )
+    }
+
+    if (showCustomColorPicker && state.showAddDialog) {
+        CustomColorPickerDialog(
+            initialColor = state.newCategoryColor,
+            title = stringResource(R.string.custom_color_title),
+            description = stringResource(R.string.custom_category_color_description),
+            onDismiss = { showCustomColorPicker = false },
+            onApply = { color ->
+                viewModel.onIntent(CategoriesIntent.UpdateNewCategoryColor(color))
+                showCustomColorPicker = false
+            }
         )
     }
 
@@ -360,40 +381,63 @@ private fun CategoryColorIcon(color: Int, iconName: String, modifier: Modifier =
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CategoryColorPickerDialog(selectedColor: Int, onSelect: (Int) -> Unit, onDismiss: () -> Unit) {
+private fun CategoryColorPickerDialog(
+    selectedColor: Int,
+    onSelect: (Int) -> Unit,
+    onCustomColorClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         title = { Text(stringResource(R.string.color)) },
         text = {
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                (CategoryColors + selectedColor).distinct().forEach { color ->
-                    val selected = selectedColor == color
-                    val colorValue = Color(color)
-                    Surface(
-                        modifier = Modifier.size(44.dp).selectable(
-                            selected = selected,
-                            role = Role.RadioButton,
-                            onClick = { onSelect(color) }
-                        ),
-                        shape = CircleShape,
-                        color = colorValue,
-                        border = if (selected) BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface) else null
-                    ) {
-                        if (selected) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    Icons.Default.Check,
-                                    contentDescription = null,
-                                    tint = if (colorValue.luminance() > 0.48f) Color.Black else Color.White,
-                                    modifier = Modifier.size(20.dp)
-                                )
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    (CategoryColors + selectedColor).distinct().forEach { color ->
+                        val selected = selectedColor == color
+                        val colorValue = Color(color)
+                        Surface(
+                            modifier = Modifier.size(44.dp).selectable(
+                                selected = selected,
+                                role = Role.RadioButton,
+                                onClick = { onSelect(color) }
+                            ),
+                            shape = CircleShape,
+                            color = colorValue,
+                            border = if (selected) BorderStroke(3.dp, MaterialTheme.colorScheme.onSurface) else null
+                        ) {
+                            if (selected) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = if (colorValue.luminance() > 0.48f) Color.Black else Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
                             }
                         }
+                    }
+                }
+                Surface(
+                    onClick = onCustomColorClick,
+                    shape = ReminderShapes.Input,
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Icon(Icons.Outlined.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Text(stringResource(R.string.accent_custom), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

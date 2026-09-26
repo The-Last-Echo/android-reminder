@@ -239,6 +239,7 @@
 
     <string name="accent_custom">Color personalizado</string>
     <string name="custom_color_title">Color personalizado</string>
+    <string name="custom_category_color_description">Elige un color para la categoría con la rueda de tono y saturación.</string>
     <string name="custom_color_description">Elige un color de acento con la rueda de tono y saturación.</string>
     <string name="brightness">Brillo</string>
     <string name="apply">Aplicar</string>

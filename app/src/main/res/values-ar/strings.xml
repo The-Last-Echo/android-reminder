@@ -239,6 +239,7 @@
 
     <string name="accent_custom">لون مخصص</string>
     <string name="custom_color_title">لون مخصص</string>
+    <string name="custom_category_color_description">اختر لونًا مخصصًا للفئة باستخدام عجلة درجة اللون والتشبع.</string>
     <string name="custom_color_description">اختر لون تمييز مخصصًا باستخدام عجلة درجة اللون والتشبع.</string>
     <string name="brightness">السطوع</string>
     <string name="apply">تطبيق</string>

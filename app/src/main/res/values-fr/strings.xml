@@ -255,6 +255,7 @@
 
     <string name="accent_custom">Couleur personnalisée</string>
     <string name="custom_color_title">Couleur personnalisée</string>
+    <string name="custom_category_color_description">Choisissez une couleur de catégorie avec la roue de teinte et de saturation.</string>
     <string name="custom_color_description">Choisissez une couleur d’accent avec la roue de teinte et de saturation.</string>
     <string name="brightness">Luminosité</string>
     <string name="apply">Appliquer</string>
