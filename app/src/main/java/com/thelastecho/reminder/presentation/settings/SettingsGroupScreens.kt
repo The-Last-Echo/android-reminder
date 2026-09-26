@@ -80,15 +80,12 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.app.NotificationManagerCompat
 import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import com.thelastecho.reminder.core.distribution.UpdateCheckController
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.core.preferences.AccentColor
 import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.NotificationStyle
-import com.thelastecho.reminder.data.local.UpdateCheckWorker
 import com.thelastecho.reminder.presentation.components.SectionHeading
 import com.thelastecho.reminder.presentation.components.CustomColorPickerDialog
 
@@ -518,7 +515,7 @@ fun DataSettingsScreen(onNavigateBack: () -> Unit, onNavigateToBackup: () -> Uni
 }
 
 @Composable
-fun AboutSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
+fun AboutSettingsScreen(viewModel: SettingsViewModel, updateChecks: UpdateCheckController, onNavigateBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     val packageVersion = remember(context) { runCatching { context.packageManager.getPackageInfo(context.packageName, 0).versionName }.getOrNull().orEmpty() }
@@ -536,13 +533,9 @@ fun AboutSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit
                 description = stringResource(R.string.automatic_update_checks_details),
                 trailing = { Switch(checked = state.automaticUpdateChecks, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAutomaticUpdateChecks(it)) }) }
             )
-            TextButton(onClick = {
-                val request = OneTimeWorkRequestBuilder<UpdateCheckWorker>()
-                    .setInputData(workDataOf(UpdateCheckWorker.KEY_MANUAL to true))
-                    .setConstraints(androidx.work.Constraints.Builder().setRequiredNetworkType(androidx.work.NetworkType.CONNECTED).build())
-                    .build()
-                WorkManager.getInstance(context).enqueueUniqueWork(UpdateCheckWorker.UNIQUE_MANUAL, androidx.work.ExistingWorkPolicy.REPLACE, request)
-            }) { Text(stringResource(R.string.check_updates_now)) }
+            TextButton(onClick = updateChecks::enqueueManualCheck) {
+                Text(stringResource(R.string.check_updates_now))
+            }
             state.latestReleaseTag?.let { tag ->
                 val newer = isVersionNewer(tag, packageVersion)
                 Text(stringResource(if (newer) R.string.update_available else R.string.app_up_to_date), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)

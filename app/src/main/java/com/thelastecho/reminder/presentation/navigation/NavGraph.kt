@@ -25,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import androidx.navigation.navArgument
+import com.thelastecho.reminder.ReminderApp
 import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
@@ -58,6 +59,9 @@ import com.thelastecho.reminder.presentation.settings.TrashViewModel
 @Composable
 fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val distributionFeatures = remember(context) {
+        (context.applicationContext as ReminderApp).distributionFeatures
+    }
     val database = remember { ReminderDatabase.getInstance(context) }
     val repository = remember { ReminderRepositoryImpl(database.reminderDao(), database.categoryDao()) }
     val alarmScheduler = remember { AndroidAlarmScheduler(context) }
@@ -177,7 +181,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 val graphEntry = remember(backStackEntry) { navController.getBackStackEntry(NavDestination.SettingsGraph.route) }
                 val factory = remember(graphEntry) { SettingsGraphViewModelFactory(preferencesRepository, repository) }
                 val viewModel: SettingsViewModel = viewModel(viewModelStoreOwner = graphEntry, key = "settings", factory = factory)
-                AboutSettingsScreen(viewModel, onNavigateBack = { navController.popBackStack() })
+                AboutSettingsScreen(viewModel, updateChecks = distributionFeatures.updateChecks, onNavigateBack = { navController.popBackStack() })
             }
 
             composable(NavDestination.Categories.route) { backStackEntry ->
