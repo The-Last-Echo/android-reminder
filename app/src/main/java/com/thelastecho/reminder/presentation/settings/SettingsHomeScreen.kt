@@ -51,6 +51,7 @@ fun SettingsHomeScreen(
     val trashState by trashViewModel.uiState.collectAsState()
     Scaffold(
         modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.settings)) },
@@ -65,7 +66,7 @@ fun SettingsHomeScreen(
     ) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             SettingsGroup.entries.forEach { group ->
                 SettingsGroupCard(
@@ -107,12 +108,12 @@ private fun SettingsGroupCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp),
+            Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(group.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(stringResource(group.titleRes), style = MaterialTheme.typography.titleMedium)
                 Text(stringResource(group.descriptionRes), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

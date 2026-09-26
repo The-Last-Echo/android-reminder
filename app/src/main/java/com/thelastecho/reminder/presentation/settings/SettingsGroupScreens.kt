@@ -15,6 +15,8 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -91,6 +93,7 @@ import com.thelastecho.reminder.presentation.components.SectionHeading
 @Composable
 private fun SettingsGroupScaffold(titleRes: Int, onNavigateBack: () -> Unit, content: @Composable () -> Unit) {
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(titleRes)) },
@@ -105,7 +108,7 @@ private fun SettingsGroupScaffold(titleRes: Int, onNavigateBack: () -> Unit, con
     ) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) { content() }
     }
 }
@@ -116,7 +119,7 @@ private fun SettingsCard(content: @Composable () -> Unit) {
         shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         modifier = Modifier.fillMaxWidth()
-    ) { Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) { content() } }
+    ) { Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) { content() } }
 }
 
 @Composable
@@ -128,12 +131,12 @@ private fun SettingRow(
     leading: (@Composable () -> Unit)? = null
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         leading?.invoke()
-        Column(Modifier.weight(1f)) {
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             if (description != null) Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -185,6 +188,7 @@ fun GeneralSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Un
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
@@ -204,17 +208,17 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
                 onClick = { showThemeDialog = true },
                 leading = { Icon(Icons.Outlined.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-            Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+            Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(stringResource(R.string.accent_color_title), style = MaterialTheme.typography.bodyLarge)
                 Text(
                     stringResource(if (state.useDynamicColors) R.string.accent_color_dynamic_disabled else R.string.accent_color_description),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(
-                    Modifier.fillMaxWidth().padding(top = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
                     AccentColor.entries.forEach { accent ->
                         val selected = !state.useCustomAccent && state.accentColor == accent

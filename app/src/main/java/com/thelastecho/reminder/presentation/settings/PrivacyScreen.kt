@@ -31,7 +31,7 @@ import com.thelastecho.reminder.core.designsystem.ReminderShapes
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrivacyScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier) {
-    Scaffold(modifier = modifier.fillMaxSize(), topBar = {
+    Scaffold(modifier = modifier.fillMaxSize(), containerColor = MaterialTheme.colorScheme.background, topBar = {
         TopAppBar(title = { Text(stringResource(com.thelastecho.reminder.R.string.privacy)) }, navigationIcon = {
             IconButton(onClick = onNavigateBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(com.thelastecho.reminder.R.string.back)) }
         }, colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background))

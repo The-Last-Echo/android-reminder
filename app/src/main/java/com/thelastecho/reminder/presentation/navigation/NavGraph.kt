@@ -5,9 +5,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -60,11 +63,11 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
         startDestination = NavDestination.Home.route,
-        modifier = modifier,
-        enterTransition = { fadeIn(tween(180)) + slideInHorizontally(tween(180)) { it / 24 } },
-        exitTransition = { fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { -it / 24 } },
-        popEnterTransition = { fadeIn(tween(180)) + slideInHorizontally(tween(180)) { -it / 24 } },
-        popExitTransition = { fadeOut(tween(120)) + slideOutHorizontally(tween(120)) { it / 24 } }
+        modifier = modifier.background(MaterialTheme.colorScheme.background),
+        enterTransition = { fadeIn(tween(240, easing = FastOutSlowInEasing)) + slideInHorizontally(tween(260, easing = FastOutSlowInEasing)) { it / 32 } },
+        exitTransition = { fadeOut(tween(180, easing = FastOutSlowInEasing)) + slideOutHorizontally(tween(200, easing = FastOutSlowInEasing)) { -it / 32 } },
+        popEnterTransition = { fadeIn(tween(240, easing = FastOutSlowInEasing)) + slideInHorizontally(tween(260, easing = FastOutSlowInEasing)) { -it / 32 } },
+        popExitTransition = { fadeOut(tween(180, easing = FastOutSlowInEasing)) + slideOutHorizontally(tween(200, easing = FastOutSlowInEasing)) { it / 32 } }
     ) {
         composable(NavDestination.Home.route) {
             val homeViewModel = remember {

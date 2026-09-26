@@ -74,7 +74,7 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
         else com.thelastecho.reminder.R.string.backup_failed
     )
 
-    Scaffold(modifier = modifier.fillMaxSize(), snackbarHost = { SnackbarHost(snackbar) }, topBar = {
+    Scaffold(modifier = modifier.fillMaxSize(), containerColor = MaterialTheme.colorScheme.background, snackbarHost = { SnackbarHost(snackbar) }, topBar = {
         TopAppBar(title = { Text(stringResource(com.thelastecho.reminder.R.string.backup_restore)) }, navigationIcon = {
             IconButton(onClick = onNavigateBack) {
                 Icon(
