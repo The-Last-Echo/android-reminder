@@ -25,6 +25,8 @@ class SettingsViewModel(
                     themeMode = settings.themeMode,
                     accentColor = settings.accentColor,
                     useDynamicColors = settings.useDynamicColors,
+                    customAccentColor = settings.customAccentColor,
+                    useCustomAccent = settings.useCustomAccent,
                     notificationStyle = settings.notificationStyle,
                     alarmSoundUri = settings.alarmSoundUri,
                     completedReminderRetentionDays = settings.completedReminderRetentionDays,
@@ -43,6 +45,7 @@ class SettingsViewModel(
             when (intent) {
                 is SettingsIntent.SetThemeMode -> preferencesRepository.setThemeMode(intent.mode)
                 is SettingsIntent.SetAccentColor -> preferencesRepository.setAccentColor(intent.color)
+                is SettingsIntent.SetCustomAccentColor -> preferencesRepository.setCustomAccentColor(intent.argb)
                 is SettingsIntent.SetDynamicColors -> {
                     preferencesRepository.setUseDynamicColors(intent.enabled)
                 }

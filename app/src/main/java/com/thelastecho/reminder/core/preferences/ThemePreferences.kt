@@ -23,3 +23,16 @@ fun migrateThemeMode(
         else -> ThemeMode.DARK
     }
 }
+
+
+/** Returns the active manual seed; dynamic system colors are resolved separately by the theme. */
+fun resolveAccentSeedArgb(accentColor: AccentColor, customAccentColor: Int?, useCustomAccent: Boolean): Int =
+    if (useCustomAccent && customAccentColor != null) customAccentColor else when (accentColor) {
+        AccentColor.BLUE -> 0xFF0061A4.toInt()
+        AccentColor.VIOLET -> 0xFF6750A4.toInt()
+        AccentColor.GREEN -> 0xFF386A20.toInt()
+        AccentColor.TEAL -> 0xFF006A60.toInt()
+        AccentColor.ORANGE -> 0xFF8A5000.toInt()
+        AccentColor.RED -> 0xFFBA1A1A.toInt()
+        AccentColor.PINK -> 0xFF9A406D.toInt()
+    }

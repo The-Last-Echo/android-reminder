@@ -228,4 +228,10 @@
     <string name="accent_orange">Orange</string>
     <string name="accent_red">Rot</string>
     <string name="accent_pink">Rosa</string>
+
+    <string name="accent_custom">Benutzerdefinierte Farbe</string>
+    <string name="custom_color_title">Benutzerdefinierte Farbe</string>
+    <string name="custom_color_description">Wähle mit dem Farbton- und Sättigungsrad eine Akzentfarbe.</string>
+    <string name="brightness">Helligkeit</string>
+    <string name="apply">Anwenden</string>
 </resources>

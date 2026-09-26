@@ -199,7 +199,7 @@ class ReminderBackupRepository(
     }
     private fun CategoryEntity.toJson() = JSONObject().put("id", id).put("name", name).put("color", colorArgb).put("icon", iconName)
     private fun SubTaskEntity.toJson() = JSONObject().put("id", id).put("reminderId", reminderId).put("title", title).put("completed", isCompleted).put("order", orderIndex)
-    private fun AppThemeSettings.toJson() = JSONObject().put("themeMode", themeMode.name).put("accentColor", accentColor.name).put("theme", when (themeMode) { ThemeMode.SYSTEM -> DarkThemeConfig.FOLLOW_SYSTEM.name; ThemeMode.LIGHT -> DarkThemeConfig.LIGHT.name; else -> DarkThemeConfig.DARK.name }).put("amoled", themeMode == ThemeMode.AMOLED).put("dynamic", useDynamicColors).put("notificationStyle", notificationStyle.name).put("alarmSound", alarmSoundUri ?: JSONObject.NULL).put("completedRetentionDays", completedReminderRetentionDays).put("addButtonOnLeft", addButtonOnLeft)
+    private fun AppThemeSettings.toJson() = JSONObject().put("themeMode", themeMode.name).put("accentColor", accentColor.name).put("customAccentColor", customAccentColor ?: JSONObject.NULL).put("useCustomAccent", useCustomAccent).put("theme", when (themeMode) { ThemeMode.SYSTEM -> DarkThemeConfig.FOLLOW_SYSTEM.name; ThemeMode.LIGHT -> DarkThemeConfig.LIGHT.name; else -> DarkThemeConfig.DARK.name }).put("amoled", themeMode == ThemeMode.AMOLED).put("dynamic", useDynamicColors).put("notificationStyle", notificationStyle.name).put("alarmSound", alarmSoundUri ?: JSONObject.NULL).put("completedRetentionDays", completedReminderRetentionDays).put("addButtonOnLeft", addButtonOnLeft)
 
     companion object {
         const val FORMAT = "the-last-echo-reminder-backup"
@@ -217,6 +217,8 @@ class ReminderBackupRepository(
             themeMode = migrateThemeMode(optString("themeMode").takeIf { it.isNotBlank() }, optString("theme").takeIf { it.isNotBlank() }, optBoolean("amoled", true)),
             accentColor = runCatching { AccentColor.valueOf(optString("accentColor", AccentColor.VIOLET.name)) }.getOrDefault(AccentColor.VIOLET),
             useDynamicColors = optBoolean("dynamic", true),
+            customAccentColor = if (isNull("customAccentColor")) null else optInt("customAccentColor"),
+            useCustomAccent = optBoolean("useCustomAccent", false),
             notificationStyle = runCatching { NotificationStyle.valueOf(getString("notificationStyle")) }.getOrDefault(NotificationStyle.HEADS_UP),
             alarmSoundUri = nullableString("alarmSound"), completedReminderRetentionDays = optInt("completedRetentionDays"), addButtonOnLeft = optBoolean("addButtonOnLeft")
         )

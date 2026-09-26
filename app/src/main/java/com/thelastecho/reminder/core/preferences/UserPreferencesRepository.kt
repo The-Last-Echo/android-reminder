@@ -16,6 +16,8 @@ data class AppThemeSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val accentColor: AccentColor = AccentColor.VIOLET,
     val useDynamicColors: Boolean = true,
+    val customAccentColor: Int? = null,
+    val useCustomAccent: Boolean = false,
     val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP,
     val alarmSoundUri: String? = null,
     val completedReminderRetentionDays: Int = 0,
@@ -42,6 +44,8 @@ class UserPreferencesRepository(private val context: Context) {
         val DARK_THEME_CONFIG = androidx.datastore.preferences.core.stringPreferencesKey("dark_theme_config")
         val IS_AMOLED_MODE = booleanPreferencesKey("is_amoled_mode")
         val USE_DYNAMIC_COLORS = booleanPreferencesKey("use_dynamic_colors")
+        val CUSTOM_ACCENT_COLOR = androidx.datastore.preferences.core.intPreferencesKey("custom_accent_color")
+        val USE_CUSTOM_ACCENT = booleanPreferencesKey("use_custom_accent")
         val NOTIFICATION_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("notification_style")
         val ALARM_SOUND_URI = androidx.datastore.preferences.core.stringPreferencesKey("alarm_sound_uri")
         val COMPLETED_RETENTION_DAYS = androidx.datastore.preferences.core.intPreferencesKey("completed_retention_days")
@@ -74,6 +78,8 @@ class UserPreferencesRepository(private val context: Context) {
             themeMode = mode,
             accentColor = accent,
             useDynamicColors = dynamicColors,
+            customAccentColor = preferences[PreferencesKeys.CUSTOM_ACCENT_COLOR],
+            useCustomAccent = preferences[PreferencesKeys.USE_CUSTOM_ACCENT] ?: false,
             notificationStyle = notificationStyle,
             alarmSoundUri = preferences[PreferencesKeys.ALARM_SOUND_URI],
             completedReminderRetentionDays = preferences[PreferencesKeys.COMPLETED_RETENTION_DAYS] ?: 0,
@@ -100,7 +106,17 @@ class UserPreferencesRepository(private val context: Context) {
     }
 
     suspend fun setAccentColor(color: AccentColor) {
-        context.dataStore.edit { it[PreferencesKeys.ACCENT_COLOR] = color.name }
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.ACCENT_COLOR] = color.name
+            preferences[PreferencesKeys.USE_CUSTOM_ACCENT] = false
+        }
+    }
+
+    suspend fun setCustomAccentColor(argb: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[PreferencesKeys.CUSTOM_ACCENT_COLOR] = argb
+            preferences[PreferencesKeys.USE_CUSTOM_ACCENT] = true
+        }
     }
 
     suspend fun setUseDynamicColors(enabled: Boolean) {
@@ -122,6 +138,8 @@ class UserPreferencesRepository(private val context: Context) {
             p[PreferencesKeys.THEME_MODE] = settings.themeMode.name
             p[PreferencesKeys.ACCENT_COLOR] = settings.accentColor.name
             p[PreferencesKeys.USE_DYNAMIC_COLORS] = settings.useDynamicColors
+            settings.customAccentColor?.let { p[PreferencesKeys.CUSTOM_ACCENT_COLOR] = it } ?: p.remove(PreferencesKeys.CUSTOM_ACCENT_COLOR)
+            p[PreferencesKeys.USE_CUSTOM_ACCENT] = settings.useCustomAccent
             p[PreferencesKeys.NOTIFICATION_STYLE] = settings.notificationStyle.name
             if (settings.alarmSoundUri == null) p.remove(PreferencesKeys.ALARM_SOUND_URI) else p[PreferencesKeys.ALARM_SOUND_URI] = settings.alarmSoundUri
             p[PreferencesKeys.COMPLETED_RETENTION_DAYS] = settings.completedReminderRetentionDays.coerceIn(0, 3650)

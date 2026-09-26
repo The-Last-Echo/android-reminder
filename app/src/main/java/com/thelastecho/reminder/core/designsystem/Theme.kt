@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.thelastecho.reminder.core.preferences.AccentColor
+import com.thelastecho.reminder.core.preferences.resolveAccentSeedArgb
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight, onPrimary = OnPrimaryLight, primaryContainer = PrimaryContainerLight,
@@ -33,45 +34,33 @@ private val DarkColorScheme = darkColorScheme(
     onSurfaceVariant = OnSurfaceVariantDark
 )
 
-private data class AccentTones(
-    val lightPrimary: Color,
-    val lightOnPrimary: Color,
-    val lightContainer: Color,
-    val lightOnContainer: Color,
-    val darkPrimary: Color,
-    val darkOnPrimary: Color,
-    val darkContainer: Color,
-    val darkOnContainer: Color
-)
-
-private fun AccentColor.tones() = when (this) {
-    AccentColor.BLUE -> AccentTones(Color(0xFF0061A4), Color.White, Color(0xFFD1E4FF), Color(0xFF001D36), Color(0xFF9ECAFF), Color(0xFF003258), Color(0xFF00497D), Color(0xFFD1E4FF))
-    AccentColor.VIOLET -> AccentTones(PrimaryLight, OnPrimaryLight, PrimaryContainerLight, OnPrimaryContainerLight, PrimaryDark, OnPrimaryDark, PrimaryContainerDark, OnPrimaryContainerDark)
-    AccentColor.GREEN -> AccentTones(Color(0xFF386A20), Color.White, Color(0xFFB7F397), Color(0xFF082100), Color(0xFF9DD67E), Color(0xFF173800), Color(0xFF28500C), Color(0xFFB7F397))
-    AccentColor.TEAL -> AccentTones(Color(0xFF006A60), Color.White, Color(0xFF9CF1E4), Color(0xFF00201C), Color(0xFF80D5C9), Color(0xFF003731), Color(0xFF005047), Color(0xFF9CF1E4))
-    AccentColor.ORANGE -> AccentTones(Color(0xFF8A5000), Color.White, Color(0xFFFFDDB3), Color(0xFF2C1600), Color(0xFFFFB95F), Color(0xFF482900), Color(0xFF673D00), Color(0xFFFFDDB3))
-    AccentColor.RED -> AccentTones(Color(0xFFBA1A1A), Color.White, Color(0xFFFFDAD6), Color(0xFF410002), Color(0xFFFFB4AB), Color(0xFF690005), Color(0xFF93000A), Color(0xFFFFDAD6))
-    AccentColor.PINK -> AccentTones(Color(0xFF9A406D), Color.White, Color(0xFFFFD8E8), Color(0xFF3E0025), Color(0xFFFFB0D0), Color(0xFF5E113F), Color(0xFF7B2955), Color(0xFFFFD8E8))
-}
-
-private fun ColorScheme.withAccent(accent: AccentColor, dark: Boolean): ColorScheme {
-    val tones = accent.tones()
-    return if (dark) copy(
-        primary = tones.darkPrimary, onPrimary = tones.darkOnPrimary,
-        primaryContainer = tones.darkContainer, onPrimaryContainer = tones.darkOnContainer,
-        secondary = tones.darkPrimary, onSecondary = tones.darkOnPrimary,
-        secondaryContainer = tones.darkContainer, onSecondaryContainer = tones.darkOnContainer,
-        tertiary = tones.darkPrimary, onTertiary = tones.darkOnPrimary,
-        tertiaryContainer = tones.darkContainer, onTertiaryContainer = tones.darkOnContainer,
-        inversePrimary = tones.lightPrimary, surfaceTint = tones.darkPrimary
-    ) else copy(
-        primary = tones.lightPrimary, onPrimary = tones.lightOnPrimary,
-        primaryContainer = tones.lightContainer, onPrimaryContainer = tones.lightOnContainer,
-        secondary = tones.lightPrimary, onSecondary = tones.lightOnPrimary,
-        secondaryContainer = tones.lightContainer, onSecondaryContainer = tones.lightOnContainer,
-        tertiary = tones.lightPrimary, onTertiary = tones.lightOnPrimary,
-        tertiaryContainer = tones.lightContainer, onTertiaryContainer = tones.lightOnContainer,
-        inversePrimary = tones.darkPrimary, surfaceTint = tones.lightPrimary
+private fun ColorScheme.withAccentSeed(seedArgb: Int, dark: Boolean): ColorScheme {
+    val generated = com.materialkolor.scheme.SchemeTonalSpot(
+        com.materialkolor.hct.Hct.fromInt(seedArgb), dark, 0.0
+    )
+    val roles = com.materialkolor.dynamiccolor.MaterialDynamicColors(dark)
+    fun color(role: com.materialkolor.dynamiccolor.DynamicColor) = Color(role.getArgb(generated))
+    return copy(
+        primary = color(roles.primary()), onPrimary = color(roles.onPrimary()),
+        primaryContainer = color(roles.primaryContainer()), onPrimaryContainer = color(roles.onPrimaryContainer()),
+        inversePrimary = color(roles.inversePrimary()),
+        secondary = color(roles.secondary()), onSecondary = color(roles.onSecondary()),
+        secondaryContainer = color(roles.secondaryContainer()), onSecondaryContainer = color(roles.onSecondaryContainer()),
+        tertiary = color(roles.tertiary()), onTertiary = color(roles.onTertiary()),
+        tertiaryContainer = color(roles.tertiaryContainer()), onTertiaryContainer = color(roles.onTertiaryContainer()),
+        background = color(roles.background()), onBackground = color(roles.onBackground()),
+        surface = color(roles.surface()), onSurface = color(roles.onSurface()),
+        surfaceVariant = color(roles.surfaceVariant()), onSurfaceVariant = color(roles.onSurfaceVariant()),
+        surfaceTint = color(roles.surfaceTint()),
+        inverseSurface = color(roles.inverseSurface()), inverseOnSurface = color(roles.inverseOnSurface()),
+        error = color(roles.error()), onError = color(roles.onError()),
+        errorContainer = color(roles.errorContainer()), onErrorContainer = color(roles.onErrorContainer()),
+        outline = color(roles.outline()), outlineVariant = color(roles.outlineVariant()),
+        scrim = color(roles.scrim()),
+        surfaceBright = color(roles.surfaceBright()), surfaceDim = color(roles.surfaceDim()),
+        surfaceContainer = color(roles.surfaceContainer()), surfaceContainerHigh = color(roles.surfaceContainerHigh()),
+        surfaceContainerHighest = color(roles.surfaceContainerHighest()), surfaceContainerLow = color(roles.surfaceContainerLow()),
+        surfaceContainerLowest = color(roles.surfaceContainerLowest())
     )
 }
 
@@ -81,6 +70,8 @@ fun ReminderTheme(
     isAmoledMode: Boolean = false,
     dynamicColor: Boolean = true,
     accentColor: AccentColor = AccentColor.VIOLET,
+    customAccentColor: Int? = null,
+    useCustomAccent: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -89,7 +80,8 @@ fun ReminderTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
-    val accentScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) baseScheme else baseScheme.withAccent(accentColor, darkTheme)
+    val manualSeed = if (useCustomAccent) customAccentColor else null
+    val accentScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) baseScheme else baseScheme.withAccentSeed(manualSeed ?: resolveAccentSeedArgb(accentColor, customAccentColor, useCustomAccent), darkTheme)
     val colorScheme = if (darkTheme && isAmoledMode) accentScheme.copy(
         background = AmoledBackground,
         surface = AmoledSurface,

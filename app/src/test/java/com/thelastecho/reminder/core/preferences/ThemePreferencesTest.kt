@@ -29,3 +29,18 @@ class ThemePreferencesTest {
         assertEquals(ThemeMode.AMOLED, migrateThemeMode("AMOLED", "LIGHT", false))
     }
 }
+
+
+class AccentSeedResolutionTest {
+    @org.junit.Test
+    fun `custom seed wins only when custom accent is active`() {
+        val custom = 0xFF13A9C2.toInt()
+        org.junit.Assert.assertEquals(custom, resolveAccentSeedArgb(AccentColor.RED, custom, true))
+        org.junit.Assert.assertEquals(0xFFBA1A1A.toInt(), resolveAccentSeedArgb(AccentColor.RED, custom, false))
+    }
+
+    @org.junit.Test
+    fun `preset is fallback when custom seed is missing`() {
+        org.junit.Assert.assertEquals(0xFF6750A4.toInt(), resolveAccentSeedArgb(AccentColor.VIOLET, null, true))
+    }
+}

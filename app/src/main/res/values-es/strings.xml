@@ -228,4 +228,10 @@
     <string name="accent_orange">Naranja</string>
     <string name="accent_red">Rojo</string>
     <string name="accent_pink">Rosa</string>
+
+    <string name="accent_custom">Color personalizado</string>
+    <string name="custom_color_title">Color personalizado</string>
+    <string name="custom_color_description">Elige un color de acento con la rueda de tono y saturación.</string>
+    <string name="brightness">Brillo</string>
+    <string name="apply">Aplicar</string>
 </resources>

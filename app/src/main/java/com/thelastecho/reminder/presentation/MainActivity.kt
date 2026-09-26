@@ -60,7 +60,9 @@ class MainActivity : ComponentActivity() {
                 darkTheme = isDark,
                 isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
                 dynamicColor = themeSettings.useDynamicColors,
-                accentColor = themeSettings.accentColor
+                accentColor = themeSettings.accentColor,
+                customAccentColor = themeSettings.customAccentColor,
+                useCustomAccent = themeSettings.useCustomAccent
             ) {
                 val navController = rememberNavController()
 

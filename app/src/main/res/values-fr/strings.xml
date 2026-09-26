@@ -244,4 +244,10 @@
     <string name="accent_orange">Orange</string>
     <string name="accent_red">Rouge</string>
     <string name="accent_pink">Rose</string>
+
+    <string name="accent_custom">Couleur personnalisée</string>
+    <string name="custom_color_title">Couleur personnalisée</string>
+    <string name="custom_color_description">Choisissez une couleur d’accent avec la roue de teinte et de saturation.</string>
+    <string name="brightness">Luminosité</string>
+    <string name="apply">Appliquer</string>
 </resources>

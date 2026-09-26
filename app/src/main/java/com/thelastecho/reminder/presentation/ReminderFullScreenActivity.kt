@@ -154,7 +154,9 @@ class ReminderFullScreenActivity : ComponentActivity() {
                 darkTheme = darkTheme,
                 isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
                 dynamicColor = themeSettings.useDynamicColors,
-                accentColor = themeSettings.accentColor
+                accentColor = themeSettings.accentColor,
+                customAccentColor = themeSettings.customAccentColor,
+                useCustomAccent = themeSettings.useCustomAccent
             ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     ReminderAlarmContent(

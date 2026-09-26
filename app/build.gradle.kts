@@ -100,6 +100,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.glance.appwidget)
+    implementation(libs.material.color.utilities)
 
     // Room SQLite
     implementation(libs.androidx.room.runtime)

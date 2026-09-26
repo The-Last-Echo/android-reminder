@@ -228,4 +228,10 @@
     <string name="accent_orange">橙色</string>
     <string name="accent_red">红色</string>
     <string name="accent_pink">粉色</string>
+
+    <string name="accent_custom">自定义颜色</string>
+    <string name="custom_color_title">自定义颜色</string>
+    <string name="custom_color_description">使用色相和饱和度色轮选择强调色。</string>
+    <string name="brightness">亮度</string>
+    <string name="apply">应用</string>
 </resources>
