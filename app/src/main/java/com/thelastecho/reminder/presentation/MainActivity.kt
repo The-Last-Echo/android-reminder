@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.map
 import com.thelastecho.reminder.core.designsystem.ReminderTheme
 import com.thelastecho.reminder.core.preferences.ThemeMode
+import com.thelastecho.reminder.core.preferences.ThemeStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.navigation.NavDestination
 import com.thelastecho.reminder.presentation.navigation.NavGraph
@@ -62,7 +63,8 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = themeSettings.useDynamicColors,
                 accentColor = themeSettings.accentColor,
                 customAccentColor = themeSettings.customAccentColor,
-                useCustomAccent = themeSettings.useCustomAccent
+                useCustomAccent = themeSettings.useCustomAccent,
+                themeStyle = themeSettings.themeStyle
             ) {
                 val navController = rememberNavController()
 

@@ -14,6 +14,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(na
 
 data class AppThemeSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeStyle: ThemeStyle = ThemeStyle.MATERIAL,
     val accentColor: AccentColor = AccentColor.VIOLET,
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
@@ -40,6 +41,7 @@ class UserPreferencesRepository(private val context: Context) {
 
     private object PreferencesKeys {
         val THEME_MODE = androidx.datastore.preferences.core.stringPreferencesKey("theme_mode")
+        val THEME_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("theme_style")
         val ACCENT_COLOR = androidx.datastore.preferences.core.stringPreferencesKey("accent_color")
         val DARK_THEME_CONFIG = androidx.datastore.preferences.core.stringPreferencesKey("dark_theme_config")
         val IS_AMOLED_MODE = booleanPreferencesKey("is_amoled_mode")
@@ -67,6 +69,7 @@ class UserPreferencesRepository(private val context: Context) {
             AccentColor.valueOf(preferences[PreferencesKeys.ACCENT_COLOR] ?: AccentColor.VIOLET.name)
         }.getOrDefault(AccentColor.VIOLET)
         val dynamicColors = preferences[PreferencesKeys.USE_DYNAMIC_COLORS] ?: true
+        val themeStyle = parseThemeStyle(preferences[PreferencesKeys.THEME_STYLE])
         val notificationStyleStr = preferences[PreferencesKeys.NOTIFICATION_STYLE] ?: NotificationStyle.HEADS_UP.name
         val notificationStyle = try {
             NotificationStyle.valueOf(notificationStyleStr)
@@ -76,6 +79,7 @@ class UserPreferencesRepository(private val context: Context) {
 
         AppThemeSettings(
             themeMode = mode,
+            themeStyle = themeStyle,
             accentColor = accent,
             useDynamicColors = dynamicColors,
             customAccentColor = preferences[PreferencesKeys.CUSTOM_ACCENT_COLOR],
@@ -99,6 +103,10 @@ class UserPreferencesRepository(private val context: Context) {
                 preferences[PreferencesKeys.ACCENT_COLOR] = AccentColor.VIOLET.name
             }
         }
+    }
+
+    suspend fun setThemeStyle(style: ThemeStyle) {
+        context.dataStore.edit { it[PreferencesKeys.THEME_STYLE] = style.name }
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
@@ -136,6 +144,7 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun restoreReminderPreferences(settings: AppThemeSettings) {
         context.dataStore.edit { p ->
             p[PreferencesKeys.THEME_MODE] = settings.themeMode.name
+            p[PreferencesKeys.THEME_STYLE] = settings.themeStyle.name
             p[PreferencesKeys.ACCENT_COLOR] = settings.accentColor.name
             p[PreferencesKeys.USE_DYNAMIC_COLORS] = settings.useDynamicColors
             settings.customAccentColor?.let { p[PreferencesKeys.CUSTOM_ACCENT_COLOR] = it } ?: p.remove(PreferencesKeys.CUSTOM_ACCENT_COLOR)

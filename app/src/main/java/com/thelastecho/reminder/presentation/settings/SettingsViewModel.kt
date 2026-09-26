@@ -23,6 +23,7 @@ class SettingsViewModel(
             _uiState.update { current ->
                 current.copy(
                     themeMode = settings.themeMode,
+                    themeStyle = settings.themeStyle,
                     accentColor = settings.accentColor,
                     useDynamicColors = settings.useDynamicColors,
                     customAccentColor = settings.customAccentColor,
@@ -44,6 +45,7 @@ class SettingsViewModel(
         viewModelScope.launch {
             when (intent) {
                 is SettingsIntent.SetThemeMode -> preferencesRepository.setThemeMode(intent.mode)
+                is SettingsIntent.SetThemeStyle -> preferencesRepository.setThemeStyle(intent.style)
                 is SettingsIntent.SetAccentColor -> preferencesRepository.setAccentColor(intent.color)
                 is SettingsIntent.SetCustomAccentColor -> preferencesRepository.setCustomAccentColor(intent.argb)
                 is SettingsIntent.SetDynamicColors -> {

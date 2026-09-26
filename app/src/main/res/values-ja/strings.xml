@@ -234,4 +234,9 @@
     <string name="custom_color_description">色相と彩度のホイールでアクセントカラーを選択します。</string>
     <string name="brightness">明るさ</string>
     <string name="apply">適用</string>
+
+    <string name="theme_style_title">表示スタイル</string>
+    <string name="theme_style_description">アプリのサーフェスの外観を選択します。</string>
+    <string name="theme_style_material">Material</string>
+    <string name="theme_style_glass">Glass</string>
 </resources>

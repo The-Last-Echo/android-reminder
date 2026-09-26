@@ -234,4 +234,9 @@
     <string name="custom_color_description">Wähle mit dem Farbton- und Sättigungsrad eine Akzentfarbe.</string>
     <string name="brightness">Helligkeit</string>
     <string name="apply">Anwenden</string>
+
+    <string name="theme_style_title">Visueller Stil</string>
+    <string name="theme_style_description">Wähle das Erscheinungsbild der App-Oberflächen.</string>
+    <string name="theme_style_material">Material</string>
+    <string name="theme_style_glass">Glas</string>
 </resources>

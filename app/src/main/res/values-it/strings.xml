@@ -234,4 +234,9 @@
     <string name="custom_color_description">Scegli un colore di accento con la ruota di tonalità e saturazione.</string>
     <string name="brightness">Luminosità</string>
     <string name="apply">Applica</string>
+
+    <string name="theme_style_title">Stile visivo</string>
+    <string name="theme_style_description">Scegli l’aspetto delle superfici dell’app.</string>
+    <string name="theme_style_material">Material</string>
+    <string name="theme_style_glass">Vetro</string>
 </resources>

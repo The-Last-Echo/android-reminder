@@ -81,8 +81,11 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.core.designsystem.styledSurfaceBorder
+import com.thelastecho.reminder.core.designsystem.styledSurfaceColor
 import com.thelastecho.reminder.core.preferences.AccentColor
 import com.thelastecho.reminder.core.preferences.ThemeMode
+import com.thelastecho.reminder.core.preferences.ThemeStyle
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.data.local.UpdateCheckWorker
 import com.thelastecho.reminder.presentation.components.SectionHeading
@@ -114,7 +117,8 @@ private fun SettingsGroupScaffold(titleRes: Int, onNavigateBack: () -> Unit, con
 private fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         shape = ReminderShapes.Card,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = CardDefaults.cardColors(containerColor = styledSurfaceColor(MaterialTheme.colorScheme.surfaceContainer)),
+        border = styledSurfaceBorder(),
         modifier = Modifier.fillMaxWidth()
     ) { Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) { content() } }
 }
@@ -189,6 +193,7 @@ fun GeneralSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Un
 fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showThemeStyleDialog by remember { mutableStateOf(false) }
     var showCustomColorDialog by remember { mutableStateOf(false) }
     val modeLabel = when (state.themeMode) {
         ThemeMode.SYSTEM -> R.string.theme_mode_system
@@ -198,6 +203,12 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
     }
     SettingsGroupScaffold(R.string.settings_group_appearance_title, onNavigateBack) {
         SettingsCard {
+            SettingRow(
+                title = stringResource(R.string.theme_style_title),
+                description = stringResource(if (state.themeStyle == ThemeStyle.GLASS) R.string.theme_style_glass else R.string.theme_style_material),
+                onClick = { showThemeStyleDialog = true },
+                leading = { Icon(Icons.Outlined.Palette, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
             SettingRow(
                 title = stringResource(R.string.theme_mode_title),
                 description = stringResource(modeLabel),
@@ -282,6 +293,33 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
                 viewModel.onIntent(SettingsIntent.SetCustomAccentColor(argb))
                 showCustomColorDialog = false
             }
+        )
+    }
+    if (showThemeStyleDialog) {
+        AlertDialog(
+            onDismissRequest = { showThemeStyleDialog = false },
+            title = { Text(stringResource(R.string.theme_style_title)) },
+            text = {
+                Column {
+                    Text(
+                        stringResource(R.string.theme_style_description),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    ThemeStyle.entries.forEach { style ->
+                        val label = if (style == ThemeStyle.MATERIAL) R.string.theme_style_material else R.string.theme_style_glass
+                        Row(
+                            Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetThemeStyle(style)); showThemeStyleDialog = false }.padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(selected = state.themeStyle == style, onClick = { viewModel.onIntent(SettingsIntent.SetThemeStyle(style)); showThemeStyleDialog = false })
+                            Spacer(Modifier.width(8.dp))
+                            Text(stringResource(label))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showThemeStyleDialog = false }) { Text(stringResource(R.string.cancel)) } }
         )
     }
     if (showThemeDialog) {

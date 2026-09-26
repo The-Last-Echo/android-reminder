@@ -250,4 +250,9 @@
     <string name="custom_color_description">Choisissez une couleur d’accent avec la roue de teinte et de saturation.</string>
     <string name="brightness">Luminosité</string>
     <string name="apply">Appliquer</string>
+
+    <string name="theme_style_title">Style visuel</string>
+    <string name="theme_style_description">Choisissez l’apparence des surfaces de l’application.</string>
+    <string name="theme_style_material">Material</string>
+    <string name="theme_style_glass">Glass</string>
 </resources>

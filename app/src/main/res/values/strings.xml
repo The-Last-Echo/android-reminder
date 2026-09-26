@@ -250,4 +250,9 @@
     <string name="custom_color_description">Choose a custom accent color using the hue and saturation wheel.</string>
     <string name="brightness">Brightness</string>
     <string name="apply">Apply</string>
+
+    <string name="theme_style_title">Visual style</string>
+    <string name="theme_style_description">Choose how app surfaces look.</string>
+    <string name="theme_style_material">Material</string>
+    <string name="theme_style_glass">Glass</string>
 </resources>
