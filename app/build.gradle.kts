@@ -29,6 +29,17 @@ android {
         }
     }
 
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("offline") {
+            dimension = "distribution"
+            applicationIdSuffix = ".offline"
+        }
+        create("online") {
+            dimension = "distribution"
+        }
+    }
+
     signingConfigs {
         create("release") {
             val keystorePath = System.getenv("KEYSTORE_PATH")
