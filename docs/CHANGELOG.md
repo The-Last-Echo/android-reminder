@@ -2,6 +2,21 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.7.0 - 2026-09-26
+
+### Added
+- Added a custom accent color picker alongside seven named accent presets, with Material You dynamic colors remaining an independent preference.
+- Added explicit System, Light, Dark, and AMOLED theme modes, plus persisted appearance preferences.
+- Added grouped Settings home cards and dedicated screens for general, appearance, reminders, notifications and alarms, data, privacy, and app information.
+- Added an animated reminder-count badge shared by Home and Settings, including the Trash count on the Data card.
+- Added a redesigned category editor with a broader icon selection and custom color selection.
+
+### Changed
+- Refined Home navigation, search dismissal, filter surfaces, reminder creation entry animation, and shared visual spacing and card treatments.
+- Improved Settings navigation and transitions, appearance controls, notification and data screens, and Privacy readability.
+- Improved touch target sizes and card outlines in reminder, editor, category, and Settings interactions.
+- Updated translations for all eight supported languages.
+
 ## 1.6.0 - 2026-09-26
 
 ### Added
