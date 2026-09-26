@@ -6,7 +6,6 @@ import androidx.room.withTransaction
 import com.thelastecho.reminder.core.preferences.AppThemeSettings
 import com.thelastecho.reminder.core.preferences.DarkThemeConfig
 import com.thelastecho.reminder.core.preferences.ThemeMode
-import com.thelastecho.reminder.core.preferences.ThemeStyle
 import com.thelastecho.reminder.core.preferences.AccentColor
 import com.thelastecho.reminder.core.preferences.migrateThemeMode
 import com.thelastecho.reminder.core.preferences.NotificationStyle
@@ -200,7 +199,7 @@ class ReminderBackupRepository(
     }
     private fun CategoryEntity.toJson() = JSONObject().put("id", id).put("name", name).put("color", colorArgb).put("icon", iconName)
     private fun SubTaskEntity.toJson() = JSONObject().put("id", id).put("reminderId", reminderId).put("title", title).put("completed", isCompleted).put("order", orderIndex)
-    private fun AppThemeSettings.toJson() = JSONObject().put("themeMode", themeMode.name).put("themeStyle", themeStyle.name).put("accentColor", accentColor.name).put("customAccentColor", customAccentColor ?: JSONObject.NULL).put("useCustomAccent", useCustomAccent).put("theme", when (themeMode) { ThemeMode.SYSTEM -> DarkThemeConfig.FOLLOW_SYSTEM.name; ThemeMode.LIGHT -> DarkThemeConfig.LIGHT.name; else -> DarkThemeConfig.DARK.name }).put("amoled", themeMode == ThemeMode.AMOLED).put("dynamic", useDynamicColors).put("notificationStyle", notificationStyle.name).put("alarmSound", alarmSoundUri ?: JSONObject.NULL).put("completedRetentionDays", completedReminderRetentionDays).put("addButtonOnLeft", addButtonOnLeft)
+    private fun AppThemeSettings.toJson() = JSONObject().put("themeMode", themeMode.name).put("accentColor", accentColor.name).put("customAccentColor", customAccentColor ?: JSONObject.NULL).put("useCustomAccent", useCustomAccent).put("theme", when (themeMode) { ThemeMode.SYSTEM -> DarkThemeConfig.FOLLOW_SYSTEM.name; ThemeMode.LIGHT -> DarkThemeConfig.LIGHT.name; else -> DarkThemeConfig.DARK.name }).put("amoled", themeMode == ThemeMode.AMOLED).put("dynamic", useDynamicColors).put("notificationStyle", notificationStyle.name).put("alarmSound", alarmSoundUri ?: JSONObject.NULL).put("completedRetentionDays", completedReminderRetentionDays).put("addButtonOnLeft", addButtonOnLeft)
 
     companion object {
         const val FORMAT = "the-last-echo-reminder-backup"
@@ -215,7 +214,6 @@ class ReminderBackupRepository(
         private fun JSONObject.nullableLong(key: String): Long? = if (isNull(key)) null else getLong(key)
         private fun JSONObject.nullableString(key: String): String? = if (isNull(key)) null else getString(key)
         private fun JSONObject.toThemeSettings() = AppThemeSettings(
-            themeStyle = runCatching { ThemeStyle.valueOf(optString("themeStyle", ThemeStyle.MATERIAL.name)) }.getOrDefault(ThemeStyle.MATERIAL),
             themeMode = migrateThemeMode(optString("themeMode").takeIf { it.isNotBlank() }, optString("theme").takeIf { it.isNotBlank() }, optBoolean("amoled", true)),
             accentColor = runCatching { AccentColor.valueOf(optString("accentColor", AccentColor.VIOLET.name)) }.getOrDefault(AccentColor.VIOLET),
             useDynamicColors = optBoolean("dynamic", true),

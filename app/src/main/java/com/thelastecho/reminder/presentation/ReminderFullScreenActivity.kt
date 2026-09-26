@@ -70,7 +70,6 @@ import com.thelastecho.reminder.core.notification.NotificationActionReceiver
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.preferences.AppThemeSettings
 import com.thelastecho.reminder.core.preferences.ThemeMode
-import com.thelastecho.reminder.core.preferences.ThemeStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
@@ -157,8 +156,7 @@ class ReminderFullScreenActivity : ComponentActivity() {
                 dynamicColor = themeSettings.useDynamicColors,
                 accentColor = themeSettings.accentColor,
                 customAccentColor = themeSettings.customAccentColor,
-                useCustomAccent = themeSettings.useCustomAccent,
-                themeStyle = themeSettings.themeStyle
+                useCustomAccent = themeSettings.useCustomAccent
             ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     ReminderAlarmContent(

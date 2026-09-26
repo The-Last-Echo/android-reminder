@@ -234,9 +234,4 @@
     <string name="custom_color_description">اختر لون تمييز مخصصًا باستخدام عجلة درجة اللون والتشبع.</string>
     <string name="brightness">السطوع</string>
     <string name="apply">تطبيق</string>
-
-    <string name="theme_style_title">النمط المرئي</string>
-    <string name="theme_style_description">اختر مظهر أسطح التطبيق.</string>
-    <string name="theme_style_material">Material</string>
-    <string name="theme_style_glass">زجاجي</string>
 </resources>

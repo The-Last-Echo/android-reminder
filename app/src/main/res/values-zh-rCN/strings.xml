@@ -234,9 +234,4 @@
     <string name="custom_color_description">使用色相和饱和度色轮选择强调色。</string>
     <string name="brightness">亮度</string>
     <string name="apply">应用</string>
-
-    <string name="theme_style_title">视觉样式</string>
-    <string name="theme_style_description">选择应用界面的外观。</string>
-    <string name="theme_style_material">Material</string>
-    <string name="theme_style_glass">玻璃</string>
 </resources>

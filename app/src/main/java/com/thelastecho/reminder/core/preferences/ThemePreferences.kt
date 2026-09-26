@@ -2,12 +2,6 @@ package com.thelastecho.reminder.core.preferences
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 
-enum class ThemeStyle { MATERIAL, GLASS }
-
-fun parseThemeStyle(storedStyle: String?): ThemeStyle =
-    runCatching { ThemeStyle.valueOf(storedStyle ?: ThemeStyle.MATERIAL.name) }
-        .getOrDefault(ThemeStyle.MATERIAL)
-
 enum class AccentColor { BLUE, VIOLET, GREEN, TEAL, ORANGE, RED, PINK }
 
 /** Retained only to decode existing backup files. */

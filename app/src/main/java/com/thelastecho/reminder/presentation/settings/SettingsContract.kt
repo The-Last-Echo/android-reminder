@@ -2,11 +2,9 @@ package com.thelastecho.reminder.presentation.settings
 
 import com.thelastecho.reminder.core.preferences.AccentColor
 import com.thelastecho.reminder.core.preferences.ThemeMode
-import com.thelastecho.reminder.core.preferences.ThemeStyle
 
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val themeStyle: ThemeStyle = ThemeStyle.MATERIAL,
     val accentColor: AccentColor = AccentColor.VIOLET,
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
@@ -23,7 +21,6 @@ data class SettingsUiState(
 
 sealed interface SettingsIntent {
     data class SetThemeMode(val mode: ThemeMode) : SettingsIntent
-    data class SetThemeStyle(val style: ThemeStyle) : SettingsIntent
     data class SetAccentColor(val color: AccentColor) : SettingsIntent
     data class SetCustomAccentColor(val argb: Int) : SettingsIntent
     data class SetDynamicColors(val enabled: Boolean) : SettingsIntent

@@ -234,9 +234,4 @@
     <string name="custom_color_description">Elige un color de acento con la rueda de tono y saturación.</string>
     <string name="brightness">Brillo</string>
     <string name="apply">Aplicar</string>
-
-    <string name="theme_style_title">Estilo visual</string>
-    <string name="theme_style_description">Elige el aspecto de las superficies de la aplicación.</string>
-    <string name="theme_style_material">Material</string>
-    <string name="theme_style_glass">Cristal</string>
 </resources>

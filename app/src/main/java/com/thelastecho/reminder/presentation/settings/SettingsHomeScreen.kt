@@ -38,8 +38,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
-import com.thelastecho.reminder.core.designsystem.styledSurfaceBorder
-import com.thelastecho.reminder.core.designsystem.styledSurfaceColor
 import com.thelastecho.reminder.presentation.components.CounterBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -103,9 +101,9 @@ private fun SettingsGroupCard(
     Surface(
         onClick = onClick,
         shape = ReminderShapes.Card,
-        color = styledSurfaceColor(MaterialTheme.colorScheme.surfaceContainer),
+        color = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = styledSurfaceBorder(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(

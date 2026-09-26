@@ -61,17 +61,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
-import com.thelastecho.reminder.core.designsystem.styledSurfaceBorder
-import com.thelastecho.reminder.core.designsystem.styledSurfaceColor
-import com.thelastecho.reminder.core.designsystem.styledSurfaceEdgeColor
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.presentation.components.ReminderItem
@@ -94,7 +89,6 @@ fun HomeScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val glassTopBarEdge = styledSurfaceEdgeColor()
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -128,12 +122,6 @@ fun HomeScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                modifier = Modifier.drawWithContent {
-                    drawContent()
-                    glassTopBarEdge?.let { edge ->
-                        drawLine(edge, Offset(0f, size.height), Offset(size.width, size.height), 1.dp.toPx())
-                    }
-                },
                 title = {
                     if (isSearchActive) {
                         OutlinedTextField(
@@ -176,7 +164,7 @@ fun HomeScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = styledSurfaceColor(MaterialTheme.colorScheme.background)
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -342,11 +330,11 @@ private fun HomeFilterTabs(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp),
         shape = ReminderShapes.Card,
-        color = styledSurfaceColor(MaterialTheme.colorScheme.surfaceContainer),
-        border = styledSurfaceBorder(BorderStroke(
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        border = BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
-        ))
+        )
     ) {
         Row(
             modifier = Modifier
@@ -389,7 +377,7 @@ private fun FilterChipItem(
         targetValue = if (isSelected) {
             MaterialTheme.colorScheme.primary
         } else {
-            styledSurfaceColor(MaterialTheme.colorScheme.surfaceContainer)
+            MaterialTheme.colorScheme.surfaceContainer
         },
         animationSpec = tween(durationMillis = 200),
         label = "ChipBackgroundColor"

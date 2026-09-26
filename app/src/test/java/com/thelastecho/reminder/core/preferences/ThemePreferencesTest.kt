@@ -44,17 +44,3 @@ class AccentSeedResolutionTest {
         org.junit.Assert.assertEquals(0xFF6750A4.toInt(), resolveAccentSeedArgb(AccentColor.VIOLET, null, true))
     }
 }
-
-
-class ThemeStyleTest {
-    @Test
-    fun existingAndNewPreferencesDefaultToMaterialStyle() {
-        assertEquals(ThemeStyle.MATERIAL, AppThemeSettings().themeStyle)
-        assertEquals(ThemeStyle.MATERIAL, parseThemeStyle(null))
-    }
-
-    @Test
-    fun invalidStoredStyleFallsBackToMaterial() {
-        assertEquals(ThemeStyle.MATERIAL, parseThemeStyle("UNKNOWN"))
-    }
-}

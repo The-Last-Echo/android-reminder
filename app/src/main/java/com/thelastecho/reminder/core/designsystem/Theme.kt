@@ -9,11 +9,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import com.thelastecho.reminder.core.preferences.AccentColor
-import com.thelastecho.reminder.core.preferences.ThemeStyle
 import com.thelastecho.reminder.core.preferences.resolveAccentSeedArgb
 
 private val LightColorScheme = lightColorScheme(
@@ -74,7 +72,6 @@ fun ReminderTheme(
     accentColor: AccentColor = AccentColor.VIOLET,
     customAccentColor: Int? = null,
     useCustomAccent: Boolean = false,
-    themeStyle: ThemeStyle = ThemeStyle.MATERIAL,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -93,7 +90,5 @@ fun ReminderTheme(
         surfaceVariant = AmoledSurfaceVariant
     ) else accentScheme
 
-    CompositionLocalProvider(LocalThemeStyle provides themeStyle) {
-        MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
-    }
+    MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)
 }
