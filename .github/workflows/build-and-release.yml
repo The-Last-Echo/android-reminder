@@ -165,6 +165,7 @@ jobs:
           body_path: changelog.md
           files: |
             release-assets/reminder-v${{ env.APP_VERSION }}-online.apk
+            release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk
             release-assets/reminder-v${{ env.APP_VERSION }}-online-debug.apk
           draft: false
           prerelease: false
