@@ -196,6 +196,12 @@
     <string name="unknown">Desconocido</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">Notificaciones de la aplicación</string>
+    <string name="notifications_permission_granted">Las notificaciones están permitidas en este dispositivo.</string>
+    <string name="notifications_permission_blocked">Las notificaciones están bloqueadas en los ajustes de Android.</string>
+    <string name="exact_alarm_access_label">Permiso para alarmas exactas</string>
+    <string name="exact_alarm_access_granted">Las alarmas exactas están permitidas.</string>
+    <string name="exact_alarm_access_not_granted">Las alarmas exactas no están disponibles; los recordatorios pueden retrasarse.</string>
 <string name="full_screen_access_label">Acceso a pantalla completa</string>
     <string name="full_screen_access_granted">Concedido</string>
     <string name="full_screen_access_not_granted">No concedido</string>

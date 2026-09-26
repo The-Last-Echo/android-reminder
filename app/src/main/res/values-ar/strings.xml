@@ -196,6 +196,12 @@
     <string name="unknown">غير معروف</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">إشعارات التطبيق</string>
+    <string name="notifications_permission_granted">الإشعارات مسموح بها على هذا الجهاز.</string>
+    <string name="notifications_permission_blocked">الإشعارات محظورة في إعدادات Android.</string>
+    <string name="exact_alarm_access_label">إذن المنبهات الدقيقة</string>
+    <string name="exact_alarm_access_granted">المنبهات الدقيقة مسموح بها.</string>
+    <string name="exact_alarm_access_not_granted">المنبهات الدقيقة غير متاحة؛ قد تتأخر التذكيرات.</string>
 <string name="full_screen_access_label">إذن عرض الإشعار بملء الشاشة</string>
     <string name="full_screen_access_granted">ممنوح</string>
     <string name="full_screen_access_not_granted">غير ممنوح</string>

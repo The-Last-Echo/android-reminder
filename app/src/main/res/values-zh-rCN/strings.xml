@@ -196,6 +196,12 @@
     <string name="unknown">未知</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">应用通知</string>
+    <string name="notifications_permission_granted">此设备已允许通知。</string>
+    <string name="notifications_permission_blocked">通知已在 Android 设置中被拦截。</string>
+    <string name="exact_alarm_access_label">精确闹钟权限</string>
+    <string name="exact_alarm_access_granted">已允许使用精确闹钟。</string>
+    <string name="exact_alarm_access_not_granted">无法使用精确闹钟，提醒可能会延迟。</string>
 <string name="full_screen_access_label">全屏意图访问权限</string>
     <string name="full_screen_access_granted">已授权</string>
     <string name="full_screen_access_not_granted">未授权</string>

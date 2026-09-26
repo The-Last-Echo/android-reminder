@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -40,28 +42,40 @@ fun PrivacyScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier) {
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Card(
-                shape = ReminderShapes.Card,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-            ) {
-                Column(
-                    Modifier.fillMaxWidth().padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                        Icon(Icons.Outlined.Security, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Text(
-                            stringResource(com.thelastecho.reminder.R.string.privacy_local_data),
-                            modifier = Modifier.padding(start = 12.dp).weight(1f),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Text(stringResource(com.thelastecho.reminder.R.string.privacy_update_network), style = MaterialTheme.typography.bodyMedium)
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Text(stringResource(com.thelastecho.reminder.R.string.privacy_photos_and_backup), style = MaterialTheme.typography.bodyMedium)
-                }
-            }
+            PrivacyInfoCard(
+                icon = Icons.Outlined.Security,
+                text = stringResource(com.thelastecho.reminder.R.string.privacy_local_data)
+            )
+            PrivacyInfoCard(
+                icon = Icons.Outlined.Update,
+                text = stringResource(com.thelastecho.reminder.R.string.privacy_update_network)
+            )
+            PrivacyInfoCard(
+                icon = Icons.Outlined.PhotoCamera,
+                text = stringResource(com.thelastecho.reminder.R.string.privacy_photos_and_backup)
+            )
+        }
+    }
+}
+
+
+@Composable
+private fun PrivacyInfoCard(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String) {
+    Card(
+        shape = ReminderShapes.Card,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            verticalAlignment = androidx.compose.ui.Alignment.Top
+        ) {
+            Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Text(
+                text,
+                modifier = Modifier.padding(start = 16.dp).weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface
+            )
         }
     }
 }

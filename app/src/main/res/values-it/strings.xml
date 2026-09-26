@@ -196,6 +196,12 @@
     <string name="unknown">Sconosciuto</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">Notifiche dell’app</string>
+    <string name="notifications_permission_granted">Le notifiche sono consentite su questo dispositivo.</string>
+    <string name="notifications_permission_blocked">Le notifiche sono bloccate nelle impostazioni Android.</string>
+    <string name="exact_alarm_access_label">Accesso alle sveglie precise</string>
+    <string name="exact_alarm_access_granted">Le sveglie precise sono consentite.</string>
+    <string name="exact_alarm_access_not_granted">Le sveglie precise non sono disponibili; i promemoria potrebbero essere in ritardo.</string>
 <string name="full_screen_access_label">Accesso a schermo intero</string>
     <string name="full_screen_access_granted">Concesso</string>
     <string name="full_screen_access_not_granted">Non concesso</string>

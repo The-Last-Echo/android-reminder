@@ -31,10 +31,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.Alarm
+import androidx.compose.material.icons.outlined.Backup
 import androidx.compose.material.icons.outlined.Category
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.NotificationsActive
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -78,6 +83,8 @@ import kotlin.math.atan2
 import kotlin.math.min
 import kotlin.math.sqrt
 import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationManagerCompat
+import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -140,7 +147,15 @@ private fun SettingRow(
             Text(title, style = MaterialTheme.typography.bodyLarge)
             if (description != null) Text(description, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        trailing?.invoke()
+        if (trailing != null) {
+            trailing()
+        } else if (onClick != null) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -329,10 +344,13 @@ fun RemindersSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> 
                 onClick = onNavigateToCategories,
                 leading = { Icon(Icons.Outlined.Category, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
+        }
+        SettingsCard {
             SettingRow(
                 title = stringResource(R.string.completed_retention),
                 description = retentionText,
-                onClick = { showRetentionDialog = true }
+                onClick = { showRetentionDialog = true },
+                leading = { Icon(Icons.Outlined.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
         }
     }
@@ -341,7 +359,7 @@ fun RemindersSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> 
             onDismissRequest = { showRetentionDialog = false },
             title = { Text(stringResource(R.string.completed_retention)) },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     listOf(0, 1, 7, 30, 90).forEach { days ->
                         val label = when (days) {
                             0 -> stringResource(R.string.retention_never)
@@ -350,9 +368,9 @@ fun RemindersSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> 
                             30 -> stringResource(R.string.retention_30_days)
                             else -> stringResource(R.string.retention_90_days)
                         }
-                        Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetCompletedRetention(days)); showRetentionDialog = false }.padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetCompletedRetention(days)); showRetentionDialog = false }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                             RadioButton(selected = state.completedReminderRetentionDays == days, onClick = { viewModel.onIntent(SettingsIntent.SetCompletedRetention(days)); showRetentionDialog = false })
-                            Text(label)
+                            Text(label, modifier = Modifier.padding(start = 8.dp))
                         }
                     }
                     OutlinedTextField(value = customRetention, onValueChange = { customRetention = it.filter(Char::isDigit).take(4) }, label = { Text(stringResource(R.string.custom_duration)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), singleLine = true)
@@ -369,11 +387,13 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
     var showStyleDialog by remember { mutableStateOf(false) }
-    var hasFullScreenAccess by remember(context) {
-        mutableStateOf(Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent())
-    }
-    val fullScreenLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        hasFullScreenAccess = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+    var hasNotificationAccess by remember(context) { mutableStateOf(readNotificationAccess(context)) }
+    var hasExactAlarmAccess by remember(context) { mutableStateOf(AndroidAlarmScheduler(context).canScheduleExactAlarms()) }
+    var hasFullScreenAccess by remember(context) { mutableStateOf(readFullScreenAccess(context)) }
+    val systemSettingsLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        hasNotificationAccess = readNotificationAccess(context)
+        hasExactAlarmAccess = AndroidAlarmScheduler(context).canScheduleExactAlarms()
+        hasFullScreenAccess = readFullScreenAccess(context)
     }
     val ringtonePicker = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
@@ -382,6 +402,7 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
         }
     }
     SettingsGroupScaffold(R.string.settings_group_notifications_title, onNavigateBack) {
+        SectionHeading(stringResource(R.string.notification_style))
         SettingsCard {
             SettingRow(
                 title = stringResource(R.string.notification_style),
@@ -392,8 +413,17 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
                     NotificationStyle.NONE -> R.string.notification_none_name
                 }),
                 onClick = { showStyleDialog = true },
-                leading = { Icon(Icons.Outlined.Notifications, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+                leading = { Icon(Icons.Outlined.NotificationsActive, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
+            SettingRow(
+                title = stringResource(R.string.notifications_permission_title),
+                description = stringResource(if (hasNotificationAccess) R.string.notifications_permission_granted else R.string.notifications_permission_blocked),
+                onClick = { runCatching { systemSettingsLauncher.launch(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)) } }
+            )
+        }
+
+        SectionHeading(stringResource(R.string.choose_alarm_sound))
+        SettingsCard {
             SettingRow(
                 title = stringResource(R.string.choose_alarm_sound),
                 description = stringResource(if (state.alarmSoundUri == null) R.string.system_default else R.string.selected),
@@ -405,30 +435,34 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
                         putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, state.alarmSoundUri?.let(Uri::parse))
                     }
                     ringtonePicker.launch(intent)
-                }
+                },
+                leading = { Icon(Icons.Outlined.Alarm, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-        }
-        DeveloperNotificationDiagnostics()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            SettingsCard {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                SettingRow(
+                    title = stringResource(R.string.exact_alarm_access_label),
+                    description = stringResource(if (hasExactAlarmAccess) R.string.exact_alarm_access_granted else R.string.exact_alarm_access_not_granted),
+                    onClick = { runCatching { systemSettingsLauncher.launch(Intent(AndroidSettings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:${context.packageName}"))) } }
+                )
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                 SettingRow(
                     title = stringResource(R.string.full_screen_access_label),
-                    description = stringResource(if (hasFullScreenAccess) R.string.full_screen_access_granted else R.string.full_screen_access_not_granted)
+                    description = stringResource(if (hasFullScreenAccess) R.string.full_screen_access_granted else R.string.full_screen_access_not_granted),
+                    onClick = { runCatching { systemSettingsLauncher.launch(fullScreenIntentSettingsIntent(context)) } }
                 )
-                Text(stringResource(R.string.full_screen_fallback_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                TextButton(onClick = { runCatching { fullScreenLauncher.launch(fullScreenIntentSettingsIntent(context)) } }) { Text(stringResource(R.string.full_screen_settings)) }
+                Text(stringResource(R.string.full_screen_fallback_details), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 56.dp, end = 8.dp, bottom = 12.dp))
             }
         }
-        if (Build.VERSION.SDK_INT >= 33 && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            TextButton(onClick = { runCatching { context.startActivity(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)) } }) { Text(stringResource(R.string.open_notification_settings)) }
-        }
+
+        DeveloperNotificationDiagnostics()
     }
     if (showStyleDialog) {
         AlertDialog(
             onDismissRequest = { showStyleDialog = false },
             title = { Text(stringResource(R.string.choose_notification_style)) },
             text = {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     NotificationStyle.entries.forEach { style ->
                         val labelRes = when (style) {
                             NotificationStyle.SIMPLE -> R.string.simple_notification
@@ -449,12 +483,31 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
     }
 }
 
+private fun readNotificationAccess(context: android.content.Context): Boolean =
+    (Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
+        NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+private fun readFullScreenAccess(context: android.content.Context): Boolean =
+    Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+
 @Composable
 fun DataSettingsScreen(onNavigateBack: () -> Unit, onNavigateToBackup: () -> Unit, onNavigateToTrash: () -> Unit) {
     SettingsGroupScaffold(R.string.settings_group_data_title, onNavigateBack) {
         SettingsCard {
-            SettingRow(title = stringResource(R.string.backup_restore), description = stringResource(R.string.backup_description), onClick = onNavigateToBackup)
-            SettingRow(title = stringResource(R.string.trash), description = stringResource(R.string.view_restore_deleted), onClick = onNavigateToTrash)
+            SettingRow(
+                title = stringResource(R.string.backup_restore),
+                description = stringResource(R.string.backup_description),
+                onClick = onNavigateToBackup,
+                leading = { Icon(Icons.Outlined.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+        }
+        SettingsCard {
+            SettingRow(
+                title = stringResource(R.string.trash),
+                description = stringResource(R.string.view_restore_deleted),
+                onClick = onNavigateToTrash,
+                leading = { Icon(Icons.Outlined.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
         }
     }
 }

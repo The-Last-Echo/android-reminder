@@ -86,7 +86,7 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
     }) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
 
@@ -94,7 +94,7 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                     Text(stringResource(com.thelastecho.reminder.R.string.backup_description), style = MaterialTheme.typography.bodyLarge)
                     Button(enabled = !busy, onClick = { export.launch("Reminder-backup.json") }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(com.thelastecho.reminder.R.string.export_backup))
@@ -107,7 +107,7 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ReminderBackupRepository.RestoreMode.entries.forEach { mode ->
                         val label = if (mode == ReminderBackupRepository.RestoreMode.MERGE) {
                             stringResource(com.thelastecho.reminder.R.string.merge_backup)

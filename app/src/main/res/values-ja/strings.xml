@@ -196,6 +196,12 @@
     <string name="unknown">不明</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">アプリの通知</string>
+    <string name="notifications_permission_granted">この端末では通知が許可されています。</string>
+    <string name="notifications_permission_blocked">Android の設定で通知がブロックされています。</string>
+    <string name="exact_alarm_access_label">正確なアラームへのアクセス</string>
+    <string name="exact_alarm_access_granted">正確なアラームが許可されています。</string>
+    <string name="exact_alarm_access_not_granted">正確なアラームは許可されていません。リマインダーが遅れる場合があります。</string>
 <string name="full_screen_access_label">全画面インテントへのアクセス</string>
     <string name="full_screen_access_granted">許可されています</string>
     <string name="full_screen_access_not_granted">許可されていません</string>

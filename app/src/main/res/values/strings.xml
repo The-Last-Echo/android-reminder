@@ -212,6 +212,12 @@
     <string name="unknown">Unknown</string>
 
     <!-- Notification diagnostics -->
+    <string name="notifications_permission_title">App notifications</string>
+    <string name="notifications_permission_granted">Notifications are allowed on this device.</string>
+    <string name="notifications_permission_blocked">Notifications are blocked in Android settings.</string>
+    <string name="exact_alarm_access_label">Exact alarm access</string>
+    <string name="exact_alarm_access_granted">Exact alarms are allowed.</string>
+    <string name="exact_alarm_access_not_granted">Exact alarms are unavailable; reminders may be delayed.</string>
 <string name="full_screen_access_label">Full-screen intent access</string>
     <string name="full_screen_access_granted">Granted</string>
     <string name="full_screen_access_not_granted">Not granted</string>

@@ -7,9 +7,12 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -26,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.notification.NotificationDiagnostics
 import com.thelastecho.reminder.core.notification.NotificationDiagnosticsSnapshot
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.presentation.components.SectionHeading
 
 @Composable
@@ -36,10 +40,18 @@ internal fun DeveloperNotificationDiagnostics() {
         snapshot = NotificationDiagnostics.read(context)
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        SectionHeading(stringResource(R.string.developer_tools))
-        TextButton(onClick = { snapshot = NotificationDiagnostics.read(context) }) {
-            Text(stringResource(R.string.notification_diagnostics))
+    Card(
+        shape = ReminderShapes.Card,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(stringResource(R.string.developer_tools), style = MaterialTheme.typography.titleSmall)
+            TextButton(onClick = { snapshot = NotificationDiagnostics.read(context) }) {
+                Text(stringResource(R.string.notification_diagnostics))
+            }
         }
     }
 
