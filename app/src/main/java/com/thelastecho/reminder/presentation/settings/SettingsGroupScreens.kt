@@ -47,6 +47,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -344,8 +345,6 @@ fun RemindersSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> 
                 onClick = onNavigateToCategories,
                 leading = { Icon(Icons.Outlined.Category, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-        }
-        SettingsCard {
             SettingRow(
                 title = stringResource(R.string.completed_retention),
                 description = retentionText,
@@ -402,8 +401,8 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
         }
     }
     SettingsGroupScaffold(R.string.settings_group_notifications_title, onNavigateBack) {
-        SectionHeading(stringResource(R.string.notification_style))
         SettingsCard {
+            Text(stringResource(R.string.notification_style), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 4.dp))
             SettingRow(
                 title = stringResource(R.string.notification_style),
                 description = stringResource(when (state.notificationStyle) {
@@ -420,10 +419,8 @@ fun NotificationsAlarmsSettingsScreen(viewModel: SettingsViewModel, onNavigateBa
                 description = stringResource(if (hasNotificationAccess) R.string.notifications_permission_granted else R.string.notifications_permission_blocked),
                 onClick = { runCatching { systemSettingsLauncher.launch(Intent(AndroidSettings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(AndroidSettings.EXTRA_APP_PACKAGE, context.packageName)) } }
             )
-        }
-
-        SectionHeading(stringResource(R.string.choose_alarm_sound))
-        SettingsCard {
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+            Text(stringResource(R.string.choose_alarm_sound), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(start = 8.dp, top = 4.dp, bottom = 4.dp))
             SettingRow(
                 title = stringResource(R.string.choose_alarm_sound),
                 description = stringResource(if (state.alarmSoundUri == null) R.string.system_default else R.string.selected),
@@ -500,8 +497,6 @@ fun DataSettingsScreen(onNavigateBack: () -> Unit, onNavigateToBackup: () -> Uni
                 onClick = onNavigateToBackup,
                 leading = { Icon(Icons.Outlined.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-        }
-        SettingsCard {
             SettingRow(
                 title = stringResource(R.string.trash),
                 description = stringResource(R.string.view_restore_deleted),

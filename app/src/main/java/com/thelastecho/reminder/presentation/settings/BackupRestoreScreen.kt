@@ -18,6 +18,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,7 +42,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
-import com.thelastecho.reminder.presentation.components.SectionHeading
 import com.thelastecho.reminder.data.backup.ReminderBackupRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
@@ -94,20 +94,13 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
                 shape = ReminderShapes.Card,
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
             ) {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text(stringResource(com.thelastecho.reminder.R.string.backup_description), style = MaterialTheme.typography.bodyLarge)
                     Button(enabled = !busy, onClick = { export.launch("Reminder-backup.json") }, modifier = Modifier.fillMaxWidth()) {
                         Text(stringResource(com.thelastecho.reminder.R.string.export_backup))
                     }
-                }
-            }
-
-            SectionHeading(stringResource(com.thelastecho.reminder.R.string.restore_mode))
-            Card(
-                shape = ReminderShapes.Card,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
-            ) {
-                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                    Text(stringResource(com.thelastecho.reminder.R.string.restore_mode), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                     ReminderBackupRepository.RestoreMode.entries.forEach { mode ->
                         val label = if (mode == ReminderBackupRepository.RestoreMode.MERGE) {
                             stringResource(com.thelastecho.reminder.R.string.merge_backup)
@@ -119,7 +112,7 @@ fun BackupRestoreScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifie
                             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
                             RadioButton(selected = mode == restoreMode, onClick = { restoreMode = mode })
-                            Text(label)
+                            Text(label, modifier = Modifier.padding(start = 8.dp))
                         }
                     }
                     Text(

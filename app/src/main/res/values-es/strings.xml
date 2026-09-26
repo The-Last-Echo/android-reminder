@@ -167,6 +167,7 @@
     <string name="latest_release">Última versión: %1$s</string>
     <string name="open_release">Abrir página de la versión</string>
     <string name="category_icon">Icono de categoría</string>
+    <string name="more_options">Más opciones</string>
     <string name="edit_category">Editar categoría</string>
     <string name="widget_today_description">Widget de recordatorios de hoy</string>
     <string name="widget_upcoming_description">Widget de próximos recordatorios</string>

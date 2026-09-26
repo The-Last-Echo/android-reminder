@@ -167,6 +167,7 @@
     <string name="latest_release">最新版本：%1$s</string>
     <string name="open_release">打开版本页面</string>
     <string name="category_icon">类别图标</string>
+    <string name="more_options">更多选项</string>
     <string name="edit_category">编辑类别</string>
     <string name="widget_today_description">今日提醒小组件</string>
     <string name="widget_upcoming_description">即将到来的提醒小组件</string>

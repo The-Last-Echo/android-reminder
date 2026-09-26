@@ -60,6 +60,13 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -89,6 +96,14 @@ fun HomeScreen(
     var isSearchActive by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    var searchFieldBounds by remember { mutableStateOf<Rect?>(null) }
+    var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    fun closeSearch() {
+        isSearchActive = false
+        viewModel.onIntent(HomeIntent.UpdateSearch(""))
+        keyboardController?.hide()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collectLatest { effect ->
@@ -118,7 +133,22 @@ fun HomeScreen(
     val pullToRefreshState = rememberPullToRefreshState()
 
     Scaffold(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize()
+            .onGloballyPositioned { rootCoordinates = it }
+            .pointerInput(isSearchActive, searchFieldBounds) {
+                if (isSearchActive) {
+                    awaitPointerEventScope {
+                        while (isSearchActive) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val down = event.changes.firstOrNull { it.changedToDown() } ?: continue
+                            val positionInWindow = rootCoordinates?.localToWindow(down.position)
+                            if (positionInWindow != null && searchFieldBounds?.contains(positionInWindow) != true) {
+                                closeSearch()
+                            }
+                        }
+                    }
+                }
+            },
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -129,7 +159,9 @@ fun HomeScreen(
                             value = state.searchQuery,
                             onValueChange = { viewModel.onIntent(HomeIntent.UpdateSearch(it)) },
                             placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.search_reminders)) },
-                            modifier = Modifier.fillMaxWidth().focusRequester(searchFocusRequester),
+                            modifier = Modifier.fillMaxWidth()
+                                .focusRequester(searchFocusRequester)
+                                .onGloballyPositioned { searchFieldBounds = it.boundsInWindow() },
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color.Transparent,

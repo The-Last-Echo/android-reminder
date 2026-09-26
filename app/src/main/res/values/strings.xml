@@ -183,6 +183,7 @@
     <string name="latest_release">Latest release: %1$s</string>
     <string name="open_release">Open release page</string>
     <string name="category_icon">Category icon</string>
+    <string name="more_options">More options</string>
     <string name="edit_category">Edit category</string>
     <string name="widget_today_description">Today reminders widget</string>
     <string name="widget_upcoming_description">Upcoming reminders widget</string>

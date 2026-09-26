@@ -2,10 +2,14 @@ package com.thelastecho.reminder.presentation.navigation
 
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -90,7 +94,12 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
 
         composable(
             route = "editor?reminderId={reminderId}",
-            arguments = listOf(navArgument("reminderId") { type = NavType.LongType; defaultValue = -1L })
+            arguments = listOf(navArgument("reminderId") { type = NavType.LongType; defaultValue = -1L }),
+            enterTransition = {
+                fadeIn(tween(220, easing = FastOutSlowInEasing)) +
+                    scaleIn(initialScale = 0.96f, animationSpec = spring(dampingRatio = 0.88f, stiffness = Spring.StiffnessMediumLow))
+            },
+            exitTransition = { fadeOut(tween(150, easing = FastOutSlowInEasing)) + scaleOut(targetScale = 0.985f, animationSpec = tween(150)) }
         ) { backStackEntry ->
             val reminderIdArg = backStackEntry.arguments?.getLong("reminderId")
             val reminderId = if (reminderIdArg != null && reminderIdArg > 0) reminderIdArg else null
