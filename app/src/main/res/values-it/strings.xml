@@ -213,4 +213,19 @@
     <string name="settings_group_privacy_description">Come vengono archiviati e utilizzati i dati</string>
     <string name="settings_group_about_title">Informazioni</string>
     <string name="settings_group_about_description">Versione, aggiornamenti e informazioni sul progetto</string>
+    <string name="theme_mode_title">Modalità tema</string>
+    <string name="theme_mode_system">Sistema</string>
+    <string name="theme_mode_light">Chiaro</string>
+    <string name="theme_mode_dark">Scuro</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">Colore principale</string>
+    <string name="accent_color_description">Scegli un colore principale</string>
+    <string name="accent_color_dynamic_disabled">Il colore manuale non è disponibile quando i colori dinamici sono attivi.</string>
+    <string name="accent_blue">Blu</string>
+    <string name="accent_violet">Viola</string>
+    <string name="accent_green">Verde</string>
+    <string name="accent_teal">Verde acqua</string>
+    <string name="accent_orange">Arancione</string>
+    <string name="accent_red">Rosso</string>
+    <string name="accent_pink">Rosa</string>
 </resources>

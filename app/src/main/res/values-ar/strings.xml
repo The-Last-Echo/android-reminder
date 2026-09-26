@@ -213,4 +213,19 @@
     <string name="settings_group_privacy_description">كيفية تخزين بياناتك واستخدامها</string>
     <string name="settings_group_about_title">حول التطبيق</string>
     <string name="settings_group_about_description">الإصدار والتحديثات ومعلومات المشروع</string>
+    <string name="theme_mode_title">وضع السمة</string>
+    <string name="theme_mode_system">النظام</string>
+    <string name="theme_mode_light">فاتح</string>
+    <string name="theme_mode_dark">داكن</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">لون التمييز</string>
+    <string name="accent_color_description">اختر لون التمييز</string>
+    <string name="accent_color_dynamic_disabled">لا يتوفر لون التمييز اليدوي عند تفعيل الألوان الديناميكية.</string>
+    <string name="accent_blue">أزرق</string>
+    <string name="accent_violet">بنفسجي</string>
+    <string name="accent_green">أخضر</string>
+    <string name="accent_teal">فيروزي</string>
+    <string name="accent_orange">برتقالي</string>
+    <string name="accent_red">أحمر</string>
+    <string name="accent_pink">وردي</string>
 </resources>

@@ -213,4 +213,19 @@
     <string name="settings_group_privacy_description">データの保存方法と利用方法</string>
     <string name="settings_group_about_title">アプリについて</string>
     <string name="settings_group_about_description">バージョン、更新、プロジェクト情報</string>
+    <string name="theme_mode_title">テーマモード</string>
+    <string name="theme_mode_system">システム</string>
+    <string name="theme_mode_light">ライト</string>
+    <string name="theme_mode_dark">ダーク</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">アクセントカラー</string>
+    <string name="accent_color_description">アクセントカラーを選択</string>
+    <string name="accent_color_dynamic_disabled">ダイナミックカラーが有効な間、手動のアクセントカラーは使用できません。</string>
+    <string name="accent_blue">青</string>
+    <string name="accent_violet">紫</string>
+    <string name="accent_green">緑</string>
+    <string name="accent_teal">青緑</string>
+    <string name="accent_orange">オレンジ</string>
+    <string name="accent_red">赤</string>
+    <string name="accent_pink">ピンク</string>
 </resources>

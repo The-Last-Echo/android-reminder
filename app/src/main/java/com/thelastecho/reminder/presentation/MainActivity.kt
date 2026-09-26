@@ -20,7 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.map
 import com.thelastecho.reminder.core.designsystem.ReminderTheme
-import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.navigation.NavDestination
 import com.thelastecho.reminder.presentation.navigation.NavGraph
@@ -43,23 +43,24 @@ class MainActivity : ComponentActivity() {
                 .map { it as com.thelastecho.reminder.core.preferences.AppThemeSettings? }
                 .collectAsState(initial = null)
             val themeSettings = loadedThemeSettings ?: com.thelastecho.reminder.core.preferences.AppThemeSettings(
-                darkThemeConfig = if (isSystemInDarkTheme()) DarkThemeConfig.DARK else DarkThemeConfig.LIGHT
+                themeMode = ThemeMode.SYSTEM
             )
             androidx.compose.runtime.SideEffect { themeSettingsLoaded = loadedThemeSettings != null }
 
             // Request POST_NOTIFICATIONS runtime permission on Android 13+ (API 33+)
             RequestNotificationPermissionIfNeeded(userPreferences, loadedThemeSettings?.notificationPermissionAsked)
 
-            val isDark = when (themeSettings.darkThemeConfig) {
-                DarkThemeConfig.FOLLOW_SYSTEM -> isSystemInDarkTheme()
-                DarkThemeConfig.LIGHT -> false
-                DarkThemeConfig.DARK -> true
+            val isDark = when (themeSettings.themeMode) {
+                ThemeMode.SYSTEM -> isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK, ThemeMode.AMOLED -> true
             }
 
             ReminderTheme(
                 darkTheme = isDark,
-                isAmoledMode = themeSettings.isAmoledMode,
-                dynamicColor = themeSettings.useDynamicColors
+                isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
+                dynamicColor = themeSettings.useDynamicColors,
+                accentColor = themeSettings.accentColor
             ) {
                 val navController = rememberNavController()
 

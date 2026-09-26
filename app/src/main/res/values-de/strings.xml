@@ -213,4 +213,19 @@
     <string name="settings_group_privacy_description">Speicherung und Verwendung deiner Daten</string>
     <string name="settings_group_about_title">Über die App</string>
     <string name="settings_group_about_description">Version, Updates und Projektinformationen</string>
+    <string name="theme_mode_title">Designmodus</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Hell</string>
+    <string name="theme_mode_dark">Dunkel</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">Akzentfarbe</string>
+    <string name="accent_color_description">Akzentfarbe auswählen</string>
+    <string name="accent_color_dynamic_disabled">Bei aktivierten dynamischen Farben ist keine manuelle Akzentfarbe verfügbar.</string>
+    <string name="accent_blue">Blau</string>
+    <string name="accent_violet">Violett</string>
+    <string name="accent_green">Grün</string>
+    <string name="accent_teal">Türkis</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_red">Rot</string>
+    <string name="accent_pink">Rosa</string>
 </resources>

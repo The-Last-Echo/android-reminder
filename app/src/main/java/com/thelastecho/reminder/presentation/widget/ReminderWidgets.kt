@@ -26,7 +26,7 @@ import androidx.glance.unit.ColorProvider
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.thelastecho.reminder.R
-import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
@@ -43,12 +43,12 @@ private class ReminderListWidget(private val kind: ReminderWidgetKind) : GlanceA
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val rows = loadRows(context, kind)
         val preferences = UserPreferencesRepository(context).themeSettings.first()
-        val dark = when (preferences.darkThemeConfig) {
-            DarkThemeConfig.DARK -> true
-            DarkThemeConfig.LIGHT -> false
-            DarkThemeConfig.FOLLOW_SYSTEM -> (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val dark = when (preferences.themeMode) {
+            ThemeMode.DARK, ThemeMode.AMOLED -> true
+            ThemeMode.LIGHT -> false
+            ThemeMode.SYSTEM -> (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
         }
-        val backgroundColor = if (dark && preferences.isAmoledMode) androidx.compose.ui.graphics.Color.Black else if (dark) androidx.compose.ui.graphics.Color(0xFF202124) else androidx.compose.ui.graphics.Color(0xFFF5F5FA)
+        val backgroundColor = if (dark && preferences.themeMode == ThemeMode.AMOLED) androidx.compose.ui.graphics.Color.Black else if (dark) androidx.compose.ui.graphics.Color(0xFF202124) else androidx.compose.ui.graphics.Color(0xFFF5F5FA)
         val foregroundColor = if (dark) androidx.compose.ui.graphics.Color.White else androidx.compose.ui.graphics.Color(0xFF15151B)
         provideContent {
             Column(GlanceModifier.fillMaxSize().background(ColorProvider(backgroundColor)).padding(16.dp)) {

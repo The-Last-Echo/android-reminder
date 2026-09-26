@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -40,6 +41,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -52,9 +54,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -63,7 +70,8 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
-import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.core.preferences.AccentColor
+import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.data.local.UpdateCheckWorker
 import com.thelastecho.reminder.presentation.components.SectionHeading
@@ -170,23 +178,67 @@ fun GeneralSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Un
 fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     var showThemeDialog by remember { mutableStateOf(false) }
+    val modeLabel = when (state.themeMode) {
+        ThemeMode.SYSTEM -> R.string.theme_mode_system
+        ThemeMode.LIGHT -> R.string.theme_mode_light
+        ThemeMode.DARK -> R.string.theme_mode_dark
+        ThemeMode.AMOLED -> R.string.theme_mode_amoled
+    }
     SettingsGroupScaffold(R.string.settings_group_appearance_title, onNavigateBack) {
         SettingsCard {
             SettingRow(
-                title = stringResource(R.string.app_theme),
-                description = stringResource(when (state.darkThemeConfig) {
-                    DarkThemeConfig.FOLLOW_SYSTEM -> R.string.system_default
-                    DarkThemeConfig.LIGHT -> R.string.light
-                    DarkThemeConfig.DARK -> R.string.dark
-                }),
+                title = stringResource(R.string.theme_mode_title),
+                description = stringResource(modeLabel),
                 onClick = { showThemeDialog = true },
                 leading = { Icon(Icons.Outlined.DarkMode, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
-            SettingRow(
-                title = stringResource(R.string.amoled_pure_black),
-                description = stringResource(R.string.amoled_description),
-                trailing = { Switch(checked = state.isAmoledMode, onCheckedChange = { viewModel.onIntent(SettingsIntent.SetAmoledMode(it)) }) }
-            )
+            Column(Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Text(stringResource(R.string.accent_color_title), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    stringResource(if (state.useDynamicColors) R.string.accent_color_dynamic_disabled else R.string.accent_color_description),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    Modifier.fillMaxWidth().padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AccentColor.entries.forEach { accent ->
+                        val selected = state.accentColor == accent
+                        val swatch = when (accent) {
+                            AccentColor.BLUE -> Color(0xFF0061A4)
+                            AccentColor.VIOLET -> Color(0xFF6750A4)
+                            AccentColor.GREEN -> Color(0xFF386A20)
+                            AccentColor.TEAL -> Color(0xFF006A60)
+                            AccentColor.ORANGE -> Color(0xFF8A5000)
+                            AccentColor.RED -> Color(0xFFBA1A1A)
+                            AccentColor.PINK -> Color(0xFF9A406D)
+                        }
+                        val accentName = when (accent) {
+                            AccentColor.BLUE -> R.string.accent_blue
+                            AccentColor.VIOLET -> R.string.accent_violet
+                            AccentColor.GREEN -> R.string.accent_green
+                            AccentColor.TEAL -> R.string.accent_teal
+                            AccentColor.ORANGE -> R.string.accent_orange
+                            AccentColor.RED -> R.string.accent_red
+                            AccentColor.PINK -> R.string.accent_pink
+                        }
+                        val accentLabel = stringResource(accentName)
+                        Surface(
+                            modifier = Modifier.size(32.dp).selectable(
+                                selected = selected,
+                                enabled = !state.useDynamicColors,
+                                role = Role.RadioButton,
+                                onClick = { viewModel.onIntent(SettingsIntent.SetAccentColor(accent)) }
+                            ).semantics { contentDescription = accentLabel },
+                            shape = androidx.compose.foundation.shape.CircleShape,
+                            color = swatch.copy(alpha = if (state.useDynamicColors) 0.35f else 1f),
+                            border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = if (state.useDynamicColors) 0.5f else 1f)) else null
+                        ) {}
+                    }
+                }
+            }
             SettingRow(
                 title = stringResource(R.string.dynamic_colors),
                 description = stringResource(R.string.dynamic_colors_description),
@@ -198,18 +250,20 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
     if (showThemeDialog) {
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
-            title = { Text(stringResource(R.string.choose_theme)) },
+            title = { Text(stringResource(R.string.theme_mode_title)) },
             text = {
                 Column {
-                    DarkThemeConfig.entries.forEach { config ->
-                        Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetDarkThemeConfig(config)); showThemeDialog = false }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            RadioButton(selected = state.darkThemeConfig == config, onClick = { viewModel.onIntent(SettingsIntent.SetDarkThemeConfig(config)); showThemeDialog = false })
+                    ThemeMode.entries.forEach { mode ->
+                        val labelRes = when (mode) {
+                            ThemeMode.SYSTEM -> R.string.theme_mode_system
+                            ThemeMode.LIGHT -> R.string.theme_mode_light
+                            ThemeMode.DARK -> R.string.theme_mode_dark
+                            ThemeMode.AMOLED -> R.string.theme_mode_amoled
+                        }
+                        Row(Modifier.fillMaxWidth().clickable { viewModel.onIntent(SettingsIntent.SetThemeMode(mode)); showThemeDialog = false }.padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = state.themeMode == mode, onClick = { viewModel.onIntent(SettingsIntent.SetThemeMode(mode)); showThemeDialog = false })
                             Spacer(Modifier.width(8.dp))
-                            Text(stringResource(when (config) {
-                                DarkThemeConfig.FOLLOW_SYSTEM -> R.string.system_default
-                                DarkThemeConfig.LIGHT -> R.string.light
-                                DarkThemeConfig.DARK -> R.string.dark
-                            }))
+                            Text(stringResource(labelRes))
                         }
                     }
                 }

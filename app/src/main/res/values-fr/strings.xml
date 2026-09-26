@@ -229,4 +229,19 @@
     <string name="settings_group_privacy_description">Stockage et utilisation de vos données</string>
     <string name="settings_group_about_title">À propos</string>
     <string name="settings_group_about_description">Version, mises à jour et informations sur le projet</string>
+    <string name="theme_mode_title">Mode du thème</string>
+    <string name="theme_mode_system">Système</string>
+    <string name="theme_mode_light">Clair</string>
+    <string name="theme_mode_dark">Sombre</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">Couleur d’accent</string>
+    <string name="accent_color_description">Choisir une couleur d’accent</string>
+    <string name="accent_color_dynamic_disabled">La couleur manuelle est indisponible lorsque les couleurs dynamiques sont activées.</string>
+    <string name="accent_blue">Bleu</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Vert</string>
+    <string name="accent_teal">Sarcelle</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_red">Rouge</string>
+    <string name="accent_pink">Rose</string>
 </resources>

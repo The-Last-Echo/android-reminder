@@ -1,10 +1,11 @@
 package com.thelastecho.reminder.presentation.settings
 
-import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.core.preferences.AccentColor
+import com.thelastecho.reminder.core.preferences.ThemeMode
 
 data class SettingsUiState(
-    val darkThemeConfig: DarkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-    val isAmoledMode: Boolean = true,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val accentColor: AccentColor = AccentColor.VIOLET,
     val useDynamicColors: Boolean = true,
     val notificationStyle: com.thelastecho.reminder.core.preferences.NotificationStyle = com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP,
     val alarmSoundUri: String? = null,
@@ -17,8 +18,8 @@ data class SettingsUiState(
 )
 
 sealed interface SettingsIntent {
-    data class SetDarkThemeConfig(val config: DarkThemeConfig) : SettingsIntent
-    data class SetAmoledMode(val enabled: Boolean) : SettingsIntent
+    data class SetThemeMode(val mode: ThemeMode) : SettingsIntent
+    data class SetAccentColor(val color: AccentColor) : SettingsIntent
     data class SetDynamicColors(val enabled: Boolean) : SettingsIntent
     data class SetNotificationStyle(val style: com.thelastecho.reminder.core.preferences.NotificationStyle) : SettingsIntent
     data class SetAlarmSound(val uri: String?) : SettingsIntent

@@ -22,8 +22,8 @@ class SettingsViewModel(
         preferencesRepository.themeSettings.onEach { settings ->
             _uiState.update { current ->
                 current.copy(
-                    darkThemeConfig = settings.darkThemeConfig,
-                    isAmoledMode = settings.isAmoledMode,
+                    themeMode = settings.themeMode,
+                    accentColor = settings.accentColor,
                     useDynamicColors = settings.useDynamicColors,
                     notificationStyle = settings.notificationStyle,
                     alarmSoundUri = settings.alarmSoundUri,
@@ -41,12 +41,8 @@ class SettingsViewModel(
     fun onIntent(intent: SettingsIntent) {
         viewModelScope.launch {
             when (intent) {
-                is SettingsIntent.SetDarkThemeConfig -> {
-                    preferencesRepository.setDarkThemeConfig(intent.config)
-                }
-                is SettingsIntent.SetAmoledMode -> {
-                    preferencesRepository.setAmoledMode(intent.enabled)
-                }
+                is SettingsIntent.SetThemeMode -> preferencesRepository.setThemeMode(intent.mode)
+                is SettingsIntent.SetAccentColor -> preferencesRepository.setAccentColor(intent.color)
                 is SettingsIntent.SetDynamicColors -> {
                     preferencesRepository.setUseDynamicColors(intent.enabled)
                 }

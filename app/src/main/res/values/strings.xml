@@ -229,4 +229,19 @@
     <string name="settings_group_privacy_description">How your data is stored and used</string>
     <string name="settings_group_about_title">About</string>
     <string name="settings_group_about_description">Version, updates and project information</string>
+    <string name="theme_mode_title">Theme mode</string>
+    <string name="theme_mode_system">System</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="theme_mode_amoled">AMOLED</string>
+    <string name="accent_color_title">Accent color</string>
+    <string name="accent_color_description">Choose an accent color</string>
+    <string name="accent_color_dynamic_disabled">Manual accent is unavailable while dynamic colors are enabled.</string>
+    <string name="accent_blue">Blue</string>
+    <string name="accent_violet">Violet</string>
+    <string name="accent_green">Green</string>
+    <string name="accent_teal">Teal</string>
+    <string name="accent_orange">Orange</string>
+    <string name="accent_red">Red</string>
+    <string name="accent_pink">Pink</string>
 </resources>

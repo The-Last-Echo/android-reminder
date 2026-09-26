@@ -8,12 +8,13 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_settings")
 
 data class AppThemeSettings(
-    val darkThemeConfig: DarkThemeConfig = DarkThemeConfig.FOLLOW_SYSTEM,
-    val isAmoledMode: Boolean = true,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val accentColor: AccentColor = AccentColor.VIOLET,
     val useDynamicColors: Boolean = true,
     val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP,
     val alarmSoundUri: String? = null,
@@ -33,15 +34,11 @@ enum class NotificationStyle {
     NONE
 }
 
-enum class DarkThemeConfig {
-    FOLLOW_SYSTEM,
-    LIGHT,
-    DARK
-}
-
 class UserPreferencesRepository(private val context: Context) {
 
     private object PreferencesKeys {
+        val THEME_MODE = androidx.datastore.preferences.core.stringPreferencesKey("theme_mode")
+        val ACCENT_COLOR = androidx.datastore.preferences.core.stringPreferencesKey("accent_color")
         val DARK_THEME_CONFIG = androidx.datastore.preferences.core.stringPreferencesKey("dark_theme_config")
         val IS_AMOLED_MODE = booleanPreferencesKey("is_amoled_mode")
         val USE_DYNAMIC_COLORS = booleanPreferencesKey("use_dynamic_colors")
@@ -57,13 +54,14 @@ class UserPreferencesRepository(private val context: Context) {
     }
 
     val themeSettings: Flow<AppThemeSettings> = context.dataStore.data.map { preferences ->
-        val configStr = preferences[PreferencesKeys.DARK_THEME_CONFIG] ?: DarkThemeConfig.FOLLOW_SYSTEM.name
-        val config = try {
-            DarkThemeConfig.valueOf(configStr)
-        } catch (e: Exception) {
-            DarkThemeConfig.FOLLOW_SYSTEM
-        }
-        val isAmoled = preferences[PreferencesKeys.IS_AMOLED_MODE] ?: true
+        val mode = migrateThemeMode(
+            preferences[PreferencesKeys.THEME_MODE],
+            preferences[PreferencesKeys.DARK_THEME_CONFIG],
+            preferences[PreferencesKeys.IS_AMOLED_MODE] ?: true
+        )
+        val accent = runCatching {
+            AccentColor.valueOf(preferences[PreferencesKeys.ACCENT_COLOR] ?: AccentColor.VIOLET.name)
+        }.getOrDefault(AccentColor.VIOLET)
         val dynamicColors = preferences[PreferencesKeys.USE_DYNAMIC_COLORS] ?: true
         val notificationStyleStr = preferences[PreferencesKeys.NOTIFICATION_STYLE] ?: NotificationStyle.HEADS_UP.name
         val notificationStyle = try {
@@ -73,8 +71,8 @@ class UserPreferencesRepository(private val context: Context) {
         }
 
         AppThemeSettings(
-            darkThemeConfig = config,
-            isAmoledMode = isAmoled,
+            themeMode = mode,
+            accentColor = accent,
             useDynamicColors = dynamicColors,
             notificationStyle = notificationStyle,
             alarmSoundUri = preferences[PreferencesKeys.ALARM_SOUND_URI],
@@ -86,20 +84,23 @@ class UserPreferencesRepository(private val context: Context) {
             latestReleaseUrl = preferences[PreferencesKeys.LATEST_RELEASE_URL],
             notificationPermissionAsked = preferences[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] ?: false
         )
-    }
-
-    suspend fun setDarkThemeConfig(config: DarkThemeConfig) {
+    }.onEach { settings ->
         context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.DARK_THEME_CONFIG] = config.name
-            if (config == DarkThemeConfig.LIGHT) preferences[PreferencesKeys.IS_AMOLED_MODE] = false
+            if (PreferencesKeys.THEME_MODE !in preferences) {
+                preferences[PreferencesKeys.THEME_MODE] = settings.themeMode.name
+            }
+            if (PreferencesKeys.ACCENT_COLOR !in preferences) {
+                preferences[PreferencesKeys.ACCENT_COLOR] = AccentColor.VIOLET.name
+            }
         }
     }
 
-    suspend fun setAmoledMode(enabled: Boolean) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.IS_AMOLED_MODE] = enabled
-            if (enabled) preferences[PreferencesKeys.DARK_THEME_CONFIG] = DarkThemeConfig.DARK.name
-        }
+    suspend fun setThemeMode(mode: ThemeMode) {
+        context.dataStore.edit { it[PreferencesKeys.THEME_MODE] = mode.name }
+    }
+
+    suspend fun setAccentColor(color: AccentColor) {
+        context.dataStore.edit { it[PreferencesKeys.ACCENT_COLOR] = color.name }
     }
 
     suspend fun setUseDynamicColors(enabled: Boolean) {
@@ -118,8 +119,8 @@ class UserPreferencesRepository(private val context: Context) {
 
     suspend fun restoreReminderPreferences(settings: AppThemeSettings) {
         context.dataStore.edit { p ->
-            p[PreferencesKeys.DARK_THEME_CONFIG] = settings.darkThemeConfig.name
-            p[PreferencesKeys.IS_AMOLED_MODE] = settings.isAmoledMode && settings.darkThemeConfig != DarkThemeConfig.LIGHT
+            p[PreferencesKeys.THEME_MODE] = settings.themeMode.name
+            p[PreferencesKeys.ACCENT_COLOR] = settings.accentColor.name
             p[PreferencesKeys.USE_DYNAMIC_COLORS] = settings.useDynamicColors
             p[PreferencesKeys.NOTIFICATION_STYLE] = settings.notificationStyle.name
             if (settings.alarmSoundUri == null) p.remove(PreferencesKeys.ALARM_SOUND_URI) else p[PreferencesKeys.ALARM_SOUND_URI] = settings.alarmSoundUri

@@ -69,7 +69,7 @@ import com.thelastecho.reminder.core.notification.AlarmSoundService
 import com.thelastecho.reminder.core.notification.NotificationActionReceiver
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.preferences.AppThemeSettings
-import com.thelastecho.reminder.core.preferences.DarkThemeConfig
+import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
@@ -144,16 +144,17 @@ class ReminderFullScreenActivity : ComponentActivity() {
             val state by alarmViewModel.uiState.collectAsState()
             val preferences = remember { UserPreferencesRepository(applicationContext) }
             val themeSettings by preferences.themeSettings.collectAsState(initial = AppThemeSettings())
-            val darkTheme = when (themeSettings.darkThemeConfig) {
-                DarkThemeConfig.FOLLOW_SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
-                DarkThemeConfig.LIGHT -> false
-                DarkThemeConfig.DARK -> true
+            val darkTheme = when (themeSettings.themeMode) {
+                ThemeMode.SYSTEM -> androidx.compose.foundation.isSystemInDarkTheme()
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK, ThemeMode.AMOLED -> true
             }
 
             ReminderTheme(
                 darkTheme = darkTheme,
-                isAmoledMode = themeSettings.isAmoledMode,
-                dynamicColor = themeSettings.useDynamicColors
+                isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
+                dynamicColor = themeSettings.useDynamicColors,
+                accentColor = themeSettings.accentColor
             ) {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     ReminderAlarmContent(
