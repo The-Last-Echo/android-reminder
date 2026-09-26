@@ -69,6 +69,7 @@ import com.thelastecho.reminder.core.notification.AlarmSoundService
 import com.thelastecho.reminder.core.notification.NotificationActionReceiver
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.preferences.AppThemeSettings
+import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.local.ReminderDatabase
@@ -393,7 +394,7 @@ private fun SnoozeAlarmButton(
         enabled = enabled,
         onClick = { onIntent(ReminderAlarmIntent.Snooze) },
         modifier = modifier.heightIn(min = 76.dp),
-        shape = RoundedCornerShape(24.dp)
+        shape = ReminderShapes.AlarmAction
     ) {
         Text(
             text = stringResource(R.string.action_snooze),
@@ -415,7 +416,7 @@ private fun StopAlarmButton(
         enabled = enabled,
         onClick = { onIntent(ReminderAlarmIntent.Dismiss) },
         modifier = modifier.heightIn(min = 76.dp),
-        shape = RoundedCornerShape(24.dp),
+        shape = ReminderShapes.AlarmAction,
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.error,
             contentColor = MaterialTheme.colorScheme.onError

@@ -104,6 +104,7 @@
     <string name="about_details">Lizenziert unter GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">Papierkorb durchsuchen</string>
     <string name="trash_no_matches">Keine passenden Erinnerungen</string>
+    <string name="no_search_results">Keine passenden Erinnerungen</string>
     <string name="back">Zurück</string>
     <string name="deleted_at_date">Gelöscht: %1$s</string>
     <string name="days_until_deletion">Noch %1$d Tage bis zum endgültigen Löschen</string>

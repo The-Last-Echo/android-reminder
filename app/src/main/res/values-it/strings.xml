@@ -104,6 +104,7 @@
     <string name="about_details">Rilasciato con licenza GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">Cerca nel cestino</string>
     <string name="trash_no_matches">Nessun promemoria corrispondente</string>
+    <string name="no_search_results">Nessun promemoria corrispondente</string>
     <string name="back">Indietro</string>
     <string name="deleted_at_date">Eliminato: %1$s</string>
     <string name="days_until_deletion">%1$d giorni all’eliminazione definitiva</string>

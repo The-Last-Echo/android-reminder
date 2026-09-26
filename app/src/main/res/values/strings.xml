@@ -116,6 +116,7 @@
     <string name="about_details">Licensed under GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">Search trash</string>
     <string name="trash_no_matches">No matching reminders</string>
+    <string name="no_search_results">No matching reminders</string>
     <string name="back">Back</string>
     <string name="deleted_at_date">Deleted: %1$s</string>
     <string name="days_until_deletion">%1$d days until permanent deletion</string>

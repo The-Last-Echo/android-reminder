@@ -6,4 +6,8 @@ import androidx.compose.ui.unit.dp
 object ReminderShapes {
     val Card = RoundedCornerShape(16.dp)
     val Input = RoundedCornerShape(12.dp)
+    val Control = RoundedCornerShape(10.dp)
+    val Compact = RoundedCornerShape(8.dp)
+    val PriorityBadge = RoundedCornerShape(6.dp)
+    val AlarmAction = RoundedCornerShape(24.dp)
 }

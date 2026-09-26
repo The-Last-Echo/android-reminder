@@ -116,6 +116,7 @@
     <string name="about_details">Sous licence GNU GPLv3\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">Rechercher dans la corbeille</string>
     <string name="trash_no_matches">Aucun rappel correspondant</string>
+    <string name="no_search_results">Aucun rappel correspondant</string>
     <string name="back">Retour</string>
     <string name="deleted_at_date">Supprimé : %1$s</string>
     <string name="days_until_deletion">%1$d jours avant la suppression définitive</string>

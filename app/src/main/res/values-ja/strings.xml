@@ -104,6 +104,7 @@
     <string name="about_details">GNU GPLv3 ライセンス\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">ゴミ箱を検索</string>
     <string name="trash_no_matches">一致するリマインダーはありません</string>
+    <string name="no_search_results">一致するリマインダーはありません</string>
     <string name="back">戻る</string>
     <string name="deleted_at_date">削除日時：%1$s</string>
     <string name="days_until_deletion">完全削除まであと %1$d 日</string>

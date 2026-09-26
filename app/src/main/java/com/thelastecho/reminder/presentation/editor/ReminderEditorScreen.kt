@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -222,7 +221,7 @@ fun ReminderEditorScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     if (state.dueDateTimeEpochMillis == null) {
                         // Quick add date buttons
                         Row(
@@ -232,7 +231,7 @@ fun ReminderEditorScreen(
                             Button(
                                 onClick = { showDatePicker = true },
                                 modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = ReminderShapes.Control
                             ) {
                                 Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -254,7 +253,7 @@ fun ReminderEditorScreen(
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(ReminderShapes.Compact)
                                     .clickable { showDatePicker = true }
                                     .padding(8.dp)
                             ) {
@@ -266,7 +265,7 @@ fun ReminderEditorScreen(
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
+                                    .clip(ReminderShapes.Compact)
                                     .clickable { showTimePicker = true }
                                     .padding(8.dp)
                             ) {
@@ -296,7 +295,7 @@ fun ReminderEditorScreen(
                                 modifier = Modifier
                                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                                     .fillMaxWidth(),
-                                shape = RoundedCornerShape(10.dp)
+                                shape = ReminderShapes.Control
                             )
                             ExposedDropdownMenu(
                                 expanded = repeatDropdownExpanded,
@@ -349,7 +348,7 @@ fun ReminderEditorScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.padding(14.dp)) {
+                Column(modifier = Modifier.padding(16.dp)) {
                     state.subTasks.forEachIndexed { index, subTask ->
                         Row(
                             modifier = Modifier
@@ -394,7 +393,7 @@ fun ReminderEditorScreen(
                             placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.add_subtask)) },
                             modifier = Modifier.weight(1f),
                             singleLine = true,
-                            shape = RoundedCornerShape(8.dp)
+                            shape = ReminderShapes.Input
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
@@ -435,7 +434,7 @@ fun ReminderEditorScreen(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -461,7 +460,7 @@ fun ReminderEditorScreen(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                 )
                             },
-                            shape = RoundedCornerShape(8.dp)
+                            shape = ReminderShapes.Control
                         ) {
                             Text(stringResource(com.thelastecho.reminder.R.string.select))
                         }
@@ -473,7 +472,7 @@ fun ReminderEditorScreen(
                         bitmap = photoBitmap!!.asImageBitmap(),
                         contentDescription = stringResource(com.thelastecho.reminder.R.string.photo_attached),
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp).clip(RoundedCornerShape(10.dp))
+                        modifier = Modifier.fillMaxWidth().heightIn(max = 240.dp).clip(ReminderShapes.Control)
                     )
                 }
                 }

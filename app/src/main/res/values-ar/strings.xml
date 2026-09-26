@@ -104,6 +104,7 @@
     <string name="about_details">مرخّص بموجب GNU GPLv3\n⁦https://github.com/The-Last-Echo/android-reminder⁩</string>
     <string name="search_trash">البحث في سلة المهملات</string>
     <string name="trash_no_matches">لا توجد تذكيرات مطابقة</string>
+    <string name="no_search_results">لا توجد تذكيرات مطابقة</string>
     <string name="back">رجوع</string>
     <string name="deleted_at_date">تاريخ الحذف: %1$s</string>
     <string name="days_until_deletion">يتبقى %1$d يومًا على الحذف النهائي</string>

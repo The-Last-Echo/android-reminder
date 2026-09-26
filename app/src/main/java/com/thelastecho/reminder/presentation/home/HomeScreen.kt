@@ -257,7 +257,7 @@ fun HomeScreen(
                                     Spacer(modifier = Modifier.height(16.dp))
                                     Text(
                                         text = when {
-                                            state.searchQuery.isNotBlank() -> stringResource(R.string.trash_no_matches)
+                                            state.searchQuery.isNotBlank() -> stringResource(R.string.no_search_results)
                                             state.selectedFilter == ReminderFilter.COMPLETED -> stringResource(
                                                 R.string.no_completed_reminders)
                                             else -> stringResource(R.string.no_reminders_here)

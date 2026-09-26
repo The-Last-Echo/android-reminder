@@ -104,6 +104,7 @@
     <string name="about_details">基于 GNU GPLv3 许可\nhttps://github.com/The-Last-Echo/android-reminder</string>
     <string name="search_trash">搜索回收站</string>
     <string name="trash_no_matches">没有匹配的提醒</string>
+    <string name="no_search_results">没有匹配的提醒</string>
     <string name="back">返回</string>
     <string name="deleted_at_date">删除时间：%1$s</string>
     <string name="days_until_deletion">距离永久删除还有 %1$d 天</string>

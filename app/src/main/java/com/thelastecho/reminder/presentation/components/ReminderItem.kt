@@ -3,6 +3,9 @@ package com.thelastecho.reminder.presentation.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -136,7 +140,7 @@ fun ReminderItem(
                             Spacer(
                                 modifier = Modifier.size(8.dp).background(
                                     androidx.compose.ui.graphics.Color(category.colorArgb),
-                                    RoundedCornerShape(50)
+                                    CircleShape
                                 )
                             )
                             Spacer(modifier = Modifier.width(5.dp))
@@ -232,8 +236,8 @@ fun ReminderItem(
 
                 AnimatedVisibility(
                     visible = checklistExpanded && reminder.subTasks.isNotEmpty(),
-                    enter = fadeIn(),
-                    exit = fadeOut()
+                    enter = fadeIn(animationSpec = tween(150)) + expandVertically(animationSpec = tween(180)),
+                    exit = fadeOut(animationSpec = tween(100)) + shrinkVertically(animationSpec = tween(160))
                 ) {
                     Column(modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                         reminder.subTasks.sortedBy { it.orderIndex }.forEach { subTask ->
