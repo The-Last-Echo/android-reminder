@@ -99,6 +99,7 @@ class ReminderBackupRepository(
         val backedCategories = categories.map { it.id }.toSet()
         require(categories.all { it.id > 0 && it.name.isNotBlank() }) { "The backup contains an invalid category." }
         require(reminders.all { it.id > 0 && it.title.isNotBlank() }) { "The backup contains an invalid reminder." }
+        require(subtasks.all { it.id > 0 }) { "The backup contains an invalid subtask." }
         require(reminders.map { it.id }.distinct().size == reminders.size) { "The backup has duplicate reminder IDs." }
         require(categories.map { it.id }.distinct().size == categories.size) { "The backup has duplicate category IDs." }
         require(subtasks.all { task -> reminders.any { it.id == task.reminderId } }) { "The backup has a subtask without its reminder." }
