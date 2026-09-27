@@ -7,16 +7,23 @@ import com.thelastecho.reminder.core.distribution.DistributionFeaturesFactory
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.data.attachments.AttachmentStore
 import com.thelastecho.reminder.data.local.ReminderDatabase
+import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
+import com.thelastecho.reminder.presentation.widget.updateReminderWidgets
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.distinctUntilChangedBy
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 class ReminderApp : Application() {
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     lateinit var distributionFeatures: DistributionFeatures
         private set
@@ -33,20 +40,40 @@ class ReminderApp : Application() {
             PeriodicWorkRequestBuilder<com.thelastecho.reminder.data.local.TrashPurgeWorker>(1, TimeUnit.DAYS).build()
         )
         distributionFeatures.updateChecks.schedulePeriodic()
-        CoroutineScope(Dispatchers.IO).launch {
+        val database = ReminderDatabase.getInstance(this)
+        applicationScope.launch {
+            ReminderRepositoryImpl(database.reminderDao(), database.categoryDao())
+                .getActiveReminders()
+                .distinctUntilChanged()
+                .collect { updateReminderWidgets(this@ReminderApp) }
+        }
+        applicationScope.launch {
+            preferencesRepository.themeSettings
+                .distinctUntilChangedBy { settings ->
+                    listOf(
+                        settings.themeMode,
+                        settings.accentColor,
+                        settings.useDynamicColors,
+                        settings.customAccentColor,
+                        settings.useCustomAccent,
+                        settings.widgetBackgroundOpacity
+                    )
+                }
+                .collect { updateReminderWidgets(this@ReminderApp) }
+        }
+        applicationScope.launch {
             val now = System.currentTimeMillis()
-            val db = ReminderDatabase.getInstance(this@ReminderApp)
-            val attachmentMigration = AttachmentStore(this@ReminderApp).migrateLegacyReferences(db.reminderDao())
+            val attachmentMigration = AttachmentStore(this@ReminderApp).migrateLegacyReferences(database.reminderDao())
             preferencesRepository.setUnreadableLegacyAttachmentCount(attachmentMigration.unreadable)
             val settings = preferencesRepository.themeSettings.first()
             if (settings.completedReminderRetentionDays > 0) {
-                db.reminderDao().moveExpiredCompletedRemindersToTrash(
+                database.reminderDao().moveExpiredCompletedRemindersToTrash(
                     now - settings.completedReminderRetentionDays * 24L * 60 * 60 * 1000,
                     now,
                     now + 90L * 24 * 60 * 60 * 1000
                 )
             }
-            db.reminderDao().permanentlyDeleteExpiredReminders(now)
+            database.reminderDao().permanentlyDeleteExpiredReminders(now)
         }
     }
 }

@@ -13,6 +13,7 @@ sealed class NavDestination(val route: String) {
     data object SettingsAppearance : NavDestination("settings/appearance")
     data object SettingsReminders : NavDestination("settings/reminders")
     data object SettingsNotifications : NavDestination("settings/notifications")
+    data object SettingsWidgets : NavDestination("settings/widgets")
     data object SettingsData : NavDestination("settings/data")
     data object SettingsAbout : NavDestination("settings/about")
 

@@ -207,6 +207,13 @@
     <string name="widget_today_description">أداة تذكيرات اليوم</string>
     <string name="widget_upcoming_description">أداة التذكيرات القادمة</string>
     <string name="widget_compact_description">أداة تذكيرات مصغرة</string>
+    <string name="widget_add_reminder">إضافة</string>
+    <string name="settings_group_widgets_title">الأدوات</string>
+    <string name="settings_group_widgets_description">اضبط مظهر أدوات الشاشة الرئيسية.</string>
+    <string name="widget_theme_title">مظهر الأدوات</string>
+    <string name="widget_theme_follows_app">يتبع وضع التطبيق ولونه المميز وألوانه الديناميكية.</string>
+    <string name="widget_background_opacity">عتامة الخلفية</string>
+    <string name="widget_background_opacity_value">العتامة: %1$d%%</string>
 
     <string name="update_available">يتوفر إصدار أحدث</string>
     <string name="app_up_to_date">أنت تستخدم أحدث إصدار.</string>

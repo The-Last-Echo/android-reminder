@@ -225,6 +225,13 @@
     <string name="widget_today_description">Today reminders widget</string>
     <string name="widget_upcoming_description">Upcoming reminders widget</string>
     <string name="widget_compact_description">Compact reminders widget</string>
+    <string name="widget_add_reminder">Add</string>
+    <string name="settings_group_widgets_title">Widgets</string>
+    <string name="settings_group_widgets_description">Adjust how home screen widgets look.</string>
+    <string name="widget_theme_title">Widget theme</string>
+    <string name="widget_theme_follows_app">Follows the app’s mode, accent, and dynamic colors.</string>
+    <string name="widget_background_opacity">Background opacity</string>
+    <string name="widget_background_opacity_value">%1$d%% opacity</string>
 
     <string name="update_available">A newer version is available</string>
     <string name="app_up_to_date">You are using the latest version.</string>

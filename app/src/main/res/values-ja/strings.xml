@@ -207,6 +207,13 @@
     <string name="widget_today_description">今日のリマインダーウィジェット</string>
     <string name="widget_upcoming_description">今後のリマインダーウィジェット</string>
     <string name="widget_compact_description">コンパクトなリマインダーウィジェット</string>
+    <string name="widget_add_reminder">追加</string>
+    <string name="settings_group_widgets_title">ウィジェット</string>
+    <string name="settings_group_widgets_description">ホーム画面ウィジェットの表示を設定します。</string>
+    <string name="widget_theme_title">ウィジェットのテーマ</string>
+    <string name="widget_theme_follows_app">アプリのモード、アクセントカラー、ダイナミックカラーに従います。</string>
+    <string name="widget_background_opacity">背景の不透明度</string>
+    <string name="widget_background_opacity_value">不透明度 %1$d%%</string>
 
     <string name="update_available">新しいバージョンがあります</string>
     <string name="app_up_to_date">最新バージョンを使用しています。</string>

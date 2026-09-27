@@ -56,6 +56,7 @@ import com.thelastecho.reminder.presentation.settings.SettingsHomeScreen
 import com.thelastecho.reminder.presentation.settings.SettingsViewModel
 import com.thelastecho.reminder.presentation.settings.TrashScreen
 import com.thelastecho.reminder.presentation.settings.TrashViewModel
+import com.thelastecho.reminder.presentation.settings.WidgetSettingsScreen
 
 @Composable
 fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
@@ -135,6 +136,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                             SettingsGroup.APPEARANCE -> NavDestination.SettingsAppearance.route
                             SettingsGroup.REMINDERS -> NavDestination.SettingsReminders.route
                             SettingsGroup.NOTIFICATIONS -> NavDestination.SettingsNotifications.route
+                            SettingsGroup.WIDGETS -> NavDestination.SettingsWidgets.route
                             SettingsGroup.DATA -> NavDestination.SettingsData.route
                             SettingsGroup.PRIVACY -> NavDestination.Privacy.route
                             SettingsGroup.ABOUT -> NavDestination.SettingsAbout.route
@@ -167,6 +169,16 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 val factory = remember(graphEntry) { SettingsGraphViewModelFactory(preferencesRepository, repository) }
                 val viewModel: SettingsViewModel = viewModel(viewModelStoreOwner = graphEntry, key = "settings", factory = factory)
                 NotificationsAlarmsSettingsScreen(viewModel, onNavigateBack = { navController.popBackStack() })
+            }
+            composable(NavDestination.SettingsWidgets.route) { backStackEntry ->
+                val graphEntry = remember(backStackEntry) { navController.getBackStackEntry(NavDestination.SettingsGraph.route) }
+                val factory = remember(graphEntry) { SettingsGraphViewModelFactory(preferencesRepository, repository) }
+                val viewModel: SettingsViewModel = viewModel(viewModelStoreOwner = graphEntry, key = "settings", factory = factory)
+                WidgetSettingsScreen(
+                    viewModel = viewModel,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToAppearance = { navController.navigate(NavDestination.SettingsAppearance.route) }
+                )
             }
             composable(NavDestination.SettingsData.route) {
                 DataSettingsScreen(

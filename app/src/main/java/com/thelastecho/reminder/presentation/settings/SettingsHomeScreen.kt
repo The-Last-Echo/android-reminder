@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -99,6 +100,7 @@ enum class SettingsGroup(
     APPEARANCE(R.string.settings_group_appearance_title, R.string.settings_group_appearance_description, Icons.Outlined.ColorLens),
     REMINDERS(R.string.settings_group_reminders_title, R.string.settings_group_reminders_description, Icons.Outlined.Category),
     NOTIFICATIONS(R.string.settings_group_notifications_title, R.string.settings_group_notifications_description, Icons.Outlined.Notifications),
+    WIDGETS(R.string.settings_group_widgets_title, R.string.settings_group_widgets_description, Icons.Outlined.Widgets),
     DATA(R.string.settings_group_data_title, R.string.settings_group_data_description, Icons.Outlined.Delete),
     PRIVACY(R.string.settings_group_privacy_title, R.string.settings_group_privacy_description, Icons.Outlined.Security),
     ABOUT(R.string.settings_group_about_title, R.string.settings_group_about_description, Icons.Outlined.Info)

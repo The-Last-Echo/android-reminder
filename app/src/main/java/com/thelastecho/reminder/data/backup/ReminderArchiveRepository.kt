@@ -429,6 +429,7 @@ class ReminderArchiveRepository(
     private fun AppThemeSettings.toArchiveJson() = JSONObject()
         .put("themeMode", themeMode.name).put("accentColor", accentColor.name)
         .put("customAccentColor", customAccentColor ?: JSONObject.NULL).put("useCustomAccent", useCustomAccent)
+        .put("widgetBackgroundOpacity", widgetBackgroundOpacity)
         .put("dynamic", useDynamicColors).put("notificationStyle", notificationStyle.name)
         .put("alarmSound", alarmSoundUri ?: JSONObject.NULL)
         .put("completedRetentionDays", completedReminderRetentionDays).put("addButtonOnLeft", addButtonOnLeft)
@@ -461,6 +462,7 @@ class ReminderArchiveRepository(
         useDynamicColors = optBoolean("dynamic", true),
         customAccentColor = if (isNull("customAccentColor")) null else optInt("customAccentColor"),
         useCustomAccent = optBoolean("useCustomAccent", false),
+        widgetBackgroundOpacity = optInt("widgetBackgroundOpacity", 100).coerceIn(0, 100),
         notificationStyle = runCatching { NotificationStyle.valueOf(optString("notificationStyle", NotificationStyle.HEADS_UP.name)) }.getOrDefault(NotificationStyle.HEADS_UP),
         alarmSoundUri = nullableString("alarmSound"),
         completedReminderRetentionDays = optInt("completedRetentionDays").coerceIn(0, 3650),

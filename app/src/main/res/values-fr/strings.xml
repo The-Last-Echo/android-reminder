@@ -225,6 +225,13 @@
     <string name="widget_today_description">Widget des rappels du jour</string>
     <string name="widget_upcoming_description">Widget des rappels à venir</string>
     <string name="widget_compact_description">Widget compact de rappels</string>
+    <string name="widget_add_reminder">Ajouter</string>
+    <string name="settings_group_widgets_title">Widgets</string>
+    <string name="settings_group_widgets_description">Réglez l’apparence des widgets de l’écran d’accueil.</string>
+    <string name="widget_theme_title">Thème des widgets</string>
+    <string name="widget_theme_follows_app">Suit le mode, l’accent et les couleurs dynamiques de l’application.</string>
+    <string name="widget_background_opacity">Opacité du fond</string>
+    <string name="widget_background_opacity_value">Opacité : %1$d %%</string>
 
     <string name="update_available">Une nouvelle version est disponible</string>
     <string name="app_up_to_date">Vous utilisez la dernière version.</string>

@@ -207,6 +207,13 @@
     <string name="widget_today_description">Widget dei promemoria di oggi</string>
     <string name="widget_upcoming_description">Widget dei prossimi promemoria</string>
     <string name="widget_compact_description">Widget compatto dei promemoria</string>
+    <string name="widget_add_reminder">Aggiungi</string>
+    <string name="settings_group_widgets_title">Widget</string>
+    <string name="settings_group_widgets_description">Regola l’aspetto dei widget della schermata Home.</string>
+    <string name="widget_theme_title">Tema dei widget</string>
+    <string name="widget_theme_follows_app">Segue modalità, colore principale e colori dinamici dell’app.</string>
+    <string name="widget_background_opacity">Opacità dello sfondo</string>
+    <string name="widget_background_opacity_value">Opacità: %1$d %%</string>
 
     <string name="update_available">È disponibile una nuova versione</string>
     <string name="app_up_to_date">Stai usando la versione più recente.</string>

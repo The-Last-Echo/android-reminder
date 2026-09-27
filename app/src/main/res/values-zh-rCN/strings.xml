@@ -208,6 +208,13 @@
     <string name="widget_today_description">今日提醒小组件</string>
     <string name="widget_upcoming_description">即将到来的提醒小组件</string>
     <string name="widget_compact_description">紧凑提醒小组件</string>
+    <string name="widget_add_reminder">添加</string>
+    <string name="settings_group_widgets_title">小组件</string>
+    <string name="settings_group_widgets_description">调整主屏幕小组件的外观。</string>
+    <string name="widget_theme_title">小组件主题</string>
+    <string name="widget_theme_follows_app">跟随应用的模式、强调色和动态颜色设置。</string>
+    <string name="widget_background_opacity">背景不透明度</string>
+    <string name="widget_background_opacity_value">不透明度：%1$d%%</string>
 
     <string name="update_available">有新版本可用</string>
     <string name="app_up_to_date">你正在使用最新版本。</string>

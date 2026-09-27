@@ -37,6 +37,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val initialReminderId = intent.getLongExtra("reminder_id", -1L)
+        val openNewReminder = intent.getBooleanExtra("open_new_reminder", false)
 
         setContent {
             val userPreferences = remember { UserPreferencesRepository(applicationContext) }
@@ -68,8 +69,10 @@ class MainActivity : ComponentActivity() {
             ) {
                 val navController = rememberNavController()
 
-                LaunchedEffect(initialReminderId) {
-                    if (initialReminderId > 0) {
+                LaunchedEffect(initialReminderId, openNewReminder) {
+                    if (openNewReminder) {
+                        navController.navigate(NavDestination.Editor.createRoute())
+                    } else if (initialReminderId > 0) {
                         navController.navigate(NavDestination.Editor.createRoute(initialReminderId))
                     }
                 }

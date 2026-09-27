@@ -207,6 +207,13 @@
     <string name="widget_today_description">Widget de recordatorios de hoy</string>
     <string name="widget_upcoming_description">Widget de próximos recordatorios</string>
     <string name="widget_compact_description">Widget compacto de recordatorios</string>
+    <string name="widget_add_reminder">Añadir</string>
+    <string name="settings_group_widgets_title">Widgets</string>
+    <string name="settings_group_widgets_description">Ajusta el aspecto de los widgets de la pantalla de inicio.</string>
+    <string name="widget_theme_title">Tema de los widgets</string>
+    <string name="widget_theme_follows_app">Sigue el modo, el color de acento y los colores dinámicos de la aplicación.</string>
+    <string name="widget_background_opacity">Opacidad del fondo</string>
+    <string name="widget_background_opacity_value">Opacidad: %1$d %%</string>
 
     <string name="update_available">Hay una versión nueva disponible</string>
     <string name="app_up_to_date">Tienes la versión más reciente.</string>
