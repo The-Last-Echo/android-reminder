@@ -2,6 +2,7 @@
 <resources>
     <plurals name="retention_days">
         <item quantity="one">%d giorno</item>
+        <item quantity="many">%d giorni</item>
         <item quantity="other">%d giorni</item>
     </plurals>
 </resources>

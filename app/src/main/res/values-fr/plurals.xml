@@ -2,6 +2,7 @@
 <resources>
     <plurals name="retention_days">
         <item quantity="one">Après %d jour</item>
+        <item quantity="many">Après %d de jours</item>
         <item quantity="other">Après %d jours</item>
     </plurals>
 </resources>

@@ -2,6 +2,15 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.3 - 2026-09-27
+
+### Changed
+- Run Offline and Online Release unit tests for tag builds while retaining Debug tests for branches and pull requests.
+- Select the previous changelog tag by creator date and package release APKs only for tag builds.
+
+### Fixed
+- Add the missing `many` plural form for retention-day strings in Spanish, French, and Italian.
+
 ## 1.8.2 - 2026-09-27
 
 ### Added
