@@ -1,5 +1,6 @@
 package com.thelastecho.reminder.presentation.editor
 
+import android.graphics.Bitmap
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -66,9 +67,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -418,9 +419,11 @@ fun ReminderEditorScreen(
                 }
             }
 
-            val photoBitmap by produceState<android.graphics.Bitmap?>(initialValue = null, state.imageUri) {
-                value = state.imageUri?.let { uriString ->
-                    withContext(Dispatchers.IO) {
+            var photoBitmap by remember(state.imageUri) { mutableStateOf<Bitmap?>(null) }
+            LaunchedEffect(state.imageUri) {
+                val uriString = state.imageUri
+                if (!uriString.isNullOrBlank()) {
+                    photoBitmap = withContext(Dispatchers.IO) {
                         runCatching {
                             val uri = Uri.parse(uriString)
                             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
@@ -431,6 +434,8 @@ fun ReminderEditorScreen(
                             context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
                         }.getOrNull()
                     }
+                } else {
+                    photoBitmap = null
                 }
             }
 

@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.map
 import com.thelastecho.reminder.core.designsystem.ReminderTheme
+import com.thelastecho.reminder.core.preferences.AppThemeSettings
 import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.navigation.NavDestination
@@ -39,10 +40,10 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val userPreferences = remember { UserPreferencesRepository(applicationContext) }
-            val loadedThemeSettings by userPreferences.themeSettings
-                .map { it as com.thelastecho.reminder.core.preferences.AppThemeSettings? }
-                .collectAsState(initial = null)
-            val themeSettings = loadedThemeSettings ?: com.thelastecho.reminder.core.preferences.AppThemeSettings(
+            val loadedThemeSettings by remember(userPreferences) {
+                userPreferences.themeSettings.map { it as AppThemeSettings? }
+            }.collectAsState(initial = null)
+            val themeSettings = loadedThemeSettings ?: AppThemeSettings(
                 themeMode = ThemeMode.SYSTEM
             )
             androidx.compose.runtime.SideEffect { themeSettingsLoaded = loadedThemeSettings != null }

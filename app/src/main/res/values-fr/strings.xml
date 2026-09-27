@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Rappel</string>
-    <string name="channel_reminders_name">Rappels</string>
-    <string name="channel_reminders_desc">Notifications pour les rappels planifiés</string>
+
     <string name="action_complete">Terminer</string>
     <string name="action_snooze">Reporter 10 min</string>
     <string name="alarm_active">Alarme active</string>
@@ -11,7 +10,7 @@
     <!-- Home Screen -->
     <string name="reminders">Rappels</string>
     <string name="search_reminders">Rechercher des rappels…</string>
-    <string name="general">Général</string>
+
     <string name="settings">Paramètres</string>
     <string name="today">Aujourd\'hui</string>
     <string name="scheduled">Planifiés</string>
@@ -53,26 +52,17 @@
     <string name="categories">Catégories</string>
     <string name="manage_categories">Gérer les catégories</string>
     <string name="create_manage_categories">Créer et gérer des catégories personnalisées</string>
-    <string name="appearance">Apparence</string>
-    <string name="app_theme">Thème de l\'application</string>
+
     <string name="system_default">Par défaut du système</string>
-    <string name="light">Clair</string>
-    <string name="dark">Sombre</string>
-    <string name="amoled_pure_black">AMOLED Noir pur</string>
-    <string name="amoled_description">Utilise un arrière-plan #000000 en mode sombre pour un contraste maximal et des économies de batterie</string>
+
     <string name="dynamic_colors">Couleurs dynamiques</string>
     <string name="dynamic_colors_description">Adapte les couleurs au papier peint du système (Android 12+)</string>
-    <string name="data_management">Données et sauvegarde</string>
+
     <string name="trash">Corbeille</string>
     <string name="view_restore_deleted">Voir et restaurer les rappels supprimés</string>
-    <string name="notifications">Notifications</string>
+
     <string name="notification_style">Style de notification</string>
-    <string name="privacy_freedom">Confidentialité et sécurité</string>
-    <string name="foss_description">100% Libre &amp; Open Source (FOSS)</string>
-    <string name="foss_details">Les données des rappels sont stockées localement. Les vérifications facultatives contactent GitHub ; aucun rappel n’est envoyé.</string>
-    <string name="about">À propos</string>
-    <string name="licensed_under">Sous licence GNU GPLv3</string>
-    <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
+
 
     <!-- Categories Screen -->
     <string name="manage_categories_title">Gérer les catégories</string>
@@ -91,7 +81,7 @@
     <string name="trash_title">Corbeille</string>
     <string name="trash_empty">La corbeille est vide</string>
     <string name="trash_empty_details">Les rappels supprimés apparaîtront ici</string>
-    <string name="deleted">Supprimé</string>
+
     <string name="delete_forever">Supprimer définitivement</string>
     <string name="restore">Restaurer</string>
     <string name="empty_trash">Vider la corbeille</string>
@@ -105,7 +95,7 @@
     <string name="full_screen_notification">Plein écran - alerte urgente gérée par Android</string>
     <string name="heads_up_notification">Heads-up - Alerte en haut de l\'écran</string>
     <string name="choose_notification_style">Choisir le style de notification</string>
-    <string name="choose_theme">Choisir le thème</string>
+
     <string name="simple_style_name">Simple</string>
     <string name="full_screen_style_name">Plein écran</string>
     <string name="heads_up_style_name">Bannière</string>
@@ -144,7 +134,7 @@
     <string name="channel_priority_medium">Rappels de priorité moyenne</string>
     <string name="channel_priority_low">Rappels de faible priorité</string>
     <string name="channel_priority_none">Rappels sans priorité</string>
-    <string name="refresh">Actualiser les rappels</string>
+
     <string name="reminder_channel_name">%1$s · %2$s</string>
     <string name="subtasks_progress">%1$d/%2$d sous-tâches</string>
     <string name="choose_alarm_sound">Choisir le son de l’alarme</string>
@@ -160,7 +150,7 @@
     <string name="custom_duration">Durée personnalisée (jours)</string>
     <string name="notification_none_name">Désactivées</string>
     <string name="privacy_local_data">Les rappels et préférences sont stockés sur cet appareil. Les mises à jour contactent GitHub uniquement si cette option est activée.</string>
-    <string name="alarm_sound_channel_description">Alerte persistante pendant la lecture du son d’alarme</string>
+
     <string name="backup_restore">Sauvegarde et restauration</string>
     <string name="backup_description">Exportez les rappels, catégories, sous-tâches, préférences et photos dans un fichier JSON versionné.</string>
     <string name="export_backup">Exporter la sauvegarde</string>
@@ -188,7 +178,7 @@
     <string name="widget_today_description">Widget des rappels du jour</string>
     <string name="widget_upcoming_description">Widget des rappels à venir</string>
     <string name="widget_compact_description">Widget compact de rappels</string>
-    <string name="open_notification_settings">Ouvrir les paramètres de notification</string>
+
     <string name="update_available">Une nouvelle version est disponible</string>
     <string name="app_up_to_date">Vous utilisez la dernière version.</string>
     <string name="full_screen_fallback_details">Les alertes plein écran nécessitent une autorisation distincte dans les paramètres Android. Si elle est désactivée, Reminder utilise une notification prioritaire. Ouvrez les paramètres des notifications plein écran pour l’activer.</string>
@@ -202,7 +192,7 @@
     <string name="delete_subtask">Supprimer la sous-tâche</string>
     <string name="clear_date_time">Effacer la date et l’heure</string>
     <string name="full_screen_settings">Ouvrir les paramètres des notifications plein écran</string>
-    <string name="privacy">Confidentialité</string>
+
     <string name="privacy_update_network">La vérification des mises à jour est facultative. Si elle est activée ou lancée manuellement, l’application contacte GitHub pour lire les métadonnées des versions. Le contenu des rappels n’est pas inclus.</string>
     <string name="privacy_photos_and_backup">Les photos sont choisies avec le sélecteur Android. Les sauvegardes sont écrites uniquement à l’emplacement choisi dans le sélecteur de fichiers Android.</string>
     <string name="position_left">Gauche</string>

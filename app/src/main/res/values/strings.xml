@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Reminder</string>
-    <string name="channel_reminders_name">Reminders</string>
-    <string name="channel_reminders_desc">Notifications for scheduled reminders</string>
+
     <string name="action_complete">Complete</string>
     <string name="action_snooze">Snooze 10m</string>
     <string name="alarm_active">Alarm active</string>
@@ -11,7 +10,7 @@
     <!-- Home Screen -->
     <string name="reminders">Reminders</string>
     <string name="search_reminders">Search reminders…</string>
-    <string name="general">General</string>
+
     <string name="settings">Settings</string>
     <string name="today">Today</string>
     <string name="scheduled">Scheduled</string>
@@ -53,26 +52,17 @@
     <string name="categories">Categories</string>
     <string name="manage_categories">Manage Categories</string>
     <string name="create_manage_categories">Create and manage custom categories</string>
-    <string name="appearance">Appearance</string>
-    <string name="app_theme">App Theme</string>
+
     <string name="system_default">System default</string>
-    <string name="light">Light</string>
-    <string name="dark">Dark</string>
-    <string name="amoled_pure_black">AMOLED Pure Black</string>
-    <string name="amoled_description">Uses #000000 background in dark mode for maximum contrast and battery savings</string>
+
     <string name="dynamic_colors">Dynamic Colors</string>
     <string name="dynamic_colors_description">Adapt colors to system wallpaper (Android 12+)</string>
-    <string name="data_management">Data &amp; backup</string>
+
     <string name="trash">Trash</string>
     <string name="view_restore_deleted">View and restore deleted reminders</string>
-    <string name="notifications">Notifications</string>
+
     <string name="notification_style">Notification Style</string>
-    <string name="privacy_freedom">Privacy &amp; security</string>
-    <string name="foss_description">100% Free &amp; Open Source (FOSS)</string>
-    <string name="foss_details">Reminder data is stored locally. Optional update checks contact GitHub; reminders are not sent.</string>
-    <string name="about">About</string>
-    <string name="licensed_under">Licensed under GNU GPLv3</string>
-    <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
+
 
     <!-- Categories Screen -->
     <string name="manage_categories_title">Manage Categories</string>
@@ -91,7 +81,7 @@
     <string name="trash_title">Trash</string>
     <string name="trash_empty">Trash is empty</string>
     <string name="trash_empty_details">Deleted reminders will appear here</string>
-    <string name="deleted">Deleted</string>
+
     <string name="delete_forever">Delete Forever</string>
     <string name="restore">Restore</string>
     <string name="empty_trash">Empty Trash</string>
@@ -105,7 +95,7 @@
     <string name="full_screen_notification">Full screen - Android-managed urgent alert</string>
     <string name="heads_up_notification">Heads-up - Alert at top of screen</string>
     <string name="choose_notification_style">Choose notification style</string>
-    <string name="choose_theme">Choose theme</string>
+
     <string name="simple_style_name">Simple</string>
     <string name="full_screen_style_name">Full screen</string>
     <string name="heads_up_style_name">Heads-up</string>
@@ -144,7 +134,7 @@
     <string name="channel_priority_medium">Medium priority reminders</string>
     <string name="channel_priority_low">Low priority reminders</string>
     <string name="channel_priority_none">Unprioritized reminders</string>
-    <string name="refresh">Refresh reminders</string>
+
     <string name="reminder_channel_name">%1$s · %2$s</string>
     <string name="subtasks_progress">%1$d/%2$d subtasks</string>
     <string name="choose_alarm_sound">Choose alarm sound</string>
@@ -160,7 +150,7 @@
     <string name="custom_duration">Custom duration (days)</string>
     <string name="notification_none_name">Disabled</string>
     <string name="privacy_local_data">Reminders and preferences are stored on this device. Update checks contact GitHub only when enabled.</string>
-    <string name="alarm_sound_channel_description">Persistent reminder alert while the alarm sound is playing</string>
+
     <string name="backup_restore">Backup &amp; Restore</string>
     <string name="backup_description">Export reminders, categories, subtasks, preferences and attached photos to a versioned JSON file.</string>
     <string name="export_backup">Export backup</string>
@@ -188,7 +178,7 @@
     <string name="widget_today_description">Today reminders widget</string>
     <string name="widget_upcoming_description">Upcoming reminders widget</string>
     <string name="widget_compact_description">Compact reminders widget</string>
-    <string name="open_notification_settings">Open notification settings</string>
+
     <string name="update_available">A newer version is available</string>
     <string name="app_up_to_date">You are using the latest version.</string>
     <string name="full_screen_fallback_details">Full-screen alerts require separate access in Android settings. If access is off, Reminder uses a Heads-Up notification instead. Open full-screen notification settings to enable it.</string>
@@ -202,7 +192,7 @@
     <string name="delete_subtask">Remove subtask</string>
     <string name="clear_date_time">Clear date and time</string>
     <string name="full_screen_settings">Open full-screen notification settings</string>
-    <string name="privacy">Privacy</string>
+
     <string name="privacy_update_network">Automatic update checks are optional. When enabled or started manually, the app contacts GitHub to read release metadata. Reminder content is not included in that request.</string>
     <string name="privacy_photos_and_backup">Photos are selected with Android’s Photo Picker. Backups are written only to the destination you choose through Android’s file picker.</string>
     <string name="position_left">Left</string>

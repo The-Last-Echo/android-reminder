@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Reminder</string>
-    <string name="channel_reminders_name">Erinnerungen</string>
-    <string name="channel_reminders_desc">Benachrichtigungen für geplante Erinnerungen</string>
+
     <string name="action_complete">Erledigt</string>
     <string name="action_snooze">10 Min. verschieben</string>
     <string name="alarm_active">Alarm aktiv</string>
     <string name="stop_alarm">Alarm beenden</string>
     <string name="reminders">Erinnerungen</string>
     <string name="search_reminders">Erinnerungen suchen…</string>
-    <string name="general">Allgemein</string>
+
     <string name="settings">Einstellungen</string>
     <string name="today">Heute</string>
     <string name="scheduled">Geplant</string>
@@ -47,26 +46,17 @@
     <string name="categories">Kategorien</string>
     <string name="manage_categories">Kategorien verwalten</string>
     <string name="create_manage_categories">Benutzerdefinierte Kategorien erstellen und verwalten</string>
-    <string name="appearance">Darstellung</string>
-    <string name="app_theme">App-Design</string>
+
     <string name="system_default">Systemstandard</string>
-    <string name="light">Hell</string>
-    <string name="dark">Dunkel</string>
-    <string name="amoled_pure_black">Tiefschwarz (AMOLED)</string>
-    <string name="amoled_description">Verwendet im Dunkelmodus einen #000000-Hintergrund für maximalen Kontrast und geringeren Akkuverbrauch</string>
+
     <string name="dynamic_colors">Dynamische Farben</string>
     <string name="dynamic_colors_description">Passt Farben an den Systemhintergrund an (Android 12+)</string>
-    <string name="data_management">Daten und Sicherung</string>
+
     <string name="trash">Papierkorb</string>
     <string name="view_restore_deleted">Gelöschte Erinnerungen ansehen und wiederherstellen</string>
-    <string name="notifications">Benachrichtigungen</string>
+
     <string name="notification_style">Benachrichtigungsstil</string>
-    <string name="privacy_freedom">Datenschutz und Sicherheit</string>
-    <string name="foss_description">100 % kostenlos und quelloffen (FOSS)</string>
-    <string name="foss_details">Erinnerungen werden lokal gespeichert. Optionale Update-Prüfungen kontaktieren GitHub; Erinnerungen werden nicht übertragen.</string>
-    <string name="about">Über</string>
-    <string name="licensed_under">Lizenziert unter GNU GPLv3</string>
-    <string name="github_url">https://github.com/The-Last-Echo/android-reminder</string>
+
     <string name="manage_categories_title">Kategorien verwalten</string>
     <string name="add_category">Kategorie hinzufügen</string>
     <string name="categories_empty_title">Noch keine Kategorien</string>
@@ -81,7 +71,7 @@
     <string name="trash_title">Papierkorb</string>
     <string name="trash_empty">Der Papierkorb ist leer</string>
     <string name="trash_empty_details">Gelöschte Erinnerungen erscheinen hier</string>
-    <string name="deleted">Gelöscht</string>
+
     <string name="delete_forever">Endgültig löschen</string>
     <string name="restore">Wiederherstellen</string>
     <string name="empty_trash">Papierkorb leeren</string>
@@ -93,7 +83,7 @@
     <string name="full_screen_notification">Schermo – Von Android verwalteter dringender Hinweis</string>
     <string name="heads_up_notification">Heads-up – Hinweis oben auf dem Bildschirm</string>
     <string name="choose_notification_style">Benachrichtigungsstil auswählen</string>
-    <string name="choose_theme">Design auswählen</string>
+
     <string name="simple_style_name">Einfach</string>
     <string name="full_screen_style_name">Vollbild</string>
     <string name="heads_up_style_name">Pop-up-Hinweis</string>
@@ -128,7 +118,7 @@
     <string name="channel_priority_medium">Erinnerungen mit mittlerer Priorität</string>
     <string name="channel_priority_low">Erinnerungen mit niedriger Priorität</string>
     <string name="channel_priority_none">Erinnerungen ohne Priorität</string>
-    <string name="refresh">Erinnerungen aktualisieren</string>
+
     <string name="reminder_channel_name">%1$s · %2$s</string>
     <string name="subtasks_progress">%1$d/%2$d Unteraufgaben</string>
     <string name="choose_alarm_sound">Weckton auswählen</string>
@@ -144,7 +134,7 @@
     <string name="custom_duration">Benutzerdefinierte Dauer (Tage)</string>
     <string name="notification_none_name">Deaktiviert</string>
     <string name="privacy_local_data">Erinnerungen und Einstellungen werden auf diesem Gerät gespeichert. Die Update-Prüfung kontaktiert GitHub nur, wenn sie aktiviert ist.</string>
-    <string name="alarm_sound_channel_description">Dauerhafter Hinweis während der Weckton abgespielt wird</string>
+
     <string name="backup_restore">Sicherung und Wiederherstellung</string>
     <string name="backup_description">Erinnerungen, Kategorien, Unteraufgaben, Einstellungen und Fotos in eine versionierte JSON-Datei exportieren.</string>
     <string name="export_backup">Sicherung exportieren</string>
@@ -172,7 +162,7 @@
     <string name="widget_today_description">Widget für heutige Erinnerungen</string>
     <string name="widget_upcoming_description">Widget für kommende Erinnerungen</string>
     <string name="widget_compact_description">Kompaktes Erinnerungswidget</string>
-    <string name="open_notification_settings">Benachrichtigungseinstellungen öffnen</string>
+
     <string name="update_available">Eine neue Version ist verfügbar</string>
     <string name="app_up_to_date">Du verwendest die neueste Version.</string>
     <string name="full_screen_fallback_details">Vollbildhinweise benötigen eine separate Berechtigung in den Android-Einstellungen. Ist sie deaktiviert, verwendet Reminder stattdessen eine hervorgehobene Benachrichtigung. Öffne die Einstellungen für Vollbildbenachrichtigungen, um sie zu aktivieren.</string>
@@ -186,7 +176,7 @@
     <string name="delete_subtask">Unteraufgabe entfernen</string>
     <string name="clear_date_time">Datum und Uhrzeit löschen</string>
     <string name="full_screen_settings">Vollbild-Benachrichtigungseinstellungen öffnen</string>
-    <string name="privacy">Datenschutz</string>
+
     <string name="privacy_update_network">Automatische Update-Prüfungen sind optional. Bei Aktivierung oder manuellem Start kontaktiert die App GitHub, um Release-Daten abzurufen. Erinnerungen werden nicht mitgesendet.</string>
     <string name="privacy_photos_and_backup">Fotos werden mit der Android-Fotoauswahl gewählt. Sicherungen werden nur am über die Android-Dateiauswahl gewählten Speicherort abgelegt.</string>
     <string name="position_left">Links</string>

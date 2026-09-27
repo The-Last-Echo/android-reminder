@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ReminderAlarmReceiver : BroadcastReceiver() {
 
@@ -23,25 +24,34 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         val style = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTIFICATION_STYLE)
 
         val pendingResult = goAsync()
-        val appContext = context.applicationContext
+        val resultFinished = AtomicBoolean(false)
+        fun finishPendingResult() {
+            if (resultFinished.compareAndSet(false, true)) pendingResult.finish()
+        }
 
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val userPreferences = UserPreferencesRepository(appContext)
-                val defaultStyle = userPreferences.themeSettings.first().notificationStyle
-                val notificationManager = ReminderNotificationManager(appContext, userPreferences)
-                notificationManager.showReminderNotification(
-                    reminderId = reminderId,
-                    title = title,
-                    notes = notes,
-                    priorityLevel = priority,
-                    photoUri = photoUri,
-                    reminderStyle = style,
-                    defaultStyle = defaultStyle
-                )
-            } finally {
-                pendingResult.finish()
+        try {
+            val appContext = context.applicationContext
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val userPreferences = UserPreferencesRepository(appContext)
+                    val defaultStyle = userPreferences.themeSettings.first().notificationStyle
+                    val notificationManager = ReminderNotificationManager(appContext, userPreferences)
+                    notificationManager.showReminderNotification(
+                        reminderId = reminderId,
+                        title = title,
+                        notes = notes,
+                        priorityLevel = priority,
+                        photoUri = photoUri,
+                        reminderStyle = style,
+                        defaultStyle = defaultStyle
+                    )
+                } finally {
+                    finishPendingResult()
+                }
             }
+        } catch (failure: Throwable) {
+            finishPendingResult()
+            throw failure
         }
     }
 }
