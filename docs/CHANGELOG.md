@@ -2,6 +2,13 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.4 - 2026-09-27
+
+### Changed
+- Standardize shared spacing, content-width, typography, and shape tokens across the main Compose UI.
+- Center and constrain Home, reminder editing, and Settings content on wide screens while preserving the existing phone layout and interactions.
+- Refine reminder-card density and settings surface contrast while retaining the 48 dp completion action target.
+
 ## 1.8.3 - 2026-09-27
 
 ### Changed

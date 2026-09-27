@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -83,6 +84,7 @@ import com.thelastecho.reminder.core.alarm.AndroidAlarmScheduler
 import com.thelastecho.reminder.core.distribution.UpdateCheckController
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.core.designsystem.ReminderDimensions
 import com.thelastecho.reminder.core.preferences.AccentColor
 import com.thelastecho.reminder.core.preferences.ThemeMode
 import com.thelastecho.reminder.core.preferences.NotificationStyle
@@ -106,10 +108,18 @@ private fun SettingsGroupScaffold(titleRes: Int, onNavigateBack: () -> Unit, con
             )
         }
     ) { padding ->
-        Column(
-            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) { content() }
+        Box(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            Column(
+                Modifier.widthIn(max = ReminderDimensions.ContentMaxWidth)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(ReminderDimensions.Medium),
+                verticalArrangement = Arrangement.spacedBy(ReminderDimensions.Medium)
+            ) { content() }
+        }
     }
 }
 
@@ -117,12 +127,12 @@ private fun SettingsGroupScaffold(titleRes: Int, onNavigateBack: () -> Unit, con
 private fun SettingsCard(content: @Composable () -> Unit) {
     Card(
         shape = ReminderShapes.Card,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         modifier = Modifier.fillMaxWidth().border(
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.28f)),
             ReminderShapes.Card
         )
-    ) { Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp)) { content() } }
+    ) { Column(Modifier.fillMaxWidth().padding(horizontal = ReminderDimensions.Medium, vertical = ReminderDimensions.Small)) { content() } }
 }
 
 @Composable
@@ -134,7 +144,7 @@ private fun SettingRow(
     leading: (@Composable () -> Unit)? = null
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = 16.dp),
+        modifier = Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier).padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {

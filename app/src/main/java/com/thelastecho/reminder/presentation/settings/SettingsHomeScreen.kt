@@ -2,6 +2,7 @@ package com.thelastecho.reminder.presentation.settings
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -38,6 +40,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.core.designsystem.ReminderDimensions
 import com.thelastecho.reminder.presentation.components.CounterBadge
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,16 +67,24 @@ fun SettingsHomeScreen(
             )
         }
     ) { padding ->
-        Column(
-            Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Box(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            contentAlignment = Alignment.TopCenter
         ) {
-            SettingsGroup.entries.forEach { group ->
-                SettingsGroupCard(
-                    group = group,
-                    trashCount = if (group == SettingsGroup.DATA && !trashState.isLoading) trashState.deletedReminders.size else null,
-                    onClick = { onNavigateToGroup(group) }
-                )
+            Column(
+                Modifier.widthIn(max = ReminderDimensions.ContentMaxWidth)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(ReminderDimensions.Medium),
+                verticalArrangement = Arrangement.spacedBy(ReminderDimensions.Medium)
+            ) {
+                SettingsGroup.entries.forEach { group ->
+                    SettingsGroupCard(
+                        group = group,
+                        trashCount = if (group == SettingsGroup.DATA && !trashState.isLoading) trashState.deletedReminders.size else null,
+                        onClick = { onNavigateToGroup(group) }
+                    )
+                }
             }
         }
     }
@@ -104,11 +115,11 @@ private fun SettingsGroupCard(
         shape = ReminderShapes.Card,
         color = MaterialTheme.colorScheme.surfaceContainer,
         contentColor = MaterialTheme.colorScheme.onSurface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.28f)),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 18.dp),
+            Modifier.fillMaxWidth().padding(horizontal = ReminderDimensions.Medium, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {

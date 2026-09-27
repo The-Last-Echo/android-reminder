@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -80,6 +81,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.core.designsystem.ReminderDimensions
 import com.thelastecho.reminder.core.designsystem.PriorityHigh
 import com.thelastecho.reminder.core.designsystem.PriorityLow
 import com.thelastecho.reminder.core.designsystem.PriorityMedium
@@ -181,14 +183,18 @@ fun ReminderEditorScreen(
             )
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+        Box(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            contentAlignment = Alignment.TopCenter
         ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = ReminderDimensions.ContentMaxWidth)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(ReminderDimensions.Medium),
+                verticalArrangement = Arrangement.spacedBy(ReminderDimensions.Medium)
+            ) {
             SectionHeading(stringResource(com.thelastecho.reminder.R.string.basic_information))
 
             // Title Input
@@ -564,6 +570,7 @@ fun ReminderEditorScreen(
             }
 
             Spacer(modifier = Modifier.height(24.dp))
+            }
         }
     }
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.foundation.lazy.LazyColumn
@@ -74,6 +75,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.core.designsystem.ReminderDimensions
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.usecase.ReminderFilter
 import com.thelastecho.reminder.presentation.components.ReminderItem
@@ -213,11 +215,15 @@ fun HomeScreen(
             }
         }
     ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
+        Box(
+            modifier = Modifier.fillMaxSize().padding(innerPadding),
+            contentAlignment = Alignment.TopCenter
         ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = ReminderDimensions.HomeContentMaxWidth)
+                    .fillMaxSize()
+            ) {
             HomeFilterTabs(
                 selectedFilter = state.selectedFilter,
                 todayCount = state.todayCount,
@@ -328,6 +334,7 @@ fun HomeScreen(
                     }
                 }
             }
+            }
         }
     }
 }
@@ -361,9 +368,9 @@ private fun HomeFilterTabs(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        shape = ReminderShapes.Card,
-        color = MaterialTheme.colorScheme.surfaceContainer,
+            .padding(horizontal = ReminderDimensions.Medium, vertical = ReminderDimensions.Small),
+        shape = ReminderShapes.Filter,
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
         border = BorderStroke(
             width = 1.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
@@ -373,8 +380,8 @@ private fun HomeFilterTabs(
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 6.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             filters.forEach { item ->
@@ -428,19 +435,19 @@ private fun FilterChipItem(
 
     Surface(
         onClick = onClick,
-        modifier = modifier.height(48.dp),
-        shape = ReminderShapes.Input,
+        modifier = modifier.height(40.dp),
+        shape = ReminderShapes.Control,
         color = backgroundColor,
         contentColor = contentColor
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
         ) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall.copy(
+                style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
                 ),
                 color = contentColor,

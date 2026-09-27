@@ -76,13 +76,13 @@ fun ReminderItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)), ReminderShapes.Card),
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.28f)), ReminderShapes.Card),
         shape = ReminderShapes.Card,
         colors = CardDefaults.cardColors(
             containerColor = if (reminder.isCompleted) {
-                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f)
             } else {
-                MaterialTheme.colorScheme.surfaceContainer
+                MaterialTheme.colorScheme.surfaceContainerLow
             }
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -90,7 +90,7 @@ fun ReminderItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.Top
         ) {
             // Completion Toggle Checkbox
@@ -113,7 +113,7 @@ fun ReminderItem(
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
 
             // Body Content
             Column(
@@ -133,7 +133,7 @@ fun ReminderItem(
                 )
 
                 // Metadata Badges (Date, Repeat, Subtasks, Priority)
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -227,7 +227,7 @@ fun ReminderItem(
                 }
 
                 if (reminder.notes.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
                         text = reminder.notes,
                         style = MaterialTheme.typography.bodyMedium,
