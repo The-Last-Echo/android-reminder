@@ -505,13 +505,24 @@ private fun readFullScreenAccess(context: android.content.Context): Boolean =
     Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE || context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
 
 @Composable
-fun DataSettingsScreen(onNavigateBack: () -> Unit, onNavigateToBackup: () -> Unit, onNavigateToTrash: () -> Unit) {
+fun DataSettingsScreen(
+    onNavigateBack: () -> Unit,
+    onNavigateToBackup: () -> Unit,
+    onNavigateToAutomaticBackup: () -> Unit,
+    onNavigateToTrash: () -> Unit
+) {
     SettingsGroupScaffold(R.string.settings_group_data_title, onNavigateBack) {
         SettingsCard {
             SettingRow(
                 title = stringResource(R.string.backup_restore),
-                description = stringResource(R.string.backup_description),
+                description = stringResource(R.string.manual_backup_description),
                 onClick = onNavigateToBackup,
+                leading = { Icon(Icons.Outlined.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
+            )
+            SettingRow(
+                title = stringResource(R.string.backup_automatic_title),
+                description = stringResource(R.string.backup_automatic_description),
+                onClick = onNavigateToAutomaticBackup,
                 leading = { Icon(Icons.Outlined.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
             )
             SettingRow(

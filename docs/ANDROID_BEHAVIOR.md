@@ -25,7 +25,7 @@ Manually deleted reminders keep their persisted `deletedAt` and `expiresAt` time
 
 ## Backup format and restore
 
-Backups use UTF-8 JSON with format name `the-last-echo-reminder-backup` and integer `version: 1`. A backup contains stable reminder/category/subtask IDs, completion/deletion timestamps, reminder notification styles, relevant appearance/notification preferences, and photo bytes embedded as Base64 attachments. Each attachment is limited to 20 MiB and the complete file to 50 MiB.
+Backups use a `.reminderbackup` ZIP archive with `manifest.json`, `database.json`, and optional `attachments/` entries. Optional encryption uses a versioned PBKDF2-HMAC-SHA-256/AES-256-GCM envelope around the complete ZIP. Each attachment is limited to 20 MiB, total attachment bytes to 35 MiB, and the archive to 50 MiB. The user selects the SAF destination; periodic backups use WorkManager and do not require network access.
 
 The complete file is parsed and validated before restore writes. **Merge** keeps existing records with matching IDs, imports new records and their subtasks, remaps a colliding subtask ID when its parent reminder is new, and reports skipped records/conflicts. Existing preferences remain unchanged in Merge. **Replace** requires confirmation and changes Room data inside one Room transaction; reminder-related preferences are restored with rollback if the Room transaction fails. Attachments are staged before the transaction and removed if restore fails. Replace also removes old app-owned attachment files after success; it does not delete files selected from outside the app's private attachment directory.
 

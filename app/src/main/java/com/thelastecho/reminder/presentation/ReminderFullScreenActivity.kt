@@ -4,6 +4,7 @@ import android.app.NotificationManager
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import com.thelastecho.reminder.data.attachments.AttachmentStore
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -183,13 +184,13 @@ class ReminderFullScreenActivity : ComponentActivity() {
     }
 
     private fun decodeReminderPhoto(rawUri: String): Bitmap? = runCatching {
-        val uri = Uri.parse(rawUri)
+        val attachmentStore = AttachmentStore(this)
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         val maxDimension = maxOf(bounds.outWidth, bounds.outHeight)
         val sample = if (maxDimension > 1024) (maxDimension / 1024).coerceAtLeast(1) else 1
         val options = BitmapFactory.Options().apply { inSampleSize = sample }
-        contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, options) }
     }.getOrNull()
 }
 

@@ -2,6 +2,21 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.5 - 2026-09-27
+
+### Added
+- Add portable `.reminderbackup` ZIP archives with optional whole-archive password encryption and cross-device restore.
+- Add automatic local backups to a user-selected SAF folder with configurable frequency, automatic-only retention, and a device-protected password for unattended encrypted backups.
+- Add immediate private photo copying and migration of readable legacy picker URIs to relative attachment paths.
+
+### Changed
+- Separate manual backup/restore from automatic backup settings; manual encryption is independently optional per export and never remembered.
+- Reprogram imported reminder alarms after restore and report alarm scheduling failures.
+- Replace the former JSON backup flow and document archive, SAF, encryption, and retention behavior.
+
+### Tests
+- Cover clear and encrypted archive round trips, password/tamper failures, manual and automatic password policies, automatic-only retention naming, and alarm scheduling reports.
+
 ## 1.8.4 - 2026-09-27
 
 ### Changed

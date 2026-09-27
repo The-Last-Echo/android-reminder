@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
+import com.thelastecho.reminder.data.attachments.AttachmentStore
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
@@ -244,13 +245,13 @@ class AlarmSoundService : Service() {
     }
 
     private fun decodeNotificationPhoto(rawUri: String): android.graphics.Bitmap? = runCatching {
-        val uri = Uri.parse(rawUri)
+        val attachmentStore = AttachmentStore(applicationContext)
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         val maxDimension = maxOf(bounds.outWidth, bounds.outHeight)
         val sample = if (maxDimension > 1024) (maxDimension / 1024).coerceAtLeast(1) else 1
         val options = BitmapFactory.Options().apply { inSampleSize = sample }
-        contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, options) }
     }.getOrNull()
 
     private fun actionPendingIntent(id: Long, action: String): PendingIntent {

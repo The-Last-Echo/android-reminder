@@ -62,7 +62,8 @@ class EditorViewModel(
                             priority = existing.priority,
                             repeatInterval = existing.repeatInterval,
                             categoryId = existing.categoryId,
-                            imageUri = existing.imageUri,
+                            imagePath = existing.imagePath,
+                            legacyImageUri = existing.legacyImageUri,
                             notificationStyle = existing.notificationStyle,
                             subTasks = existing.subTasks,
                             isCompleted = existing.isCompleted
@@ -121,8 +122,8 @@ class EditorViewModel(
             is EditorIntent.SetCategory -> {
                 _uiState.update { it.copy(categoryId = intent.categoryId) }
             }
-            is EditorIntent.SetImageUri -> {
-                _uiState.update { it.copy(imageUri = intent.uriString) }
+            is EditorIntent.SetImageAttachment -> {
+                _uiState.update { it.copy(imagePath = intent.relativePath, legacyImageUri = null) }
             }
             is EditorIntent.SetNotificationStyle -> {
                 _uiState.update { it.copy(notificationStyle = intent.style) }
@@ -185,7 +186,8 @@ class EditorViewModel(
                 priority = state.priority,
                 repeatInterval = state.repeatInterval,
                 categoryId = state.categoryId,
-                imageUri = state.imageUri,
+                imagePath = state.imagePath,
+                legacyImageUri = state.legacyImageUri,
                 notificationStyle = state.notificationStyle,
                 subTasks = state.subTasks
             )

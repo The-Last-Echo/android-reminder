@@ -19,5 +19,6 @@ sealed class NavDestination(val route: String) {
     data object Categories : NavDestination("settings/reminders/categories")
     data object Trash : NavDestination("settings/data/trash")
     data object BackupRestore : NavDestination("settings/data/backup_restore")
+    data object AutomaticBackup : NavDestination("settings/data/backup_automatic")
     data object Privacy : NavDestination("settings/privacy")
 }

@@ -12,13 +12,14 @@ data class Reminder(
     val priority: Priority = Priority.NONE,
     val repeatInterval: RepeatInterval = RepeatInterval.ONCE,
     val categoryId: Long? = null,
-    val imageUri: String? = null,
+    val legacyImageUri: String? = null,
     val notificationStyle: String? = null,
     val subTasks: List<SubTask> = emptyList(),
     val createdAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
     val deletedAt: Long? = null,
-    val expiresAt: Long? = null
+    val expiresAt: Long? = null,
+    val imagePath: String? = null
 ) {
     val isOverdue: Boolean
         get() = !isCompleted && dueDateTimeEpochMillis != null && dueDateTimeEpochMillis < System.currentTimeMillis()

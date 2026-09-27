@@ -14,6 +14,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.debug.ReminderDebugTrace
+import com.thelastecho.reminder.data.attachments.AttachmentStore
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.MainActivity
@@ -305,13 +306,13 @@ class ReminderNotificationManager(
     }
 
     private fun loadNotificationImage(rawUri: String): Bitmap? = runCatching {
-        val uri = Uri.parse(rawUri)
+        val attachmentStore = AttachmentStore(context)
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
         val maxDimension = maxOf(bounds.outWidth, bounds.outHeight)
         val sampleSize = if (maxDimension > 1024) (maxDimension / 1024).coerceAtLeast(1) else 1
         val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-        context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+        attachmentStore.openReference(rawUri)?.use { BitmapFactory.decodeStream(it, null, options) }
     }.getOrNull()
 
     companion object {

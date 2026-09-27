@@ -34,13 +34,15 @@ data class ReminderEntity(
     val priorityLevel: Int = 0,
     val repeatIntervalId: String = "ONCE",
     val categoryId: Long? = null,
+    // Legacy picker URI retained only while its photo cannot yet be copied into app-private storage.
     val imageUri: String? = null,
     val notificationStyleId: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null,
     val isDeleted: Boolean = false,
     val deletedAt: Long? = null,
-    val expiresAt: Long? = null
+    val expiresAt: Long? = null,
+    val imagePath: String? = null
 ) {
     fun toDomain(): Reminder = Reminder(
         id = id,
@@ -51,13 +53,14 @@ data class ReminderEntity(
         priority = Priority.fromLevel(priorityLevel),
         repeatInterval = RepeatInterval.fromId(repeatIntervalId),
         categoryId = categoryId,
-        imageUri = imageUri,
+        legacyImageUri = imageUri,
         notificationStyle = notificationStyleId,
         subTasks = emptyList(),
         createdAt = createdAt,
         completedAt = completedAt,
         deletedAt = deletedAt,
-        expiresAt = expiresAt
+        expiresAt = expiresAt,
+        imagePath = imagePath
     )
 
     companion object {
@@ -70,13 +73,14 @@ data class ReminderEntity(
             priorityLevel = domain.priority.level,
             repeatIntervalId = domain.repeatInterval.id,
             categoryId = domain.categoryId,
-            imageUri = domain.imageUri,
+            imageUri = domain.legacyImageUri,
             notificationStyleId = domain.notificationStyle,
             createdAt = domain.createdAt,
             completedAt = domain.completedAt,
             isDeleted = false,
             deletedAt = domain.deletedAt,
-            expiresAt = domain.expiresAt
+            expiresAt = domain.expiresAt,
+            imagePath = domain.imagePath
         )
     }
 }

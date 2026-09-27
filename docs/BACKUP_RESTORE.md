@@ -1,21 +1,14 @@
 # Backup and restore
 
-Reminder implements local backup and restore in a portable JSON format. This is a local data portability feature, not a remote sync or cloud backup feature.
+Reminder implements local backup and restore with portable `.reminderbackup` archives. The app does not provide cloud integration or network synchronization. The user chooses a destination through Android's Storage Access Framework (SAF).
 
 ## Format
 
-The backup format is:
+The archive contains `manifest.json`, `database.json`, and optional `attachments/` files. The manifest records `formatVersion`, `appVersion`, `createdAt`, `databaseVersion`, `encrypted`, and `attachmentsIncluded`. Database JSON contains reminders, categories, subtasks, and the portable app preferences. Photo references are stable attachment IDs, not device URIs.
 
-- `format = "the-last-echo-reminder-backup"`
-- `version = 1`
+Optional encryption wraps the complete ZIP payload in a versioned envelope. It uses PBKDF2-HMAC-SHA-256 with a per-backup random salt and AES-256-GCM with a per-backup random nonce. Restore requires only the backup password, not the originating device's Android Keystore.
 
-The exported JSON includes:
-
-- reminders
-- categories
-- subtasks
-- attachments
-- app preferences relevant to the current app state
+Manual and automatic backups use the same SAF destination but distinct filename prefixes: `Reminder-Manual-` and `Reminder-Auto-`. Retention lists and deletes only `Reminder-Auto-` files, so manual backups are never automatically removed. Manual password protection is chosen per export and is not stored; the automatic password is stored separately in device-protected form for the worker.
 
 ## What is included
 
@@ -30,17 +23,17 @@ The export includes:
 
 ## File and attachment limits
 
-The repository enforces limits:
+The archive repository enforces limits:
 
 - backup file max: 50 MB
 - attachment max per file: 20 MB
 - total attachments in a backup: 35 MB
 
-The restore logic validates those limits before writing.
+Restore validates those limits and all archive paths/references before writing.
 
 ## Restore modes
 
-The repository supports two restore modes:
+The archive repository supports two restore modes:
 
 - `MERGE`
 - `REPLACE`
@@ -76,27 +69,27 @@ Before writing data to Room, the backup is validated for:
 - no missing parent reminder/subtask references
 - no external image URI references (only embedded attachments)
 
-This validation happens before mutation, so the restore path does not write partial state.
+This validation happens before mutation. Room changes are transactional; the importer stages attachment files and removes them if the database/preferences restore fails. Alarm scheduling occurs after the Room commit; failed alarm operations are listed in the restore report rather than presented as fully successful.
 
 ## Photos and attachments
 
-Photos are not kept as a picker URI from another device. Instead, the export embeds the attachment bytes as Base64 and writes them to app-private storage on restore. This keeps the backup portable and self-contained.
-
-The code also cleans up temporary app-owned files if they are not referenced after a successful restore.
+Photo Picker images are copied immediately into `filesDir/attachments/`; Room stores relative paths. Existing picker URI references are migrated on app startup when readable. Unreadable references are preserved in the legacy `imageUri` column and counted in the settings warning; successfully migrated references clear that legacy column. New photos never populate the legacy URI column.
 
 ## Risk and rollback
 
 The restore path tries to avoid partial writes:
 
-- it parses and validates everything first;
-- it stages attachment files before the transaction;
-- it rolls back preference changes on failure;
-- it deletes temporary files if restore fails.
+- it parses and validates the archive before database mutation;
+- it stages attachment files before the Room transaction;
+- it restores the prior database snapshot if preference commit fails after Room commit;
+- it rolls back preferences and deletes staged files on failure.
 
 ## Limitations
 
-- this is a local backup, not a cloud or server-based sync mechanism;
-- it does not implement conflict resolution beyond the merge/replace report logic;
-- it does not manage remote attachments or a server-side backup repository.
+- WorkManager periodic execution is inexact and subject to Android background limits, including Doze;
+- the user-selected SAF provider may not support listing/deleting children, in which case backup succeeds and retention reports a warning;
+- the automatic worker's local password copy is wrapped by the source device's Keystore; reinstalling or losing that key requires entering the password again, while cross-device restore still uses only the password;
+- custom alarm sound files are not bundled; an unavailable URI falls back to the system default and is reported;
+- this is a local data portability feature, not cloud backup or synchronization.
 
 See also [docs/DATABASE.md](DATABASE.md) and [docs/OFFLINE_ONLINE.md](OFFLINE_ONLINE.md).

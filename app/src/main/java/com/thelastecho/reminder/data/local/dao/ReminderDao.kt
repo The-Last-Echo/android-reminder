@@ -44,6 +44,12 @@ interface ReminderDao {
     @Query("SELECT * FROM reminders")
     suspend fun getAllReminderEntitiesForBackup(): List<ReminderEntity>
 
+    @Query("SELECT * FROM reminders WHERE imageUri IS NOT NULL AND imagePath IS NULL")
+    suspend fun getLegacyAttachmentReminders(): List<ReminderEntity>
+
+    @Query("UPDATE reminders SET imagePath = :imagePath, imageUri = NULL WHERE id = :id AND imagePath IS NULL")
+    suspend fun setMigratedAttachment(id: Long, imagePath: String)
+
     @Query("SELECT * FROM subtasks")
     suspend fun getAllSubTaskEntitiesForBackup(): List<SubTaskEntity>
 

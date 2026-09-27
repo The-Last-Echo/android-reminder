@@ -8,7 +8,7 @@ Reminder currently focuses on four core responsibilities:
 
 - local reminder creation and editing with scheduling, priority, subtasks, notes, categories, and photo attachments;
 - exact or inexact local alarm scheduling with Android `AlarmManager` and local notification delivery;
-- local backup/restore of reminders and related preferences in a portable JSON format;
+- local backup/restore of reminders and related preferences in a portable `.reminderbackup` archive;
 - local settings, theming, retention, widgets, and diagnostics.
 
 This is not a cloud-synced or multi-user application. The app can be built in two distribution variants:

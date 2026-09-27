@@ -12,7 +12,7 @@ Current schema:
 - `SubTaskEntity`
 - `CategoryEntity`
 
-The database version is `4` and `exportSchema` is disabled.
+The database version is `5` and `exportSchema` is disabled.
 
 ## Main entities
 
@@ -80,7 +80,7 @@ The application persists:
 - reminders and subtasks in Room;
 - preferences in DataStore;
 - attachments as files under the app’s private storage and Uris in Room;
-- backups as JSON files chosen by the user via Android file picker.
+- backups as `.reminderbackup` archives written to a user-selected SAF directory.
 
 ## Local retention rules
 

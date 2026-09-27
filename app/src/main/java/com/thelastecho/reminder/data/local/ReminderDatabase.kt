@@ -64,7 +64,7 @@ abstract class ReminderDatabase : RoomDatabase() {
                         }
                     }
                 })
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
         }
 
@@ -85,6 +85,11 @@ abstract class ReminderDatabase : RoomDatabase() {
             override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE reminders ADD COLUMN isDeleted INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE reminders ADD COLUMN deletedAt INTEGER")
+            }
+        }
+        private val MIGRATION_4_5 = object : androidx.room.migration.Migration(4, 5) {
+            override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE reminders ADD COLUMN imagePath TEXT")
             }
         }
     }

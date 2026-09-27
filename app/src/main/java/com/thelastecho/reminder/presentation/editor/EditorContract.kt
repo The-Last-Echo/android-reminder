@@ -13,7 +13,8 @@ data class EditorUiState(
     val priority: Priority = Priority.NONE,
     val repeatInterval: RepeatInterval = RepeatInterval.ONCE,
     val categoryId: Long? = null,
-    val imageUri: String? = null,
+    val imagePath: String? = null,
+    val legacyImageUri: String? = null,
     val notificationStyle: String? = null,
     val subTasks: List<SubTask> = emptyList(),
     val categories: List<Category> = emptyList(),
@@ -31,7 +32,7 @@ sealed interface EditorIntent {
     data class SetPriority(val priority: Priority) : EditorIntent
     data class SetRepeatInterval(val interval: RepeatInterval) : EditorIntent
     data class SetCategory(val categoryId: Long?) : EditorIntent
-    data class SetImageUri(val uriString: String?) : EditorIntent
+    data class SetImageAttachment(val relativePath: String?) : EditorIntent
     data class SetNotificationStyle(val style: String?) : EditorIntent
     data class AddSubTask(val text: String) : EditorIntent
     data class ToggleSubTask(val index: Int) : EditorIntent

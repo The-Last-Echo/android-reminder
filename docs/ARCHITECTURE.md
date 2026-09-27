@@ -64,7 +64,7 @@ The app targets Android 8.0+ and compiles with JDK 21 and Android SDK 36. The ma
 - the project keeps a single codebase and selects flavor-specific behavior at compile time;
 - the app prioritizes local-first operation and offline resilience;
 - the notification system is intentionally platform-aware and may fall back when Android blocks full-screen access;
-- backup and restore are implemented as explicit local data portability features, not remote sync;
+- backup and restore use a user-selected SAF destination and remain explicit local data portability features, not remote sync;
 - debug instrumentation is present only in debug builds.
 
 ## Notable files
@@ -73,7 +73,9 @@ The app targets Android 8.0+ and compiles with JDK 21 and Android SDK 36. The ma
 - `app/src/main/java/com/thelastecho/reminder/data/local/ReminderDatabase.kt` — Room database definition and migrations
 - `app/src/main/java/com/thelastecho/reminder/core/alarm/AndroidAlarmScheduler.kt` — exact alarm scheduling
 - `app/src/main/java/com/thelastecho/reminder/core/notification/ReminderNotificationManager.kt` — notification and channel management
-- `app/src/main/java/com/thelastecho/reminder/data/backup/ReminderBackupRepository.kt` — JSON backup/restore logic
+- `app/src/main/java/com/thelastecho/reminder/data/backup/ReminderArchiveRepository.kt` — archive export/import and validation
+- `app/src/main/java/com/thelastecho/reminder/data/backup/ReminderBackupWorker.kt` — offline periodic backup scheduling
+- `app/src/main/java/com/thelastecho/reminder/data/attachments/AttachmentStore.kt` — app-private photo storage and legacy URI migration
 - `app/src/offline/java/.../DistributionFeaturesFactory.kt` and `app/src/online/java/.../DistributionFeaturesFactory.kt` — variant-specific behavior
 
 See also [docs/OFFLINE_ONLINE.md](OFFLINE_ONLINE.md), [docs/DATABASE.md](DATABASE.md), [docs/NOTIFICATIONS.md](NOTIFICATIONS.md), and [docs/ALARMS.md](ALARMS.md).

@@ -5,6 +5,7 @@ import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.distribution.DistributionFeatures
 import com.thelastecho.reminder.core.distribution.DistributionFeaturesFactory
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
+import com.thelastecho.reminder.data.attachments.AttachmentStore
 import com.thelastecho.reminder.data.local.ReminderDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +36,8 @@ class ReminderApp : Application() {
         CoroutineScope(Dispatchers.IO).launch {
             val now = System.currentTimeMillis()
             val db = ReminderDatabase.getInstance(this@ReminderApp)
+            val attachmentMigration = AttachmentStore(this@ReminderApp).migrateLegacyReferences(db.reminderDao())
+            preferencesRepository.setUnreadableLegacyAttachmentCount(attachmentMigration.unreadable)
             val settings = preferencesRepository.themeSettings.first()
             if (settings.completedReminderRetentionDays > 0) {
                 db.reminderDao().moveExpiredCompletedRemindersToTrash(

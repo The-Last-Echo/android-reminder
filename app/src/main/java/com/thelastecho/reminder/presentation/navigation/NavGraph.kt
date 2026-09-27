@@ -42,7 +42,8 @@ import com.thelastecho.reminder.presentation.home.HomeScreen
 import com.thelastecho.reminder.presentation.home.HomeViewModel
 import com.thelastecho.reminder.presentation.settings.AboutSettingsScreen
 import com.thelastecho.reminder.presentation.settings.AppearanceSettingsScreen
-import com.thelastecho.reminder.presentation.settings.BackupRestoreScreen
+import com.thelastecho.reminder.presentation.settings.AutomaticBackupScreen
+import com.thelastecho.reminder.presentation.settings.ManualBackupScreen
 import com.thelastecho.reminder.presentation.settings.CategoriesScreen
 import com.thelastecho.reminder.presentation.settings.CategoriesViewModel
 import com.thelastecho.reminder.presentation.settings.DataSettingsScreen
@@ -171,6 +172,7 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 DataSettingsScreen(
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToBackup = { navController.navigate(NavDestination.BackupRestore.route) },
+                    onNavigateToAutomaticBackup = { navController.navigate(NavDestination.AutomaticBackup.route) },
                     onNavigateToTrash = { navController.navigate(NavDestination.Trash.route) }
                 )
             }
@@ -189,7 +191,10 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
                 CategoriesScreen(viewModel = categoriesViewModel, onNavigateBack = { navController.popBackStack() })
             }
             composable(NavDestination.BackupRestore.route) {
-                BackupRestoreScreen(onNavigateBack = { navController.popBackStack() })
+                ManualBackupScreen(onNavigateBack = { navController.popBackStack() })
+            }
+            composable(NavDestination.AutomaticBackup.route) {
+                AutomaticBackupScreen(onNavigateBack = { navController.popBackStack() })
             }
             composable(NavDestination.Trash.route) { backStackEntry ->
                 val graphEntry = remember(backStackEntry) { navController.getBackStackEntry(NavDestination.SettingsGraph.route) }

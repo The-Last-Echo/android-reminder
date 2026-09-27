@@ -5,7 +5,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -70,6 +69,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,6 +81,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
+import com.thelastecho.reminder.data.attachments.AttachmentStore
 import com.thelastecho.reminder.core.designsystem.ReminderDimensions
 import com.thelastecho.reminder.core.designsystem.PriorityHigh
 import com.thelastecho.reminder.core.designsystem.PriorityLow
@@ -92,6 +93,7 @@ import com.thelastecho.reminder.presentation.components.priorityLabelResource
 import com.thelastecho.reminder.presentation.components.repeatLabelResource
 import com.thelastecho.reminder.domain.model.RepeatInterval
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.collectLatest
 import java.time.Instant
@@ -112,18 +114,25 @@ fun ReminderEditorScreen(
     val state by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    val attachmentStore = remember(context) { AttachmentStore(context) }
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     var newSubTaskText by remember { mutableStateOf("") }
     var repeatDropdownExpanded by remember { mutableStateOf(false) }
 
-    // Modern Android PhotoPicker (100% scoped, zero permissions required)
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-        if (uri != null) runCatching { context.contentResolver.takePersistableUriPermission(uri, android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION) }
-        viewModel.onIntent(EditorIntent.SetImageUri(uri?.toString()))
+        if (uri != null) scope.launch {
+            val copied = runCatching { withContext(Dispatchers.IO) { attachmentStore.copyFromUri(uri) } }
+            copied.onSuccess {
+                viewModel.onIntent(EditorIntent.SetImageAttachment(it.relativePath))
+            }.onFailure {
+                snackbarHostState.showSnackbar(context.getString(com.thelastecho.reminder.R.string.photo_copy_failed))
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -424,19 +433,17 @@ fun ReminderEditorScreen(
                 }
             }
 
-            var photoBitmap by remember(state.imageUri) { mutableStateOf<Bitmap?>(null) }
-            LaunchedEffect(state.imageUri) {
-                val uriString = state.imageUri
-                if (!uriString.isNullOrBlank()) {
+            var photoBitmap by remember(state.imagePath, state.legacyImageUri) { mutableStateOf<Bitmap?>(null) }
+            LaunchedEffect(state.imagePath, state.legacyImageUri) {
+                if (!state.imagePath.isNullOrBlank() || !state.legacyImageUri.isNullOrBlank()) {
                     photoBitmap = withContext(Dispatchers.IO) {
                         runCatching {
-                            val uri = Uri.parse(uriString)
                             val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-                            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
+                            attachmentStore.open(state.imagePath, state.legacyImageUri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
                             val maxDimension = maxOf(bounds.outWidth, bounds.outHeight)
                             val sampleSize = if (maxDimension > 1280) (maxDimension / 1280).coerceAtLeast(1) else 1
                             val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
-                            context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, options) }
+                            attachmentStore.open(state.imagePath, state.legacyImageUri)?.use { BitmapFactory.decodeStream(it, null, options) }
                         }.getOrNull()
                     }
                 } else {
@@ -465,13 +472,13 @@ fun ReminderEditorScreen(
                         Icon(Icons.Outlined.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = if (state.imageUri != null) stringResource(com.thelastecho.reminder.R.string.photo_attached) else stringResource(com.thelastecho.reminder.R.string.add_photo),
+                            text = if (state.imagePath != null || state.legacyImageUri != null) stringResource(com.thelastecho.reminder.R.string.photo_attached) else stringResource(com.thelastecho.reminder.R.string.add_photo),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
 
-                    if (state.imageUri != null) {
-                        IconButton(onClick = { viewModel.onIntent(EditorIntent.SetImageUri(null)) }) {
+                    if (state.imagePath != null || state.legacyImageUri != null) {
+                        IconButton(onClick = { viewModel.onIntent(EditorIntent.SetImageAttachment(null)) }) {
                             Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.remove_photo))
                         }
                     } else {

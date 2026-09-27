@@ -33,7 +33,7 @@ class AndroidAlarmScheduler(
             putExtra(EXTRA_REMINDER_TITLE, reminder.title)
             putExtra(EXTRA_REMINDER_NOTES, reminder.notes)
             putExtra(EXTRA_REMINDER_PRIORITY, reminder.priority.level)
-            putExtra(EXTRA_REMINDER_PHOTO_URI, reminder.imageUri)
+            putExtra(EXTRA_REMINDER_PHOTO_URI, reminder.imagePath ?: reminder.legacyImageUri)
             putExtra(EXTRA_REMINDER_NOTIFICATION_STYLE, reminder.notificationStyle)
         }
 

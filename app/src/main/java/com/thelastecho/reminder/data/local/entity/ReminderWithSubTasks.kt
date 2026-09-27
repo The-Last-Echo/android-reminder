@@ -23,12 +23,13 @@ data class ReminderWithSubTasks(
         priority = Priority.fromLevel(reminder.priorityLevel),
         repeatInterval = RepeatInterval.fromId(reminder.repeatIntervalId),
         categoryId = reminder.categoryId,
-        imageUri = reminder.imageUri,
+        legacyImageUri = reminder.imageUri,
         notificationStyle = reminder.notificationStyleId,
         subTasks = subTasks.sortedBy { it.orderIndex }.map { it.toDomain() },
         createdAt = reminder.createdAt,
         completedAt = reminder.completedAt,
         deletedAt = reminder.deletedAt,
-        expiresAt = reminder.expiresAt
+        expiresAt = reminder.expiresAt,
+        imagePath = reminder.imagePath
     )
 }

@@ -4,7 +4,7 @@ This Android project does not expose a network or public SDK API. This page docu
 
 ## Reminder model
 
-`domain/model/Reminder.kt` defines reminders. `notificationStyle` is an optional notification-style enum name stored as a nullable string; `null` means use the app-wide preference. `imageUri` is an Android Photo Picker content URI.
+`domain/model/Reminder.kt` defines reminders. `notificationStyle` is an optional notification-style enum name stored as a nullable string; `null` means use the app-wide preference. New photos use app-private relative `imagePath` references. `legacyImageUri` exists only for picker references that have not yet been copied successfully.
 
 ## Repository
 
@@ -25,8 +25,8 @@ This Android project does not expose a network or public SDK API. This page docu
 
 ## Backup
 
-`data/backup/ReminderBackupRepository.kt` reads and writes format `the-last-echo-reminder-backup`, version 1. It validates all records and attachments before mutation; Replace uses a Room transaction, while Merge inserts missing IDs and retains existing rows. The JSON stores photo bytes as Base64, not temporary picker URIs.
+`data/backup/ReminderArchiveRepository.kt` reads and writes versioned `.reminderbackup` ZIP archives. It validates archive entries, records, relationships, and attachment references before mutation; Replace and Merge both use Room transactions. Optional PBKDF2-HMAC-SHA-256/AES-256-GCM encryption covers the complete ZIP payload.
 
 ## Database
 
-Room schema version is 4. Migrations 1→2 add soft-delete fields; migration 2→3 adds the per-reminder notification style; migration 3→4 adds the expiration timestamp used by Trash cleanup. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.
+Room schema version is 5. Migrations 1→2 add soft-delete fields; 2→3 adds the per-reminder notification style; 3→4 adds the Trash expiration timestamp; 4→5 adds relative photo paths. The legacy URI column remains only for references that could not be migrated. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.

@@ -26,7 +26,8 @@ data class AppThemeSettings(
     val lastUpdateCheckMillis: Long = 0L,
     val latestReleaseTag: String? = null,
     val latestReleaseUrl: String? = null,
-    val notificationPermissionAsked: Boolean = false
+    val notificationPermissionAsked: Boolean = false,
+    val unreadableLegacyAttachmentCount: Int = 0
 )
 
 enum class NotificationStyle {
@@ -55,6 +56,7 @@ class UserPreferencesRepository(private val context: Context) {
         val LATEST_RELEASE_TAG = androidx.datastore.preferences.core.stringPreferencesKey("latest_release_tag")
         val LATEST_RELEASE_URL = androidx.datastore.preferences.core.stringPreferencesKey("latest_release_url")
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
+        val UNREADABLE_LEGACY_ATTACHMENT_COUNT = androidx.datastore.preferences.core.intPreferencesKey("unreadable_legacy_attachment_count")
     }
 
     val themeSettings: Flow<AppThemeSettings> = context.dataStore.data.map { preferences ->
@@ -88,7 +90,8 @@ class UserPreferencesRepository(private val context: Context) {
             lastUpdateCheckMillis = preferences[PreferencesKeys.LAST_UPDATE_CHECK] ?: 0L,
             latestReleaseTag = preferences[PreferencesKeys.LATEST_RELEASE_TAG],
             latestReleaseUrl = preferences[PreferencesKeys.LATEST_RELEASE_URL],
-            notificationPermissionAsked = preferences[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] ?: false
+            notificationPermissionAsked = preferences[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] ?: false,
+            unreadableLegacyAttachmentCount = preferences[PreferencesKeys.UNREADABLE_LEGACY_ATTACHMENT_COUNT] ?: 0
         )
     }.onEach { settings ->
         context.dataStore.edit { preferences ->
@@ -130,6 +133,7 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setAddButtonOnLeft(enabled: Boolean) { context.dataStore.edit { it[PreferencesKeys.ADD_BUTTON_ON_LEFT] = enabled } }
     suspend fun setAutomaticUpdateChecks(enabled: Boolean) { context.dataStore.edit { it[PreferencesKeys.AUTOMATIC_UPDATE_CHECKS] = enabled } }
     suspend fun markNotificationPermissionAsked() { context.dataStore.edit { it[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] = true } }
+    suspend fun setUnreadableLegacyAttachmentCount(count: Int) { context.dataStore.edit { it[PreferencesKeys.UNREADABLE_LEGACY_ATTACHMENT_COUNT] = count.coerceAtLeast(0) } }
     suspend fun saveUpdateCheck(timestamp: Long, tag: String?, url: String?) { context.dataStore.edit { p -> p[PreferencesKeys.LAST_UPDATE_CHECK] = timestamp; if (tag != null) p[PreferencesKeys.LATEST_RELEASE_TAG] = tag; if (url != null) p[PreferencesKeys.LATEST_RELEASE_URL] = url } }
 
 
