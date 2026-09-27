@@ -13,8 +13,8 @@ This document records the build configuration that is actually present in the re
 
 The app version is defined in [gradle.properties](../gradle.properties):
 
-- `appVersionCode=10806`
-- `appVersionName=1.8.6`
+- `appVersionCode=10807`
+- `appVersionName=1.8.7`
 
 These values must stay aligned with the Git tag and the CI checks.
 

@@ -2,6 +2,18 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.7 - 2026-09-27
+
+### Added
+- Allow manual backups to use a SAF destination independent of automatic backups, with a fallback to the existing destination until one is selected.
+- Add destination-folder labels and dedicated automatic-backup encryption password setup, change, and disable controls.
+
+### Changed
+- Localize the new backup controls across all supported languages and document the separate destination behavior.
+
+### Tests
+- Cover independent manual/automatic destinations and verify manual backups do not read the automatic-backup password.
+
 ## 1.8.6 - 2026-09-27
 
 ### Added
