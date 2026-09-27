@@ -125,13 +125,35 @@ jobs:
       - name: Prepare Assets for Distribution
         run: |
           mkdir -p release-assets
-          cp app/build/outputs/apk/offline/debug/app-offline-debug.apk release-assets/reminder-v${{ env.APP_VERSION }}-offline-debug.apk
-          cp app/build/outputs/apk/online/debug/app-online-debug.apk release-assets/reminder-v${{ env.APP_VERSION }}-online-debug.apk
-          if [ -f app/build/outputs/apk/online/release/app-online-release.apk ]; then
-            cp app/build/outputs/apk/online/release/app-online-release.apk release-assets/reminder-v${{ env.APP_VERSION }}-online.apk
-          fi
-          if [ -f app/build/outputs/apk/offline/release/app-offline-release.apk ]; then
-            cp app/build/outputs/apk/offline/release/app-offline-release.apk release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk
+
+          copy_apk() {
+            local src_dir="$1"
+            local dest_file="$2"
+            local required="$3"
+
+            local apk_path
+            apk_path=$(find "$src_dir" -maxdepth 1 -name "*.apk" 2>/dev/null | head -n 1)
+
+            if [ -n "$apk_path" ] && [ -f "$apk_path" ]; then
+              cp "$apk_path" "$dest_file"
+              echo "Copied $apk_path -> $dest_file"
+            elif [ "$required" = "true" ]; then
+              echo "::error::Required APK in $src_dir not found!"
+              exit 1
+            else
+              echo "::warning::Optional APK in $src_dir not found, skipping."
+            fi
+          }
+
+          copy_apk "app/build/outputs/apk/offline/debug" "release-assets/reminder-v${{ env.APP_VERSION }}-offline-debug.apk" "true"
+          copy_apk "app/build/outputs/apk/online/debug" "release-assets/reminder-v${{ env.APP_VERSION }}-online-debug.apk" "true"
+
+          if [ "${{ env.IS_TAG }}" = "true" ]; then
+            copy_apk "app/build/outputs/apk/offline/release" "release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk" "true"
+            copy_apk "app/build/outputs/apk/online/release" "release-assets/reminder-v${{ env.APP_VERSION }}-online.apk" "true"
+          else
+            copy_apk "app/build/outputs/apk/offline/release" "release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk" "false"
+            copy_apk "app/build/outputs/apk/online/release" "release-assets/reminder-v${{ env.APP_VERSION }}-online.apk" "false"
           fi
 
       - name: Upload Artifacts
@@ -163,10 +185,8 @@ jobs:
         with:
           name: Release ${{ github.ref_name }}
           body_path: changelog.md
-          files: |
-            release-assets/reminder-v${{ env.APP_VERSION }}-online.apk
-            release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk
-            release-assets/reminder-v${{ env.APP_VERSION }}-online-debug.apk
+          files: release-assets/*.apk
+          fail_on_unmatched_files: true
           draft: false
           prerelease: false
           generate_release_notes: false
