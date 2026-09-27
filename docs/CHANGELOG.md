@@ -2,6 +2,19 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.6 - 2026-09-27
+
+### Added
+- Add refreshed Today, Upcoming, and Compact Glance widgets with localized due-date/time details and reminder deep links.
+- Add a quick-create action to the compact widget and widget appearance controls for theme colors and background opacity.
+- Add widget settings navigation and localized widget labels across all supported languages.
+
+### Changed
+- Refresh widgets when reminders or appearance settings change, on relevant system environment changes, and periodically through the launcher.
+
+### Fixed
+- Keep undated and overdue active reminders visible in the compact widget, and refresh time-dependent lists as reminders become due.
+
 ## 1.8.5 - 2026-09-27
 
 ### Added

@@ -37,7 +37,7 @@ Reminder rows, categories, subtasks and settings are stored locally in Room and 
 
 ## Widgets and themes
 
-Three Jetpack Glance home-screen widgets show today's reminders, upcoming reminders, or a compact active list. Selecting a reminder opens it in the app. Launcher refresh is periodic; visual behavior and refresh timing can vary by launcher. Widget background follows the app's System/Light/Dark/AMOLED preference when rendered.
+Three Jetpack Glance home-screen widgets show today's reminders, upcoming reminders, or a compact active list with a quick-create action. Selecting a reminder opens it in the app. Widgets refresh when reminder data or relevant appearance settings change, on date/time/time-zone/theme/locale events, and at a requested 30-minute launcher interval; Android and launchers may throttle periodic refreshes. Widget colors, theme mode, and background opacity follow the app's appearance settings when rendered.
 
 ## Language support
 

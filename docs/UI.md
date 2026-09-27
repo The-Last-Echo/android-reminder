@@ -85,7 +85,7 @@ The app includes three Glance widgets:
 - Upcoming reminders
 - Compact reminder list
 
-These are rendered with the app’s current theme settings and are local-only UI surfaces.
+The Today and Upcoming widgets show localized due times and open a selected reminder in the app. The Compact widget shows an active reminder and includes a quick-create action. Widget colors and background opacity follow the appearance settings. These are local-only UI surfaces.
 
 ## Accessibility and localization
 
