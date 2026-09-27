@@ -2,6 +2,15 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.2 - 2026-09-27
+
+### Added
+- Add content-free Debug logging across reminder alarm scheduling, receiver delivery, notification posting, Full-Screen fallback, foreground service startup, and audio playback.
+- Document a device-based reminder diagnostic procedure and recommended reproduction matrix.
+
+### Tests
+- Add unit coverage for reminder diagnostic event formatting.
+
 ## 1.8.1 - 2026-09-27
 
 ### Fixed
