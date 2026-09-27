@@ -2,6 +2,15 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.1 - 2026-09-27
+
+### Fixed
+- Avoid invoking Flow operators during composition when loading saved theme settings, and ensure alarm receivers finish pending asynchronous work if coroutine launch fails.
+- Remove unused localized strings and colors, and reject backup subtasks with non-positive IDs during restore.
+
+### Tests
+- Add unit coverage for backup export limits and restore validation/merge/replace behavior, plus reminder deletion retention and snooze scheduling.
+
 ## 1.8.0 - 2026-09-26
 
 ### Architecture
