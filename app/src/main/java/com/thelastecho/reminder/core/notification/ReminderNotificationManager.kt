@@ -13,6 +13,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.thelastecho.reminder.R
+import com.thelastecho.reminder.core.debug.ReminderDebugTrace
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.MainActivity
@@ -45,24 +46,64 @@ class ReminderNotificationManager(
 
         val priority = priorityLevel.coerceIn(0, 3)
 
+        ReminderDebugTrace.log(
+            step = "notification.show.request",
+            reminderId = reminderId,
+            state = style.name,
+            extra = mapOf("priority" to priority.toString(), "fullScreenAllowed" to canUseFullScreenIntent().toString())
+        )
+
         if (style == NotificationStyle.NONE) {
+            ReminderDebugTrace.log(
+                step = "notification.show.result",
+                reminderId = reminderId,
+                state = "dismissed",
+                extra = mapOf("style" to NotificationStyle.NONE.name)
+            )
             dismissNotification(reminderId)
             return
         }
 
         if (style == NotificationStyle.FULL_SCREEN) {
             if (!canUseFullScreenIntent()) {
+                ReminderDebugTrace.log(
+                    step = "notification.fullscreen.fallback",
+                    reminderId = reminderId,
+                    state = "blocked",
+                    extra = mapOf("reason" to "full_screen_intent_access")
+                )
                 Log.w(TAG, "Full-screen intent access unavailable; using the high-importance alarm notification fallback")
             }
             try {
+                ReminderDebugTrace.log(
+                    step = "notification.foreground_service.start",
+                    reminderId = reminderId,
+                    state = "pending"
+                )
                 AlarmSoundService.start(context, reminderId, title, notes, photoUri, priority)
+                ReminderDebugTrace.log(
+                    step = "notification.foreground_service.result",
+                    reminderId = reminderId,
+                    state = "started"
+                )
             } catch (exception: Exception) {
+                ReminderDebugTrace.log(
+                    step = "notification.foreground_service.result",
+                    reminderId = reminderId,
+                    state = "failed",
+                    extra = mapOf("reason" to exception.javaClass.simpleName)
+                )
                 Log.e(TAG, "Could not start the alarm foreground service; posting an explicit notification fallback", exception)
                 showStandardNotification(reminderId, title, notes, priority, photoUri, style)
             }
             return
         }
 
+        ReminderDebugTrace.log(
+            step = "notification.standard.start",
+            reminderId = reminderId,
+            state = style.name
+        )
         showStandardNotification(reminderId, title, notes, priority, photoUri, style)
     }
 
@@ -76,6 +117,12 @@ class ReminderNotificationManager(
     ) {
         val fullScreenAllowed = canUseFullScreenIntent()
         val effectiveStyle = if (style == NotificationStyle.FULL_SCREEN && !fullScreenAllowed) {
+            ReminderDebugTrace.log(
+                step = "notification.standard.fallback",
+                reminderId = reminderId,
+                state = "full_screen_to_heads_up",
+                extra = mapOf("fullScreenAllowed" to fullScreenAllowed.toString())
+            )
             Log.w(TAG, "Full-screen intent access unavailable; explicitly falling back to the Heads-up channel")
             NotificationStyle.HEADS_UP
         } else {
@@ -147,6 +194,12 @@ class ReminderNotificationManager(
 
         // Recheck immediately before posting: Android 14+ lets the user revoke FSI access at any time.
         if (style == NotificationStyle.FULL_SCREEN && fullScreenAllowed && !canUseFullScreenIntent()) {
+            ReminderDebugTrace.log(
+                step = "notification.post.result",
+                reminderId = reminderId,
+                state = "revoked_after_check",
+                extra = mapOf("fallback" to NotificationStyle.HEADS_UP.name)
+            )
             Log.w(TAG, "Full-screen intent access was revoked before reminder $reminderId was posted; retrying on the Heads-up channel")
             showStandardNotification(reminderId, title, notes, priority, photoUri, NotificationStyle.HEADS_UP)
             return
@@ -154,7 +207,19 @@ class ReminderNotificationManager(
 
         try {
             NotificationManagerCompat.from(context).notify(reminderId.toInt(), builder.build())
+            ReminderDebugTrace.log(
+                step = "notification.post.result",
+                reminderId = reminderId,
+                state = "posted",
+                extra = mapOf("channel" to channelId(effectiveStyle), "fullScreenAllowed" to fullScreenAllowed.toString())
+            )
         } catch (exception: SecurityException) {
+            ReminderDebugTrace.log(
+                step = "notification.post.result",
+                reminderId = reminderId,
+                state = "security_exception",
+                extra = mapOf("reason" to "notification_permission")
+            )
             Log.e(TAG, "Notification permission was revoked before posting reminder $reminderId", exception)
         }
     }

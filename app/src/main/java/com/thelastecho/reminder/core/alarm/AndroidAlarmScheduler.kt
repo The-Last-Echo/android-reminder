@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.thelastecho.reminder.core.debug.ReminderDebugTrace
 import com.thelastecho.reminder.domain.model.Reminder
 
 class AndroidAlarmScheduler(
@@ -16,6 +17,16 @@ class AndroidAlarmScheduler(
     override fun schedule(reminder: Reminder) {
         val dueTime = reminder.dueDateTimeEpochMillis ?: return
         if (dueTime <= System.currentTimeMillis() || reminder.isCompleted) return
+
+        ReminderDebugTrace.log(
+            step = "alarm.schedule.request",
+            reminderId = reminder.id,
+            state = "pending",
+            extra = mapOf(
+                "dueTime" to dueTime.toString(),
+                "exactAlarmAccess" to canScheduleExactAlarms().toString()
+            )
+        )
 
         val intent = Intent(context, ReminderAlarmReceiver::class.java).apply {
             putExtra(EXTRA_REMINDER_ID, reminder.id)
@@ -40,11 +51,23 @@ class AndroidAlarmScheduler(
                     dueTime,
                     pendingIntent
                 )
+                ReminderDebugTrace.log(
+                    step = "alarm.schedule.result",
+                    reminderId = reminder.id,
+                    state = "setExactAndAllowWhileIdle",
+                    extra = mapOf("dueTime" to dueTime.toString())
+                )
             } else {
                 alarmManager.setAndAllowWhileIdle(
                     AlarmManager.RTC_WAKEUP,
                     dueTime,
                     pendingIntent
+                )
+                ReminderDebugTrace.log(
+                    step = "alarm.schedule.result",
+                    reminderId = reminder.id,
+                    state = "setAndAllowWhileIdle",
+                    extra = mapOf("dueTime" to dueTime.toString())
                 )
             }
         } catch (e: SecurityException) {
@@ -54,10 +77,21 @@ class AndroidAlarmScheduler(
                 dueTime,
                 pendingIntent
             )
+            ReminderDebugTrace.log(
+                step = "alarm.schedule.result",
+                reminderId = reminder.id,
+                state = "fallback.setAndAllowWhileIdle",
+                extra = mapOf("dueTime" to dueTime.toString(), "reason" to "security_exception")
+            )
         }
     }
 
     override fun cancel(reminderId: Long) {
+        ReminderDebugTrace.log(
+            step = "alarm.cancel.request",
+            reminderId = reminderId,
+            state = "pending"
+        )
         val intent = Intent(context, ReminderAlarmReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -66,6 +100,11 @@ class AndroidAlarmScheduler(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pendingIntent)
+        ReminderDebugTrace.log(
+            step = "alarm.cancel.result",
+            reminderId = reminderId,
+            state = "cancelled"
+        )
     }
 
     override fun canScheduleExactAlarms(): Boolean {

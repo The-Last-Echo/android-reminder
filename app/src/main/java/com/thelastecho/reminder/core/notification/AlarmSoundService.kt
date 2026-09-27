@@ -20,6 +20,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.thelastecho.reminder.R
+import com.thelastecho.reminder.core.debug.ReminderDebugTrace
 import com.thelastecho.reminder.core.preferences.NotificationStyle
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import com.thelastecho.reminder.presentation.ReminderFullScreenActivity
@@ -49,6 +50,11 @@ class AlarmSoundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == ACTION_STOP) {
             val requestedReminderId = intent.getLongExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, -1L)
+            ReminderDebugTrace.log(
+                step = "alarm.service.stop",
+                reminderId = requestedReminderId,
+                state = if (reminderId == requestedReminderId) "stopping_current" else "stopping_stale"
+            )
             if (reminderId == requestedReminderId) {
                 stopPlayback()
             } else {
@@ -63,9 +69,16 @@ class AlarmSoundService : Service() {
         val command = intent ?: run { stopSelf(startId); return START_NOT_STICKY }
         val newReminderId = command.getLongExtra(ReminderNotificationManager.EXTRA_REMINDER_ID, -1L)
         if (newReminderId < 0L) {
+            ReminderDebugTrace.log(step = "alarm.service.start", reminderId = newReminderId, state = "invalid")
             stopSelf(startId)
             return START_NOT_STICKY
         }
+        ReminderDebugTrace.log(
+            step = "alarm.service.start",
+            reminderId = newReminderId,
+            state = "requested",
+            extra = mapOf("priority" to command.getIntExtra(EXTRA_REMINDER_PRIORITY, 3).toString())
+        )
         if (reminderId >= 0L && reminderId != newReminderId) {
             detachPreviousAlarmNotification()
         } else if (reminderId == newReminderId) {
@@ -81,7 +94,17 @@ class AlarmSoundService : Service() {
         lastNotificationContent = NotificationContent(title, notes, photoUri)
         try {
             postAlarmNotification(reminderId, title, notes, photoUri, foreground = true)
+            ReminderDebugTrace.log(
+                step = "alarm.service.foreground",
+                reminderId = reminderId,
+                state = "posted"
+            )
         } catch (_: Exception) {
+            ReminderDebugTrace.log(
+                step = "alarm.service.foreground",
+                reminderId = reminderId,
+                state = "fallback"
+            )
             // If FGS start fails, post a standard Full-Screen notification fallback.
             stopForeground(STOP_FOREGROUND_REMOVE)
             val notificationManager = ReminderNotificationManager(
@@ -100,6 +123,11 @@ class AlarmSoundService : Service() {
             return START_NOT_STICKY
         }
         startPlayback()
+        ReminderDebugTrace.log(
+            step = "alarm.service.playback",
+            reminderId = reminderId,
+            state = "started"
+        )
         // Decode photos off the service thread so a large image cannot delay alarm audio.
         photoUri?.let { raw ->
             val currentReminderId = reminderId
@@ -240,6 +268,12 @@ class AlarmSoundService : Service() {
         val generation = ++playbackGeneration
         val playbackReminderId = reminderId
 
+        ReminderDebugTrace.log(
+            step = "alarm.service.playback.prepare",
+            reminderId = playbackReminderId,
+            state = "requested"
+        )
+
         CoroutineScope(Dispatchers.IO).launch {
             val saved = runCatching {
                 UserPreferencesRepository(applicationContext).themeSettings.first().alarmSoundUri
@@ -263,13 +297,26 @@ class AlarmSoundService : Service() {
                             mainHandler.removeCallbacks(preparationTimeout)
                             runCatching {
                                 mediaPlayer.start()
+                                ReminderDebugTrace.log(
+                                    step = "alarm.service.playback.result",
+                                    reminderId = playbackReminderId,
+                                    state = "playing"
+                                )
                                 mainHandler.postDelayed(playbackWatchdog, PLAYBACK_WATCHDOG_MS)
                             }.onFailure { stopPlayback(showFallback = true) }
                         }
                         prepareAsync()
                     }
                     mainHandler.postDelayed(preparationTimeout, PREPARE_TIMEOUT_MS)
-                }.onFailure { stopPlayback(showFallback = true) }
+                }.onFailure { exception ->
+                    ReminderDebugTrace.log(
+                        step = "alarm.service.playback.result",
+                        reminderId = playbackReminderId,
+                        state = "failed",
+                        extra = mapOf("reason" to exception.javaClass.simpleName)
+                    )
+                    stopPlayback(showFallback = true)
+                }
             }
         }
     }

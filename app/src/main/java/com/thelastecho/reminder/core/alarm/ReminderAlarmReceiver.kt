@@ -3,6 +3,7 @@ package com.thelastecho.reminder.core.alarm
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.thelastecho.reminder.core.debug.ReminderDebugTrace
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.preferences.UserPreferencesRepository
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +16,17 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val reminderId = intent.getLongExtra(AndroidAlarmScheduler.EXTRA_REMINDER_ID, -1L)
-        if (reminderId == -1L) return
+        if (reminderId == -1L) {
+            ReminderDebugTrace.log(step = "alarm.receiver.missing_id", state = "discarded")
+            return
+        }
+
+        ReminderDebugTrace.log(
+            step = "alarm.receiver.delivered",
+            reminderId = reminderId,
+            state = "received",
+            extra = mapOf("action" to intent.action.orEmpty())
+        )
 
         val title = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_TITLE) ?: context.getString(com.thelastecho.reminder.R.string.app_name)
         val notes = intent.getStringExtra(AndroidAlarmScheduler.EXTRA_REMINDER_NOTES) ?: ""
@@ -35,6 +46,12 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
                 try {
                     val userPreferences = UserPreferencesRepository(appContext)
                     val defaultStyle = userPreferences.themeSettings.first().notificationStyle
+                    ReminderDebugTrace.log(
+                        step = "alarm.receiver.notification.start",
+                        reminderId = reminderId,
+                        state = "pending",
+                        extra = mapOf("defaultStyle" to defaultStyle.name)
+                    )
                     val notificationManager = ReminderNotificationManager(appContext, userPreferences)
                     notificationManager.showReminderNotification(
                         reminderId = reminderId,
@@ -44,6 +61,11 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
                         photoUri = photoUri,
                         reminderStyle = style,
                         defaultStyle = defaultStyle
+                    )
+                    ReminderDebugTrace.log(
+                        step = "alarm.receiver.notification.complete",
+                        reminderId = reminderId,
+                        state = "posted"
                     )
                 } finally {
                     finishPendingResult()
