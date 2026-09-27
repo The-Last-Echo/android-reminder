@@ -1,51 +1,103 @@
 # Reminder
 
-Reminder is an offline-first Android app for scheduled reminders and checklists. Reminder data and preferences are stored locally.
+Reminder is a local-first Android app for scheduled reminders and checklists. The current implementation stores reminder data, categories, subtasks, attachments and preferences locally in Room and DataStore, and it continues to work without a remote server or account.
 
-## Features
+## What this project does today
 
-- Create reminders with notes, dates, repeats, categories, photos, and subtasks.
-- Complete reminders from the app or from notification actions; snooze an alert for ten minutes.
-- Choose a default notification presentation or override it per reminder. Android may limit heads-up and full-screen presentation according to notification channel settings, permissions, and device policy.
-- Search and filter reminders, including completed items.
-- Soft-delete reminders, restore them from Trash, and permanently remove them after 90 days.
-- Choose light, dark, system, or AMOLED appearance. English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic use Android per-app language settings.
-- Use category colors and monochrome icons, configure automatic completed-item retention, and move the Home Add button left or right.
-- Set an alarm sound for Full screen mode, export versioned backups, and add Today, Upcoming, or Compact home-screen widgets.
-- Optionally check public GitHub release metadata for app updates. Reminder content is not included in update requests.
+Reminder currently focuses on four core responsibilities:
 
-## Requirements
+- local reminder creation and editing with scheduling, priority, subtasks, notes, categories, and photo attachments;
+- exact or inexact local alarm scheduling with Android `AlarmManager` and local notification delivery;
+- local backup/restore of reminders and related preferences in a portable JSON format;
+- local settings, theming, retention, widgets, and diagnostics.
 
-- Android 8.0 (API 26) or later.
-- JDK 21.
-- Android SDK Platform 36 to build the current target.
+This is not a cloud-synced or multi-user application. The app can be built in two distribution variants:
 
-## Build
+- `offline`: local-only distribution with no network permissions in the manifest;
+- `online`: same local reminder engine, with optional public GitHub release checks enabled.
 
-Use Android Studio or a local Android SDK and network access for Gradle dependency resolution.
+## Offline / Online status
+
+The project is intentionally split into an `offline` flavor and an `online` flavor, but the real online implementation does not add remote reminder synchronization. Today, `online` is a local app with extra GitHub update-check logic, not a sync platform.
+
+## Main features implemented
+
+- reminders with title, notes, due date/time, category, priority, subtasks, and attachments;
+- local soft-delete + restore flow with a 90-day retention window and trash purge;
+- recurrence semantics through the reminder model and scheduling logic already present in the app;
+- multiple notification styles: simple, heads-up, full-screen, and disabled;
+- local alarm scheduling and reboot rescheduling;
+- local backups with validate-and-restore logic;
+- Material 3 theme modes: System, Light, Dark, and AMOLED;
+- per-app language support for English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic;
+- Jetpack Glance widgets for Today, Upcoming, and Compact views;
+- debug diagnostics limited to debug builds.
+
+## Current architecture
+
+The project is a single Gradle module named `:app`, structured into packages rather than separate Android modules. The main layers are:
+
+- `presentation`: Compose UI and ViewModels;
+- `domain`: models, repository contracts, and use cases;
+- `data`: Room database, DAOs, repositories, backups, and workers;
+- `core`: alarms, notifications, preferences, debug tools, distribution features, and design system.
+
+The app relies on Room, DataStore, WorkManager, Compose, and Android standard platform APIs.
+
+## Tech stack
+
+- Kotlin + Jetpack Compose
+- Room + KSP
+- DataStore Preferences
+- WorkManager
+- Material 3
+- Android `AlarmManager`, notifications, foreground services, and app widget APIs
+
+## Build and requirements
+
+- Android 8.0+ (API 26)
+- JDK 21
+- Android SDK Platform 36
+- Gradle via the repository wrapper
 
 ```sh
-./gradlew assembleDebug
+./gradlew testOfflineDebugUnitTest testOnlineDebugUnitTest
+./gradlew assembleOfflineDebug assembleOnlineDebug
 ```
 
-The debug APK is written to `app/build/outputs/apk/debug/app-debug.apk`. Debug builds are debuggable and use the separate `com.thelastecho.reminder.debug` application ID, so they can be installed alongside a release build. Release builds enable code/resource shrinking and use the production application ID; signing credentials are read from `KEYSTORE_PATH`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD` when configured. There is no “Basic” build mode in this repository.
+For release builds, the project reads signing information from environment variables when present, and `gradle.properties` provides the current `appVersionCode` and `appVersionName`.
 
-Set `appVersionCode` and `appVersionName` in `gradle.properties` before making a release. The Settings screen reads the installed package `versionName`.
+## Documentation structure
 
-## Android behavior
+This repository contains the product documentation in the `docs/` directory.
 
-Reminder schedules keep the existing exact/inexact AlarmManager behavior. Full-screen reminders follow Android's full-screen intent access rules, and ongoing alarm-like sound uses a typed media-playback foreground service. See [Android behavior and user data](docs/ANDROID_BEHAVIOR.md) for platform restrictions, backup format, privacy, retention, widgets, and update-check details. On Android 13 and later, choose any of the eight supported languages from Android’s per-app language settings. On older versions the app follows the system language.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — architecture, data flow, and package responsibilities
+- [docs/BUILD.md](docs/BUILD.md) — build prerequisites, flavors, commands, and packaging details
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) — working guide for contributors
+- [docs/DEBUGGING.md](docs/DEBUGGING.md) — debug logging and diagnostic workflow
+- [docs/NOTIFICATIONS.md](docs/NOTIFICATIONS.md) — notification channels and Android constraints
+- [docs/ALARMS.md](docs/ALARMS.md) — scheduling, alarms, receivers, snooze, and boot recovery
+- [docs/DATABASE.md](docs/DATABASE.md) — Room schema and persistence model
+- [docs/BACKUP_RESTORE.md](docs/BACKUP_RESTORE.md) — backup format, validation, and restore behavior
+- [docs/OFFLINE_ONLINE.md](docs/OFFLINE_ONLINE.md) — exact current state of both flavors
+- [docs/UI.md](docs/UI.md) — interface and navigation overview
+- [docs/THEMING.md](docs/THEMING.md) — theme system and appearance rules
+- [docs/SECURITY.md](docs/SECURITY.md) — existing security posture and future recommendations
+- [docs/ROADMAP.md](docs/ROADMAP.md) — factual roadmap and future intent
+- [docs/ANDROID_BEHAVIOR.md](docs/ANDROID_BEHAVIOR.md) — Android platform constraints affecting reminders
+- [docs/API.md](docs/API.md) — internal domain and persistence contracts
+- [docs/CHANGELOG.md](docs/CHANGELOG.md) — project changelog
 
-## Project layout
+Additional project docs:
 
-- `app/src/main/java/.../domain`: reminder models, repository interfaces, and use cases.
-- `app/src/main/java/.../data`: Room database and repository implementation.
-- `app/src/main/java/.../core`: alarms, notifications, preferences, and design system.
-- `app/src/main/java/.../presentation`: Compose screens and view models.
-- `docs/`: architecture, API/data model notes, and changelog.
-
-See [Architecture](docs/ARCHITECTURE.md), [Android behavior](docs/ANDROID_BEHAVIOR.md), [API and data model](docs/API.md), [Changelog](docs/CHANGELOG.md), and [Contributing](CONTRIBUTING.md). Security reports: [SECURITY.md](SECURITY.md).
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)
+- [LICENSE](LICENSE)
 
 ## License
 
-GNU General Public License v3.0. See [LICENSE](LICENSE).
+Reminder is licensed under the GNU General Public License v3.0. See [LICENSE](LICENSE).
+
+## Current project state
+
+This repository is in active development and documentation is aligned to the implemented codebase, not to future plans. The project is locally centric and intentionally avoids remote synchronization until it is explicitly designed and implemented.

@@ -1,47 +1,79 @@
 # Architecture
 
-Reminder is a single-module Android application. Package boundaries organize the code into presentation, domain, data, and platform infrastructure; these are Kotlin packages, not separate Gradle modules.
+Reminder is a single-module Android app. The project is not split into separate Gradle modules for business logic; instead, Kotlin package boundaries separate the responsibilities inside `:app`.
 
-## Runtime flow
+## High-level runtime flow
 
 ```text
-Compose screen -> ViewModel intent -> use case -> repository -> Room DAO
-       ^                                                    |
-       +------------- Flow-backed UI state -----------------+
+Compose screen
+  -> ViewModel/UI state
+  -> use case
+  -> repository
+  -> Room DAO / DataStore
+  -> alarm, notification, or backup handling
 ```
 
-One-off navigation and snackbar events are emitted separately from persistent UI state. Screens collect ViewModel state with Compose. The Home screen filters the Room-backed reminder stream by date, category, completion, and search query.
+A typical reminder lifecycle is:
 
-## Packages
+- the user creates or edits a reminder in a Compose screen;
+- the ViewModel dispatches an intent to a domain use case;
+- the use case calls the repository API;
+- the repository updates the Room database and possibly schedules or cancels an alarm;
+- the notification manager posts a reminder notification when Android delivers the alarm.
 
-- `presentation/home`, `editor`, `settings`: Compose UI and screen state contracts.
-- `presentation/navigation`: Navigation Compose routes and manual object construction.
-- `domain/model`: Reminder, category, priority, repeat interval, and checklist models.
-- `domain/usecase`: Save, delete, query, completion, snooze, and restore operations.
-- `domain/repository`: Repository interface used by the domain and presentation layers.
-- `data/local`: Room database, DAOs, persistence entities, Trash retention worker, and optional release-check worker.
-- `data/backup`: validated versioned JSON export/restore with Room transactions and attachment staging.
-- `presentation/widget`: Jetpack Glance home-screen widgets.
-- `data/repository`: maps entities to domain models and implements repository operations.
-- `core/alarm`: schedules exact alarms when Android permits them and restores alarms on boot/package replacement.
-- `core/notification`: style-specific channels, photo previews, notification actions, and the optional `mediaPlayback` foreground service for Full screen mode.
-- `core/preferences`: DataStore preferences for appearance, notification style/sound, retention, button position, and optional update checks.
-- `core/designsystem`: Compose Material 3 colors, typography, and theme.
+## Main package responsibilities
 
-## Persistence
+- `presentation`: screens, navigation, ViewModels, widgets, and shared UI components
+- `domain`: reminder models, repository interfaces, and use cases that encapsulate business rules
+- `data`: Room database, DAO access, repository implementations, backup logic, and WorkManager jobs
+- `core`: platform concerns such as alarms, notifications, preferences, debug logging, distribution flavor logic, and theming
 
-Room database schema version is declared in `ReminderDatabase`. Migrations preserve existing data when schema fields change. Reminders and subtasks are stored locally. A soft delete sets `isDeleted`, `deletedAt`, and `expiresAt` (90 days after deletion); expired trash rows are purged by a daily WorkManager job, with an additional sweep at application startup. Completed reminders are moved into Trash only when the configured retention period elapses.
+## Data flow and persistence
 
-## Notifications
+The source of truth for reminders is Room. DataStore stores app-level preferences such as theme mode, notification default style, alarm sound, retention preference, and update-check settings.
 
-`SaveReminderUseCase` passes scheduled reminders to `AndroidAlarmScheduler`. The alarm intent carries the reminder text, image URI, priority, and optional per-reminder notification style. If no reminder-level style is selected, the notification manager uses the DataStore default. Android notification channel importance and full-screen access remain subject to OS/user settings.
+The repository layer converts Room entities into domain models and exposes read/update operations used by the UI and use cases. Deletion is a soft delete flow: reminders are marked as deleted, given `deletedAt` and `expiresAt`, and purged later by WorkManager and app-start cleanup.
 
-## Theme and language
+## Alarm and notification path
 
-`MainActivity` keeps the Android splash screen visible until DataStore emits appearance preferences, so the first Compose frame uses the saved theme. Light/dark and AMOLED appearance are applied by `ReminderTheme`. English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic are declared in the app locale configuration; Android 13+ provides the native per-app language settings UI. Arabic follows the system RTL layout direction.
+The reminder scheduling flow is:
 
-See [Android behavior and user data](ANDROID_BEHAVIOR.md) for notification restrictions, backup semantics, optional network behavior, Trash retention, and widget details.
+1. `SaveReminderUseCase` persists the reminder and calls the alarm scheduler.
+2. `AndroidAlarmScheduler` creates a pending broadcast using `AlarmManager`.
+3. `ReminderAlarmReceiver` handles the alarm and posts a notification.
+4. `ReminderNotificationManager` chooses the correct channel, optional full-screen activity, and action buttons.
+5. `AlarmSoundService` manages the foreground media-playback service used by full-screen reminders.
 
-## Build configuration
+This path is intentionally local-only. There is no remote sync engine in the current code. The only non-local feature in `online` is GitHub release check logic.
 
-The project uses Kotlin 2.1, AGP 8.7, Compose, Room/KSP, Coroutines/Flow, and DataStore. SDK levels, dependencies, and versions are configured in `app/build.gradle.kts` and `gradle/libs.versions.toml`.
+## Distribution flavors
+
+The build defines the `offline` and `online` flavors. The selection happens at build time via `DistributionFeaturesFactory`:
+
+- `offline`: `UpdateCheckController` is unavailable; `syncEngine` reports `Unavailable`.
+- `online`: update checks are enabled and scheduled via WorkManager, but the sync engine is still `NotConfigured`.
+
+This separation exists for distribution and optional update checks, not for online reminder synchronization.
+
+## Build and platform constraints
+
+The app targets Android 8.0+ and compiles with JDK 21 and Android SDK 36. The manifest declares exact-alarm permissions, notification permission, foreground media-playback service permission, boot completion receiver, and local app widget entries.
+
+## Important architectural choices
+
+- the project keeps a single codebase and selects flavor-specific behavior at compile time;
+- the app prioritizes local-first operation and offline resilience;
+- the notification system is intentionally platform-aware and may fall back when Android blocks full-screen access;
+- backup and restore are implemented as explicit local data portability features, not remote sync;
+- debug instrumentation is present only in debug builds.
+
+## Notable files
+
+- `app/build.gradle.kts` — Gradle configuration, SDK levels, flavors, signing, and dependencies
+- `app/src/main/java/com/thelastecho/reminder/data/local/ReminderDatabase.kt` — Room database definition and migrations
+- `app/src/main/java/com/thelastecho/reminder/core/alarm/AndroidAlarmScheduler.kt` — exact alarm scheduling
+- `app/src/main/java/com/thelastecho/reminder/core/notification/ReminderNotificationManager.kt` — notification and channel management
+- `app/src/main/java/com/thelastecho/reminder/data/backup/ReminderBackupRepository.kt` — JSON backup/restore logic
+- `app/src/offline/java/.../DistributionFeaturesFactory.kt` and `app/src/online/java/.../DistributionFeaturesFactory.kt` — variant-specific behavior
+
+See also [docs/OFFLINE_ONLINE.md](OFFLINE_ONLINE.md), [docs/DATABASE.md](DATABASE.md), [docs/NOTIFICATIONS.md](NOTIFICATIONS.md), and [docs/ALARMS.md](ALARMS.md).
