@@ -88,7 +88,12 @@ jobs:
           fi
 
       - name: Run Offline and Online Unit Tests
-        run: ./gradlew testOfflineDebugUnitTest testOnlineDebugUnitTest
+        run: |
+          if [ "${{ env.IS_TAG }}" = "true" ]; then
+            ./gradlew testOfflineReleaseUnitTest testOnlineReleaseUnitTest
+          else
+            ./gradlew testOfflineDebugUnitTest testOnlineDebugUnitTest
+          fi
 
       - name: Build Offline and Online Debug APKs
         run: ./gradlew assembleOfflineDebug assembleOnlineDebug -PappVersionCode=${{ env.APP_VERSION_CODE }} -PappVersionName=${{ env.APP_VERSION }}
@@ -151,9 +156,6 @@ jobs:
           if [ "${{ env.IS_TAG }}" = "true" ]; then
             copy_apk "app/build/outputs/apk/offline/release" "release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk" "true"
             copy_apk "app/build/outputs/apk/online/release" "release-assets/reminder-v${{ env.APP_VERSION }}-online.apk" "true"
-          else
-            copy_apk "app/build/outputs/apk/offline/release" "release-assets/reminder-v${{ env.APP_VERSION }}-offline.apk" "false"
-            copy_apk "app/build/outputs/apk/online/release" "release-assets/reminder-v${{ env.APP_VERSION }}-online.apk" "false"
           fi
 
       - name: Upload Artifacts
@@ -165,7 +167,7 @@ jobs:
       - name: Generate Changelog
         if: env.IS_TAG == 'true'
         run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 "${{ github.ref_name }}^" 2>/dev/null || echo "")
+          PREV_TAG=$(git tag --sort=-creatordate | grep -v "${{ github.ref_name }}" | head -n 1)
           echo "## What's Changed in ${{ github.ref_name }}" > changelog.md
           echo "" >> changelog.md
           if [ -n "$PREV_TAG" ]; then
