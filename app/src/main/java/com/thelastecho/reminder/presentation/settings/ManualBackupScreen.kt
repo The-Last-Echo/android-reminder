@@ -13,6 +13,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -22,6 +25,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
@@ -34,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,8 +102,16 @@ fun ManualBackupScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier
     var restorePassword by remember { mutableStateOf("") }
     var showRestoreDialog by remember { mutableStateOf(false) }
     var selectedMode by remember { mutableStateOf(ReminderArchiveRepository.RestoreMode.MERGE) }
+    val manualDestinationUri = settings.manualDestinationTreeUri ?: settings.destinationTreeUri
+    var destinationName by remember(manualDestinationUri) { mutableStateOf<String?>(null) }
 
-    val folderPicker = rememberBackupDestinationPicker { result ->
+    LaunchedEffect(manualDestinationUri) {
+        destinationName = manualDestinationUri?.let { uri ->
+            withContext(Dispatchers.IO) { readBackupDestinationName(context, uri) }
+        }
+    }
+
+    val folderPicker = rememberBackupDestinationPicker(manual = true) { result ->
         if (result == BackupDestinationPickResult.SAVED) showManualDialog = true
         else if (result == BackupDestinationPickResult.FAILED) scope.launch {
             snackbar.showSnackbar(context.getString(R.string.backup_status_destination_unavailable))
@@ -122,7 +135,7 @@ fun ManualBackupScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier
     }
 
     fun openManualDialog() {
-        if (settings.destinationTreeUri.isNullOrBlank()) folderPicker.launch(null)
+        if (manualDestinationUri.isNullOrBlank()) folderPicker.launch(null)
         else showManualDialog = true
     }
 
@@ -168,14 +181,41 @@ fun ManualBackupScreen(onNavigateBack: () -> Unit, modifier: Modifier = Modifier
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Button(onClick = ::openManualDialog, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                        Text(stringResource(R.string.backup_create_now))
+                    Text(
+                        context.getString(
+                            R.string.backup_destination_label,
+                            destinationName
+                                ?: stringResource(if (manualDestinationUri == null) R.string.backup_no_folder else R.string.backup_folder_selected)
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    OutlinedButton(
+                        onClick = { folderPicker.launch(null) },
+                        enabled = !busy,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Outlined.FolderOpen, contentDescription = null)
+                        Text(
+                            stringResource(
+                                if (settings.manualDestinationTreeUri == null) R.string.backup_manual_choose_folder
+                                else R.string.backup_manual_change_folder,
+                            ),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
-                    Button(
+                    Button(onClick = ::openManualDialog, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Outlined.Backup, contentDescription = null)
+                        Text(stringResource(R.string.backup_create_now), modifier = Modifier.padding(start = 8.dp))
+                    }
+                    OutlinedButton(
                         onClick = { backupPicker.launch(arrayOf(SafBackupDestination.MIME_TYPE, "application/zip", "application/octet-stream")) },
                         enabled = !busy,
                         modifier = Modifier.fillMaxWidth()
-                    ) { Text(stringResource(R.string.restore)) }
+                    ) {
+                        Icon(Icons.Outlined.Restore, contentDescription = null)
+                        Text(stringResource(R.string.backup_restore_action), modifier = Modifier.padding(start = 8.dp))
+                    }
                     Text(stringResource(R.string.restore_mode), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
                     ReminderArchiveRepository.RestoreMode.entries.forEach { mode ->
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {

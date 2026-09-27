@@ -156,6 +156,15 @@
     <string name="backup_no_folder">Kein Sicherungsordner ausgewählt</string>
     <string name="backup_folder_selected">Sicherungsordner ausgewählt</string>
     <string name="backup_create_now">Jetzt sichern</string>
+    <string name="backup_restore_action">Sicherung wiederherstellen</string>
+    <string name="backup_destination_label">Ziel: %1$s</string>
+    <string name="backup_manual_choose_folder">Ordner für einmalige Sicherung auswählen</string>
+    <string name="backup_manual_change_folder">Ordner für einmalige Sicherungen ändern</string>
+    <string name="backup_auto_encryption_label">Automatische Sicherungen verschlüsseln</string>
+    <string name="backup_define_password">Passwort festlegen</string>
+    <string name="backup_change_password">Passwort ändern</string>
+    <string name="backup_disable_encryption">Verschlüsselung deaktivieren</string>
+    <string name="backup_disable_encryption_confirmation">Künftige automatische Sicherungen werden nicht verschlüsselt. Das gespeicherte Passwort für automatische Sicherungen wird entfernt.</string>
     <string name="backup_auto_frequency">Automatische Sicherung</string>
     <string name="backup_disabled">Deaktiviert</string>
     <string name="backup_daily">Täglich</string>

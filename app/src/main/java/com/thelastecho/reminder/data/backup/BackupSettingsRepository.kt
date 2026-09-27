@@ -24,6 +24,7 @@ enum class BackupStatus { NONE, DESTINATION_UNAVAILABLE, PASSWORD_REQUIRED, BACK
 
 data class BackupSettings(
     val destinationTreeUri: String? = null,
+    val manualDestinationTreeUri: String? = null,
     val frequency: BackupFrequency = BackupFrequency.DISABLED,
     val retention: BackupRetention = BackupRetention.FIVE,
     val encryptionEnabled: Boolean = false,
@@ -31,11 +32,16 @@ data class BackupSettings(
     val status: BackupStatus = BackupStatus.NONE,
     val lastAutomaticBackupMillis: Long? = null,
     val lastManualBackupMillis: Long? = null
-)
+) {
+    internal fun destinationFor(origin: SafBackupDestination.Origin): String? =
+        if (origin == SafBackupDestination.Origin.MANUAL) manualDestinationTreeUri ?: destinationTreeUri
+        else destinationTreeUri
+}
 
 class BackupSettingsRepository(private val context: Context) {
     private object Keys {
         val destination = stringPreferencesKey("destination_tree_uri")
+        val manualDestination = stringPreferencesKey("manual_destination_tree_uri")
         val frequency = stringPreferencesKey("frequency")
         val retention = stringPreferencesKey("retention")
         val encrypted = booleanPreferencesKey("encryption_enabled")
@@ -48,6 +54,7 @@ class BackupSettingsRepository(private val context: Context) {
     val settings: Flow<BackupSettings> = context.backupDataStore.data.map { prefs ->
         BackupSettings(
             destinationTreeUri = prefs[Keys.destination],
+            manualDestinationTreeUri = prefs[Keys.manualDestination],
             frequency = enumValue(prefs[Keys.frequency], BackupFrequency.DISABLED),
             retention = enumValue(prefs[Keys.retention], BackupRetention.FIVE),
             encryptionEnabled = prefs[Keys.encrypted] ?: false,
@@ -60,6 +67,10 @@ class BackupSettingsRepository(private val context: Context) {
 
     suspend fun setDestination(uri: String?) = context.backupDataStore.edit { prefs ->
         if (uri == null) prefs.remove(Keys.destination) else prefs[Keys.destination] = uri
+    }
+
+    suspend fun setManualDestination(uri: String?) = context.backupDataStore.edit { prefs ->
+        if (uri == null) prefs.remove(Keys.manualDestination) else prefs[Keys.manualDestination] = uri
     }
 
     suspend fun setFrequency(value: BackupFrequency) = context.backupDataStore.edit { it[Keys.frequency] = value.name }

@@ -172,7 +172,16 @@
     <string name="backup_select_folder">Choose backup folder</string>
     <string name="backup_no_folder">No backup folder selected</string>
     <string name="backup_folder_selected">Backup folder selected</string>
-    <string name="backup_create_now">Create backup now</string>
+    <string name="backup_create_now">Back up now</string>
+    <string name="backup_restore_action">Restore a backup</string>
+    <string name="backup_destination_label">Destination: %1$s</string>
+    <string name="backup_manual_choose_folder">Choose one-time backup folder</string>
+    <string name="backup_manual_change_folder">Change one-time backup folder</string>
+    <string name="backup_auto_encryption_label">Encrypt automatic backups</string>
+    <string name="backup_define_password">Set password</string>
+    <string name="backup_change_password">Change password</string>
+    <string name="backup_disable_encryption">Disable encryption</string>
+    <string name="backup_disable_encryption_confirmation">Future automatic backups will be unencrypted. The saved automatic-backup password will be removed.</string>
     <string name="backup_auto_frequency">Automatic backup</string>
     <string name="backup_disabled">Disabled</string>
     <string name="backup_daily">Daily</string>
@@ -185,7 +194,7 @@
     <string name="backup_keep_10">10 backups</string>
     <string name="backup_keep_20">20 backups</string>
     <string name="backup_keep_unlimited">Unlimited</string>
-    <string name="backup_encryption">Encrypt backups</string>
+    <string name="backup_encryption">Encrypt automatic backups</string>
     <string name="backup_encryption_details">Encrypted backups require this password to restore on any device. Automatic backups use a device-protected copy of it.</string>
     <string name="backup_password">Backup password</string>
     <string name="save_backup_password">Save password</string>

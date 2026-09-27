@@ -8,7 +8,7 @@ The archive contains `manifest.json`, `database.json`, and optional `attachments
 
 Optional encryption wraps the complete ZIP payload in a versioned envelope. It uses PBKDF2-HMAC-SHA-256 with a per-backup random salt and AES-256-GCM with a per-backup random nonce. Restore requires only the backup password, not the originating device's Android Keystore.
 
-Manual and automatic backups use the same SAF destination but distinct filename prefixes: `Reminder-Manual-` and `Reminder-Auto-`. Retention lists and deletes only `Reminder-Auto-` files, so manual backups are never automatically removed. Manual password protection is chosen per export and is not stored; the automatic password is stored separately in device-protected form for the worker.
+Manual and automatic backups can use separate SAF destinations but retain distinct filename prefixes: `Reminder-Manual-` and `Reminder-Auto-`. Until a manual destination is chosen, manual backups use the configured automatic destination. Retention lists and deletes only `Reminder-Auto-` files, so manual backups are never automatically removed. Manual password protection is chosen per export and is not stored; the automatic password is stored separately in device-protected form for the worker.
 
 ## What is included
 

@@ -172,7 +172,16 @@
     <string name="backup_select_folder">Choisir le dossier de sauvegarde</string>
     <string name="backup_no_folder">Aucun dossier de sauvegarde sélectionné</string>
     <string name="backup_folder_selected">Dossier de sauvegarde sélectionné</string>
-    <string name="backup_create_now">Créer une sauvegarde</string>
+    <string name="backup_create_now">Sauvegarder maintenant</string>
+    <string name="backup_restore_action">Restaurer une sauvegarde</string>
+    <string name="backup_destination_label">Destination : %1$s</string>
+    <string name="backup_manual_choose_folder">Choisir le dossier des sauvegardes ponctuelles</string>
+    <string name="backup_manual_change_folder">Changer le dossier des sauvegardes ponctuelles</string>
+    <string name="backup_auto_encryption_label">Chiffrer les sauvegardes automatiques</string>
+    <string name="backup_define_password">Définir le mot de passe</string>
+    <string name="backup_change_password">Modifier le mot de passe</string>
+    <string name="backup_disable_encryption">Désactiver le chiffrement</string>
+    <string name="backup_disable_encryption_confirmation">Les prochaines sauvegardes automatiques ne seront plus chiffrées. Le mot de passe automatique enregistré sera supprimé.</string>
     <string name="backup_auto_frequency">Sauvegarde automatique</string>
     <string name="backup_disabled">Désactivée</string>
     <string name="backup_daily">Quotidienne</string>
@@ -185,7 +194,7 @@
     <string name="backup_keep_10">10 sauvegardes</string>
     <string name="backup_keep_20">20 sauvegardes</string>
     <string name="backup_keep_unlimited">Sans limite</string>
-    <string name="backup_encryption">Chiffrer les sauvegardes</string>
+    <string name="backup_encryption">Chiffrer les sauvegardes automatiques</string>
     <string name="backup_encryption_details">Le mot de passe est nécessaire pour restaurer une sauvegarde sur tout appareil. Les sauvegardes automatiques utilisent une copie protégée sur cet appareil.</string>
     <string name="backup_password">Mot de passe de sauvegarde</string>
     <string name="save_backup_password">Enregistrer le mot de passe</string>

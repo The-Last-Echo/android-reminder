@@ -3,6 +3,7 @@ package com.thelastecho.reminder.presentation.settings
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,7 +22,10 @@ import java.util.Date
 enum class BackupDestinationPickResult { SAVED, CANCELLED, FAILED }
 
 @Composable
-fun rememberBackupDestinationPicker(onResult: (BackupDestinationPickResult) -> Unit): ActivityResultLauncher<Uri?> {
+fun rememberBackupDestinationPicker(
+    manual: Boolean = false,
+    onResult: (BackupDestinationPickResult) -> Unit
+): ActivityResultLauncher<Uri?> {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     return rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
@@ -30,7 +34,7 @@ fun rememberBackupDestinationPicker(onResult: (BackupDestinationPickResult) -> U
         } else {
             scope.launch {
                 val result = runCatching {
-                    withContext(Dispatchers.IO) { persistDestination(context, uri) }
+                    withContext(Dispatchers.IO) { persistDestination(context, uri, manual) }
                 }
                 onResult(if (result.isSuccess) BackupDestinationPickResult.SAVED else BackupDestinationPickResult.FAILED)
             }
@@ -38,15 +42,36 @@ fun rememberBackupDestinationPicker(onResult: (BackupDestinationPickResult) -> U
     }
 }
 
-private suspend fun persistDestination(context: Context, uri: Uri) {
+private suspend fun persistDestination(context: Context, uri: Uri, manual: Boolean) {
     context.contentResolver.takePersistableUriPermission(
         uri,
         Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
     )
     val repository = BackupSettingsRepository(context)
-    repository.setDestination(uri.toString())
-    BackupWorkScheduler.synchronize(context, repository.settings.first())
+    if (manual) {
+        repository.setManualDestination(uri.toString())
+    } else {
+        repository.setDestination(uri.toString())
+        BackupWorkScheduler.synchronize(context, repository.settings.first())
+    }
 }
+
+fun readBackupDestinationName(context: Context, treeUriString: String): String? = runCatching {
+    val treeUri = Uri.parse(treeUriString)
+    val documentUri = DocumentsContract.buildDocumentUriUsingTree(
+        treeUri,
+        DocumentsContract.getTreeDocumentId(treeUri)
+    )
+    context.contentResolver.query(
+        documentUri,
+        arrayOf(DocumentsContract.Document.COLUMN_DISPLAY_NAME),
+        null,
+        null,
+        null
+    )?.use { cursor ->
+        if (cursor.moveToFirst()) cursor.getString(0) else null
+    }
+}.getOrNull()
 
 fun formatBackupTime(context: Context, timestamp: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, context.resources.configuration.locales[0])

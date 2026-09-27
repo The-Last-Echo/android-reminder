@@ -156,6 +156,15 @@
     <string name="backup_no_folder">No se ha seleccionado ninguna carpeta</string>
     <string name="backup_folder_selected">Carpeta de copias seleccionada</string>
     <string name="backup_create_now">Crear copia ahora</string>
+    <string name="backup_restore_action">Restaurar una copia de seguridad</string>
+    <string name="backup_destination_label">Destino: %1$s</string>
+    <string name="backup_manual_choose_folder">Elegir carpeta para copia puntual</string>
+    <string name="backup_manual_change_folder">Cambiar carpeta para copias puntuales</string>
+    <string name="backup_auto_encryption_label">Cifrar copias de seguridad automáticas</string>
+    <string name="backup_define_password">Establecer contraseña</string>
+    <string name="backup_change_password">Cambiar contraseña</string>
+    <string name="backup_disable_encryption">Desactivar cifrado</string>
+    <string name="backup_disable_encryption_confirmation">Las próximas copias automáticas no estarán cifradas. Se eliminará la contraseña guardada para las copias automáticas.</string>
     <string name="backup_auto_frequency">Copia automática</string>
     <string name="backup_disabled">Desactivada</string>
     <string name="backup_daily">Diaria</string>

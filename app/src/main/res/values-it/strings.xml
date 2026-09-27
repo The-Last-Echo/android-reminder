@@ -156,6 +156,15 @@
     <string name="backup_no_folder">Nessuna cartella di backup selezionata</string>
     <string name="backup_folder_selected">Cartella di backup selezionata</string>
     <string name="backup_create_now">Crea backup ora</string>
+    <string name="backup_restore_action">Ripristina un backup</string>
+    <string name="backup_destination_label">Destinazione: %1$s</string>
+    <string name="backup_manual_choose_folder">Scegli la cartella per i backup una tantum</string>
+    <string name="backup_manual_change_folder">Cambia la cartella per i backup una tantum</string>
+    <string name="backup_auto_encryption_label">Crittografa i backup automatici</string>
+    <string name="backup_define_password">Imposta password</string>
+    <string name="backup_change_password">Modifica password</string>
+    <string name="backup_disable_encryption">Disattiva crittografia</string>
+    <string name="backup_disable_encryption_confirmation">I prossimi backup automatici non saranno crittografati. La password salvata per i backup automatici verrà rimossa.</string>
     <string name="backup_auto_frequency">Backup automatico</string>
     <string name="backup_disabled">Disattivato</string>
     <string name="backup_daily">Ogni giorno</string>

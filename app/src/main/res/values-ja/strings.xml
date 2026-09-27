@@ -156,6 +156,15 @@
     <string name="backup_no_folder">バックアップフォルダが選択されていません</string>
     <string name="backup_folder_selected">バックアップフォルダを選択しました</string>
     <string name="backup_create_now">今すぐバックアップ</string>
+    <string name="backup_restore_action">バックアップを復元</string>
+    <string name="backup_destination_label">保存先: %1$s</string>
+    <string name="backup_manual_choose_folder">単発バックアップ用のフォルダを選択</string>
+    <string name="backup_manual_change_folder">単発バックアップ用のフォルダを変更</string>
+    <string name="backup_auto_encryption_label">自動バックアップを暗号化</string>
+    <string name="backup_define_password">パスワードを設定</string>
+    <string name="backup_change_password">パスワードを変更</string>
+    <string name="backup_disable_encryption">暗号化を無効にする</string>
+    <string name="backup_disable_encryption_confirmation">今後の自動バックアップは暗号化されません。保存済みの自動バックアップ用パスワードは削除されます。</string>
     <string name="backup_auto_frequency">自動バックアップ</string>
     <string name="backup_disabled">無効</string>
     <string name="backup_daily">毎日</string>

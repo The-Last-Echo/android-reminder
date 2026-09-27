@@ -156,6 +156,15 @@
     <string name="backup_no_folder">لم يتم اختيار مجلد للنسخ الاحتياطي</string>
     <string name="backup_folder_selected">تم اختيار مجلد النسخ الاحتياطي</string>
     <string name="backup_create_now">إنشاء نسخة الآن</string>
+    <string name="backup_restore_action">استعادة نسخة احتياطية</string>
+    <string name="backup_destination_label">الوجهة: %1$s</string>
+    <string name="backup_manual_choose_folder">اختيار مجلد لنسخة احتياطية لمرة واحدة</string>
+    <string name="backup_manual_change_folder">تغيير مجلد النسخة الاحتياطية لمرة واحدة</string>
+    <string name="backup_auto_encryption_label">تشفير النسخ الاحتياطية التلقائية</string>
+    <string name="backup_define_password">تعيين كلمة المرور</string>
+    <string name="backup_change_password">تغيير كلمة المرور</string>
+    <string name="backup_disable_encryption">إيقاف التشفير</string>
+    <string name="backup_disable_encryption_confirmation">لن يتم تشفير النسخ الاحتياطية التلقائية القادمة. ستتم إزالة كلمة مرور النسخ الاحتياطي التلقائي المحفوظة.</string>
     <string name="backup_auto_frequency">النسخ الاحتياطي التلقائي</string>
     <string name="backup_disabled">متوقف</string>
     <string name="backup_daily">يوميًا</string>

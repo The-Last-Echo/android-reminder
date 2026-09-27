@@ -15,29 +15,25 @@ class BackupRunner(private val context: Context) {
     data class Result(val succeeded: Boolean, val status: BackupStatus, val retentionWarning: Boolean)
 
     private val settingsRepository = BackupSettingsRepository(context)
-    private val secretStore = EncryptedBackupSecretStore(context)
+    private val secretStore by lazy { EncryptedBackupSecretStore(context) }
+    private val passwordResolver by lazy { BackupPasswordResolver { secretStore.loadPassword() } }
 
     suspend fun runBackup(): Result {
         val settings = settingsRepository.settings.first()
-        val password = if (settings.encryptionEnabled) {
-            try {
-                secretStore.loadPassword() ?: return finishFailure(BackupStatus.PASSWORD_REQUIRED)
-            } catch (_: LocalBackupSecretUnavailableException) {
-                return finishFailure(BackupStatus.PASSWORD_REQUIRED)
-            }
-        } else null
-        return performBackup(
-            SafBackupDestination.Origin.AUTOMATIC,
-            BackupPasswordPolicy.forAutomatic(settings.encryptionEnabled, password)
-        )
+        val password = try {
+            passwordResolver.forAutomatic(settings.encryptionEnabled)
+        } catch (_: LocalBackupSecretUnavailableException) {
+            return finishFailure(BackupStatus.PASSWORD_REQUIRED)
+        } ?: if (settings.encryptionEnabled) return finishFailure(BackupStatus.PASSWORD_REQUIRED) else null
+        return performBackup(SafBackupDestination.Origin.AUTOMATIC, password)
     }
 
     suspend fun runManualBackup(password: CharArray?): Result =
-        performBackup(SafBackupDestination.Origin.MANUAL, BackupPasswordPolicy.forManual(password))
+        performBackup(SafBackupDestination.Origin.MANUAL, passwordResolver.forManual(password))
 
     private suspend fun performBackup(origin: SafBackupDestination.Origin, password: CharArray?): Result {
         val settings = settingsRepository.settings.first()
-        val treeUri = settings.destinationTreeUri?.let(Uri::parse)
+        val treeUri = settings.destinationFor(origin)?.let(Uri::parse)
         if (treeUri == null) {
             password?.fill('\u0000')
             return if (origin == SafBackupDestination.Origin.AUTOMATIC) finishFailure(BackupStatus.DESTINATION_UNAVAILABLE)
@@ -116,4 +112,14 @@ internal object BackupPasswordPolicy {
         if (encryptionEnabled) localPassword else null
 
     fun forManual(password: CharArray?): CharArray? = password?.takeIf { it.isNotEmpty() }
+}
+
+internal class BackupPasswordResolver(private val loadAutomaticPassword: () -> CharArray?) {
+    fun forAutomatic(encryptionEnabled: Boolean): CharArray? =
+        BackupPasswordPolicy.forAutomatic(
+            encryptionEnabled,
+            if (encryptionEnabled) loadAutomaticPassword() else null
+        )
+
+    fun forManual(password: CharArray?): CharArray? = BackupPasswordPolicy.forManual(password)
 }

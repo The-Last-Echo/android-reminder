@@ -156,6 +156,15 @@
     <string name="backup_no_folder">未选择备份文件夹</string>
     <string name="backup_folder_selected">已选择备份文件夹</string>
     <string name="backup_create_now">立即备份</string>
+    <string name="backup_restore_action">恢复备份</string>
+    <string name="backup_destination_label">保存位置：%1$s</string>
+    <string name="backup_manual_choose_folder">选择单次备份文件夹</string>
+    <string name="backup_manual_change_folder">更改单次备份文件夹</string>
+    <string name="backup_auto_encryption_label">加密自动备份</string>
+    <string name="backup_define_password">设置密码</string>
+    <string name="backup_change_password">更改密码</string>
+    <string name="backup_disable_encryption">关闭加密</string>
+    <string name="backup_disable_encryption_confirmation">后续自动备份将不再加密。已保存的自动备份密码将被删除。</string>
     <string name="backup_auto_frequency">自动备份</string>
     <string name="backup_disabled">已停用</string>
     <string name="backup_daily">每天</string>

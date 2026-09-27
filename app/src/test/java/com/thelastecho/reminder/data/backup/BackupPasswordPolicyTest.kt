@@ -1,6 +1,7 @@
 package com.thelastecho.reminder.data.backup
 
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
@@ -25,5 +26,18 @@ class BackupPasswordPolicyTest {
     fun automaticEncryptedBackupUsesTheDeviceStoredPassword() {
         val password = "device stored secret".toCharArray()
         assertArrayEquals(password, BackupPasswordPolicy.forAutomatic(true, password))
+    }
+
+    @Test
+    fun manualBackupDoesNotReadAnAvailableAutomaticPassword() {
+        val storedSecret = "automatic secret".toCharArray()
+        var secretReads = 0
+        val resolver = BackupPasswordResolver {
+            secretReads++
+            storedSecret.copyOf()
+        }
+
+        assertNull(resolver.forManual(null))
+        assertEquals(0, secretReads)
     }
 }
