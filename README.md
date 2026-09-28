@@ -9,7 +9,7 @@ Reminder currently focuses on four core responsibilities:
 - local reminder creation and editing with scheduling, priority, subtasks, notes, categories, and photo attachments;
 - exact or inexact local alarm scheduling with Android `AlarmManager` and local notification delivery;
 - local backup/restore of reminders and related preferences in a portable `.reminderbackup` archive;
-- local settings, theming, retention, widgets, and diagnostics.
+- local settings, theming, retention, diagnostics, and home-screen widgets.
 
 This is not a cloud-synced or multi-user application. The app can be built in two distribution variants:
 
@@ -28,9 +28,9 @@ The project is intentionally split into an `offline` flavor and an `online` flav
 - multiple notification styles: simple, heads-up, full-screen, and disabled;
 - local alarm scheduling and reboot rescheduling;
 - local backups with validate-and-restore logic;
+- a resizable Today reminders widget with per-widget transparency and a fixed quick-add widget.
 - Material 3 theme modes: System, Light, Dark, and AMOLED;
 - per-app language support for English, French, Italian, German, Spanish, Japanese, Simplified Chinese, and Arabic;
-- Jetpack Glance widgets for Today, Upcoming, and Compact views;
 - debug diagnostics limited to debug builds.
 
 ## Current architecture
@@ -51,7 +51,7 @@ The app relies on Room, DataStore, WorkManager, Compose, and Android standard pl
 - DataStore Preferences
 - WorkManager
 - Material 3
-- Android `AlarmManager`, notifications, foreground services, and app widget APIs
+- Android `AlarmManager`, notifications, and foreground services
 
 ## Build and requirements
 

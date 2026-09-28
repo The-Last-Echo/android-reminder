@@ -19,6 +19,10 @@
     <string name="done">Terminés</string>
     <string name="all_categories">Toutes les catégories</string>
     <string name="no_reminders_here">Aucun rappel ici</string>
+    <string name="widget_today_description">Les rappels prévus aujourd’hui.</string>
+    <string name="widget_add_description">Ouvre l’éditeur pour créer un rappel.</string>
+    <string name="widget_transparency_description">Choisissez si le widget Aujourd’hui affiche un fond.</string>
+    <string name="widget_transparent_background">Fond transparent</string>
     <string name="no_completed_reminders">Aucun rappel terminé</string>
     <string name="tap_plus_button">Appuyez sur le bouton + ci-dessous pour en créer un</string>
 
@@ -231,17 +235,6 @@
     <string name="category_icon">Icône de catégorie</string>
     <string name="more_options">Plus d’options</string>
     <string name="edit_category">Modifier la catégorie</string>
-    <string name="widget_today_description">Widget des rappels du jour</string>
-    <string name="widget_upcoming_description">Widget des rappels à venir</string>
-    <string name="widget_compact_description">Widget compact de rappels</string>
-    <string name="widget_add_reminder">Ajouter</string>
-    <string name="settings_group_widgets_title">Widgets</string>
-    <string name="settings_group_widgets_description">Réglez l’apparence des widgets de l’écran d’accueil.</string>
-    <string name="widget_theme_title">Thème des widgets</string>
-    <string name="widget_theme_follows_app">Suit le mode, l’accent et les couleurs dynamiques de l’application.</string>
-    <string name="widget_background_opacity">Opacité du fond</string>
-    <string name="widget_background_opacity_value">Opacité : %1$d %%</string>
-
     <string name="update_available">Une nouvelle version est disponible</string>
     <string name="app_up_to_date">Vous utilisez la dernière version.</string>
     <string name="full_screen_fallback_details">Les alertes plein écran nécessitent une autorisation distincte dans les paramètres Android. Si elle est désactivée, Reminder utilise une notification prioritaire. Ouvrez les paramètres des notifications plein écran pour l’activer.</string>

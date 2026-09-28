@@ -17,6 +17,10 @@
     <string name="done">已完成</string>
     <string name="all_categories">所有类别</string>
     <string name="no_reminders_here">这里没有提醒</string>
+    <string name="widget_today_description">今天到期的提醒。</string>
+    <string name="widget_add_description">打开新提醒编辑器。</string>
+    <string name="widget_transparency_description">选择今日小组件是否显示背景。</string>
+    <string name="widget_transparent_background">透明背景</string>
     <string name="no_completed_reminders">没有已完成的提醒</string>
     <string name="tap_plus_button">点按下方的 + 按钮创建</string>
     <string name="edit_reminder">编辑提醒</string>
@@ -214,17 +218,6 @@
     <string name="category_icon">类别图标</string>
     <string name="more_options">更多选项</string>
     <string name="edit_category">编辑类别</string>
-    <string name="widget_today_description">今日提醒小组件</string>
-    <string name="widget_upcoming_description">即将到来的提醒小组件</string>
-    <string name="widget_compact_description">紧凑提醒小组件</string>
-    <string name="widget_add_reminder">添加</string>
-    <string name="settings_group_widgets_title">小组件</string>
-    <string name="settings_group_widgets_description">调整主屏幕小组件的外观。</string>
-    <string name="widget_theme_title">小组件主题</string>
-    <string name="widget_theme_follows_app">跟随应用的模式、强调色和动态颜色设置。</string>
-    <string name="widget_background_opacity">背景不透明度</string>
-    <string name="widget_background_opacity_value">不透明度：%1$d%%</string>
-
     <string name="update_available">有新版本可用</string>
     <string name="app_up_to_date">你正在使用最新版本。</string>
     <string name="full_screen_fallback_details">全屏提醒需要在 Android 设置中单独授权。如果未授权，Reminder 会改用横幅通知。打开全屏通知设置即可授权。</string>

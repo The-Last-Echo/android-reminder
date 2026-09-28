@@ -18,7 +18,6 @@ data class AppThemeSettings(
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
     val useCustomAccent: Boolean = false,
-    val widgetBackgroundOpacity: Int = 100,
     val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP,
     val alarmSoundUri: String? = null,
     val completedReminderRetentionDays: Int = 0,
@@ -48,7 +47,6 @@ class UserPreferencesRepository(private val context: Context) {
         val USE_DYNAMIC_COLORS = booleanPreferencesKey("use_dynamic_colors")
         val CUSTOM_ACCENT_COLOR = androidx.datastore.preferences.core.intPreferencesKey("custom_accent_color")
         val USE_CUSTOM_ACCENT = booleanPreferencesKey("use_custom_accent")
-        val WIDGET_BACKGROUND_OPACITY = androidx.datastore.preferences.core.intPreferencesKey("widget_background_opacity")
         val NOTIFICATION_STYLE = androidx.datastore.preferences.core.stringPreferencesKey("notification_style")
         val ALARM_SOUND_URI = androidx.datastore.preferences.core.stringPreferencesKey("alarm_sound_uri")
         val COMPLETED_RETENTION_DAYS = androidx.datastore.preferences.core.intPreferencesKey("completed_retention_days")
@@ -84,7 +82,6 @@ class UserPreferencesRepository(private val context: Context) {
             useDynamicColors = dynamicColors,
             customAccentColor = preferences[PreferencesKeys.CUSTOM_ACCENT_COLOR],
             useCustomAccent = preferences[PreferencesKeys.USE_CUSTOM_ACCENT] ?: false,
-            widgetBackgroundOpacity = (preferences[PreferencesKeys.WIDGET_BACKGROUND_OPACITY] ?: 100).coerceIn(0, 100),
             notificationStyle = notificationStyle,
             alarmSoundUri = preferences[PreferencesKeys.ALARM_SOUND_URI],
             completedReminderRetentionDays = preferences[PreferencesKeys.COMPLETED_RETENTION_DAYS] ?: 0,
@@ -131,12 +128,6 @@ class UserPreferencesRepository(private val context: Context) {
         }
     }
 
-    suspend fun setWidgetBackgroundOpacity(opacity: Int) {
-        context.dataStore.edit { preferences ->
-            preferences[PreferencesKeys.WIDGET_BACKGROUND_OPACITY] = opacity.coerceIn(0, 100)
-        }
-    }
-
     suspend fun setAlarmSoundUri(uri: String?) { context.dataStore.edit { if (uri == null) it.remove(PreferencesKeys.ALARM_SOUND_URI) else it[PreferencesKeys.ALARM_SOUND_URI] = uri } }
     suspend fun setCompletedRetentionDays(days: Int) { context.dataStore.edit { it[PreferencesKeys.COMPLETED_RETENTION_DAYS] = days.coerceIn(0, 3650) } }
     suspend fun setAddButtonOnLeft(enabled: Boolean) { context.dataStore.edit { it[PreferencesKeys.ADD_BUTTON_ON_LEFT] = enabled } }
@@ -151,7 +142,6 @@ class UserPreferencesRepository(private val context: Context) {
             p[PreferencesKeys.THEME_MODE] = settings.themeMode.name
             p[PreferencesKeys.ACCENT_COLOR] = settings.accentColor.name
             p[PreferencesKeys.USE_DYNAMIC_COLORS] = settings.useDynamicColors
-            p[PreferencesKeys.WIDGET_BACKGROUND_OPACITY] = settings.widgetBackgroundOpacity.coerceIn(0, 100)
             settings.customAccentColor?.let { p[PreferencesKeys.CUSTOM_ACCENT_COLOR] = it } ?: p.remove(PreferencesKeys.CUSTOM_ACCENT_COLOR)
             p[PreferencesKeys.USE_CUSTOM_ACCENT] = settings.useCustomAccent
             p[PreferencesKeys.NOTIFICATION_STYLE] = settings.notificationStyle.name

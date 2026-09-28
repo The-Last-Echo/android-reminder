@@ -19,6 +19,10 @@
     <string name="done">Done</string>
     <string name="all_categories">All Categories</string>
     <string name="no_reminders_here">No reminders here</string>
+    <string name="widget_today_description">Reminders scheduled for today.</string>
+    <string name="widget_add_description">Open the new reminder editor.</string>
+    <string name="widget_transparency_description">Choose whether the Today widget shows a background.</string>
+    <string name="widget_transparent_background">Transparent background</string>
     <string name="no_completed_reminders">No completed reminders</string>
     <string name="tap_plus_button">Tap the + button below to create one</string>
 
@@ -231,17 +235,6 @@
     <string name="category_icon">Category icon</string>
     <string name="more_options">More options</string>
     <string name="edit_category">Edit category</string>
-    <string name="widget_today_description">Today reminders widget</string>
-    <string name="widget_upcoming_description">Upcoming reminders widget</string>
-    <string name="widget_compact_description">Compact reminders widget</string>
-    <string name="widget_add_reminder">Add</string>
-    <string name="settings_group_widgets_title">Widgets</string>
-    <string name="settings_group_widgets_description">Adjust how home screen widgets look.</string>
-    <string name="widget_theme_title">Widget theme</string>
-    <string name="widget_theme_follows_app">Follows the app’s mode, accent, and dynamic colors.</string>
-    <string name="widget_background_opacity">Background opacity</string>
-    <string name="widget_background_opacity_value">%1$d%% opacity</string>
-
     <string name="update_available">A newer version is available</string>
     <string name="app_up_to_date">You are using the latest version.</string>
     <string name="full_screen_fallback_details">Full-screen alerts require separate access in Android settings. If access is off, Reminder uses a Heads-Up notification instead. Open full-screen notification settings to enable it.</string>

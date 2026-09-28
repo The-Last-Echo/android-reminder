@@ -13,9 +13,9 @@ Implemented behavior:
 - local reminder creation and scheduling
 - local database and preferences
 - local notifications
+- local home-screen widgets
 - local `AlarmManager` scheduling and reboot recovery
 - local backup and restore
-- local widgets
 - local theme and language settings
 - app-local data retention and trash cleanup
 

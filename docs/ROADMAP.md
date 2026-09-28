@@ -13,7 +13,7 @@ The project already includes the following work:
 - backup and restore with validation and local attachment handling
 - Material 3 theme support with System/Light/Dark/AMOLED modes
 - Android localization for eight languages
-- app widgets for Today, Upcoming, and Compact views
+- a resizable, configurable Today widget and a fixed quick-add widget
 - debug diagnostics for notification and alarm issues
 - offline/online build split with offline local-only manifest constraints
 

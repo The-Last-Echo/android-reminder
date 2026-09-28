@@ -17,6 +17,10 @@
     <string name="done">Erledigt</string>
     <string name="all_categories">Alle Kategorien</string>
     <string name="no_reminders_here">Hier gibt es keine Erinnerungen</string>
+    <string name="widget_today_description">Erinnerungen, die heute fällig sind.</string>
+    <string name="widget_add_description">Öffnet den Editor für eine neue Erinnerung.</string>
+    <string name="widget_transparency_description">Wähle, ob das Heute-Widget einen Hintergrund zeigt.</string>
+    <string name="widget_transparent_background">Transparenter Hintergrund</string>
     <string name="no_completed_reminders">Keine erledigten Erinnerungen</string>
     <string name="tap_plus_button">Tippe unten auf +, um eines zu erstellen</string>
     <string name="edit_reminder">Erinnerung bearbeiten</string>
@@ -213,17 +217,6 @@
     <string name="category_icon">Kategoriesymbol</string>
     <string name="more_options">Weitere Optionen</string>
     <string name="edit_category">Kategorie bearbeiten</string>
-    <string name="widget_today_description">Widget für heutige Erinnerungen</string>
-    <string name="widget_upcoming_description">Widget für kommende Erinnerungen</string>
-    <string name="widget_compact_description">Kompaktes Erinnerungswidget</string>
-    <string name="widget_add_reminder">Hinzufügen</string>
-    <string name="settings_group_widgets_title">Widgets</string>
-    <string name="settings_group_widgets_description">Darstellung der Startbildschirm-Widgets anpassen.</string>
-    <string name="widget_theme_title">Widget-Design</string>
-    <string name="widget_theme_follows_app">Folgt Modus, Akzentfarbe und dynamischen Farben der App.</string>
-    <string name="widget_background_opacity">Hintergrundtransparenz</string>
-    <string name="widget_background_opacity_value">%1$d %% Deckkraft</string>
-
     <string name="update_available">Eine neue Version ist verfügbar</string>
     <string name="app_up_to_date">Du verwendest die neueste Version.</string>
     <string name="full_screen_fallback_details">Vollbildhinweise benötigen eine separate Berechtigung in den Android-Einstellungen. Ist sie deaktiviert, verwendet Reminder stattdessen eine hervorgehobene Benachrichtigung. Öffne die Einstellungen für Vollbildbenachrichtigungen, um sie zu aktivieren.</string>

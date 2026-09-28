@@ -27,7 +27,6 @@ class SettingsViewModel(
                     useDynamicColors = settings.useDynamicColors,
                     customAccentColor = settings.customAccentColor,
                     useCustomAccent = settings.useCustomAccent,
-                    widgetBackgroundOpacity = settings.widgetBackgroundOpacity,
                     notificationStyle = settings.notificationStyle,
                     alarmSoundUri = settings.alarmSoundUri,
                     completedReminderRetentionDays = settings.completedReminderRetentionDays,
@@ -50,7 +49,6 @@ class SettingsViewModel(
                 is SettingsIntent.SetDynamicColors -> {
                     preferencesRepository.setUseDynamicColors(intent.enabled)
                 }
-                is SettingsIntent.SetWidgetBackgroundOpacity -> preferencesRepository.setWidgetBackgroundOpacity(intent.opacity)
                 is SettingsIntent.SetNotificationStyle -> {
                     preferencesRepository.setNotificationStyle(intent.style)
                 }

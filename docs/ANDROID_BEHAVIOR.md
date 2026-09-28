@@ -35,9 +35,9 @@ Update checks are off by default. A manual check or enabled daily WorkManager ch
 
 Reminder rows, categories, subtasks and settings are stored locally in Room and DataStore. Photos are selected using Android's Photo Picker and retained as the selected URI until the user removes or replaces the photo. There is no analytics or cloud sync feature.
 
-## Widgets and themes
+## Home-screen widgets
 
-Three Jetpack Glance home-screen widgets show today's reminders, upcoming reminders, or a compact active list with a quick-create action. Selecting a reminder opens it in the app. Widgets refresh when reminder data or relevant appearance settings change, on date/time/time-zone/theme/locale events, and at a requested 30-minute launcher interval; Android and launchers may throttle periodic refreshes. Widget colors, theme mode, and background opacity follow the app's appearance settings when rendered.
+Reminder provides two local Glance widgets: Today lists active reminders due on the current local date and adapts the number of visible rows to its launcher-controlled size; Quick add is a fixed-size shortcut that opens the new-reminder editor. The Today widget has a per-instance transparent-background option in its Android widget configuration activity. Android 12+ launchers can expose this activity again through the widget's reconfigure action; resizing is handled by the launcher and is not offered for Quick add. Widget content refreshes after reminder or appearance changes, on date/time/locale changes, and periodically through Android.
 
 ## Language support
 

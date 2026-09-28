@@ -17,6 +17,10 @@
     <string name="done">Completados</string>
     <string name="all_categories">Todas las categorías</string>
     <string name="no_reminders_here">No hay recordatorios aquí</string>
+    <string name="widget_today_description">Recordatorios programados para hoy.</string>
+    <string name="widget_add_description">Abre el editor para crear un recordatorio.</string>
+    <string name="widget_transparency_description">Elige si el widget de hoy muestra un fondo.</string>
+    <string name="widget_transparent_background">Fondo transparente</string>
     <string name="no_completed_reminders">No hay recordatorios completados</string>
     <string name="tap_plus_button">Toca el botón + de abajo para crear uno</string>
     <string name="edit_reminder">Editar recordatorio</string>
@@ -213,17 +217,6 @@
     <string name="category_icon">Icono de categoría</string>
     <string name="more_options">Más opciones</string>
     <string name="edit_category">Editar categoría</string>
-    <string name="widget_today_description">Widget de recordatorios de hoy</string>
-    <string name="widget_upcoming_description">Widget de próximos recordatorios</string>
-    <string name="widget_compact_description">Widget compacto de recordatorios</string>
-    <string name="widget_add_reminder">Añadir</string>
-    <string name="settings_group_widgets_title">Widgets</string>
-    <string name="settings_group_widgets_description">Ajusta el aspecto de los widgets de la pantalla de inicio.</string>
-    <string name="widget_theme_title">Tema de los widgets</string>
-    <string name="widget_theme_follows_app">Sigue el modo, el color de acento y los colores dinámicos de la aplicación.</string>
-    <string name="widget_background_opacity">Opacidad del fondo</string>
-    <string name="widget_background_opacity_value">Opacidad: %1$d %%</string>
-
     <string name="update_available">Hay una versión nueva disponible</string>
     <string name="app_up_to_date">Tienes la versión más reciente.</string>
     <string name="full_screen_fallback_details">Las alertas a pantalla completa necesitan un permiso independiente en los ajustes de Android. Si está desactivado, Reminder usará una notificación destacada. Abre los ajustes de notificaciones a pantalla completa para activarlo.</string>

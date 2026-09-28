@@ -67,15 +67,11 @@ Translations and locale config are under:
 
 The application declares eight locales in the manifest configuration.
 
-### Widgets
-
-The Glance widgets live under:
-
-- `app/src/main/java/com/thelastecho/reminder/presentation/widget`
-
-These are Android app widgets, not a separate module.
-
 ## Development workflow
+
+### Home-screen widgets
+
+The local Glance widgets are implemented under `app/src/main/java/com/thelastecho/reminder/presentation/widget`. The Today widget's transparency setting is stored per widget instance and edited through the Android widget configuration activity. Keep widget sizing and reconfiguration declarations in the matching `app/src/main/res/xml/widget_*_info.xml` provider metadata; Quick add is intentionally fixed-size.
 
 1. Keep the local-first behavior intact.
 2. Prefer domain/use case changes over direct UI mutation.

@@ -55,8 +55,7 @@ class ReminderApp : Application() {
                         settings.accentColor,
                         settings.useDynamicColors,
                         settings.customAccentColor,
-                        settings.useCustomAccent,
-                        settings.widgetBackgroundOpacity
+                        settings.useCustomAccent
                     )
                 }
                 .collect { updateReminderWidgets(this@ReminderApp) }

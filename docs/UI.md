@@ -77,15 +77,9 @@ The design system uses Material 3 and a custom `ReminderTheme` implementation wi
 
 These settings are persisted via DataStore.
 
-## Widgets
+## Home-screen widgets
 
-The app includes three Glance widgets:
-
-- Today reminders
-- Upcoming reminders
-- Compact reminder list
-
-The Today and Upcoming widgets show localized due times and open a selected reminder in the app. The Compact widget shows an active reminder and includes a quick-create action. Widget colors and background opacity follow the appearance settings. These are local-only UI surfaces.
+The Today widget shows active reminders scheduled for the current day. It can be resized on the home screen and its background can be toggled between opaque and transparent from Android's widget reconfiguration screen. Quick add is a compact fixed-size action that opens the new reminder editor.
 
 ## Accessibility and localization
 

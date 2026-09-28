@@ -348,40 +348,6 @@ fun AppearanceSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () ->
 }
 
 @Composable
-fun WidgetSettingsScreen(
-    viewModel: SettingsViewModel,
-    onNavigateBack: () -> Unit,
-    onNavigateToAppearance: () -> Unit
-) {
-    val state by viewModel.uiState.collectAsState()
-    var opacity by remember(state.widgetBackgroundOpacity) { mutableStateOf(state.widgetBackgroundOpacity.toFloat()) }
-    SettingsGroupScaffold(R.string.settings_group_widgets_title, onNavigateBack) {
-        SettingsCard {
-            SettingRow(
-                title = stringResource(R.string.widget_theme_title),
-                description = stringResource(R.string.widget_theme_follows_app),
-                onClick = onNavigateToAppearance,
-                leading = { Icon(Icons.Outlined.ColorLens, contentDescription = null, tint = MaterialTheme.colorScheme.primary) }
-            )
-            HorizontalDivider()
-            Column(Modifier.fillMaxWidth().padding(vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(stringResource(R.string.widget_background_opacity), modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-                    Text(stringResource(R.string.widget_background_opacity_value, opacity.toInt()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Slider(
-                    value = opacity,
-                    onValueChange = { opacity = it },
-                    onValueChangeFinished = { viewModel.onIntent(SettingsIntent.SetWidgetBackgroundOpacity(opacity.toInt())) },
-                    valueRange = 0f..100f,
-                    steps = 19
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun RemindersSettingsScreen(viewModel: SettingsViewModel, onNavigateBack: () -> Unit, onNavigateToCategories: () -> Unit) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current

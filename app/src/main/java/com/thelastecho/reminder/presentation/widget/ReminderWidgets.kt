@@ -1,23 +1,26 @@
 package com.thelastecho.reminder.presentation.widget
 
-import android.appwidget.AppWidgetManager
 import android.content.Context
-import android.content.ComponentName
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.glance.LocalSize
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.action.ActionParameters
-import androidx.glance.action.actionStartActivity
 import androidx.glance.action.actionParametersOf
+import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.AppWidgetId
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.provideContent
+import androidx.glance.appwidget.state.getAppWidgetState
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.glance.background
+import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
@@ -26,12 +29,13 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.layout.width
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.designsystem.reminderColorScheme
 import com.thelastecho.reminder.core.preferences.AppThemeSettings
@@ -41,27 +45,31 @@ import com.thelastecho.reminder.data.local.ReminderDatabase
 import com.thelastecho.reminder.data.repository.ReminderRepositoryImpl
 import com.thelastecho.reminder.domain.model.Reminder
 import com.thelastecho.reminder.presentation.MainActivity
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import java.text.DateFormat
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
-import java.util.Locale
+import java.util.Date
 
-private enum class ReminderWidgetKind { TODAY, UPCOMING, COMPACT }
+internal val transparentWidgetBackgroundKey = booleanPreferencesKey("transparent_background")
 
-private class ReminderListWidget(private val kind: ReminderWidgetKind) : GlanceAppWidget() {
+private val reminderIdKey = ActionParameters.Key<Long>("reminder_id")
+private val openNewReminderKey = ActionParameters.Key<Boolean>("open_new_reminder")
+
+private class TodayRemindersWidget : GlanceAppWidget() {
+    override val stateDefinition = PreferencesGlanceStateDefinition
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val remindersFlow = activeRemindersFlow(context)
         val initialReminders = remindersFlow.first()
         val themeSettingsFlow = UserPreferencesRepository(context).themeSettings
         val initialThemeSettings = themeSettingsFlow.first()
+
         provideContent {
-            ReminderWidgetContent(
+            TodayRemindersContent(
                 context = context,
-                kind = kind,
                 remindersFlow = remindersFlow,
                 initialReminders = initialReminders,
                 themeSettingsFlow = themeSettingsFlow,
@@ -72,9 +80,8 @@ private class ReminderListWidget(private val kind: ReminderWidgetKind) : GlanceA
 }
 
 @Composable
-private fun ReminderWidgetContent(
+private fun TodayRemindersContent(
     context: Context,
-    kind: ReminderWidgetKind,
     remindersFlow: Flow<List<Reminder>>,
     initialReminders: List<Reminder>,
     themeSettingsFlow: Flow<AppThemeSettings>,
@@ -82,70 +89,73 @@ private fun ReminderWidgetContent(
 ) {
     val reminders by remindersFlow.collectAsState(initial = initialReminders)
     val themeSettings by themeSettingsFlow.collectAsState(initial = initialThemeSettings)
-    val dark = when (themeSettings.themeMode) {
+    val preferences = currentState<Preferences>()
+    val isTransparent = preferences[transparentWidgetBackgroundKey] ?: false
+    val darkTheme = when (themeSettings.themeMode) {
         ThemeMode.DARK, ThemeMode.AMOLED -> true
         ThemeMode.LIGHT -> false
         ThemeMode.SYSTEM -> (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
     }
     val colors = reminderColorScheme(
         context = context,
-        darkTheme = dark,
+        darkTheme = darkTheme,
         isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
         dynamicColor = themeSettings.useDynamicColors,
         accentColor = themeSettings.accentColor,
         customAccentColor = themeSettings.customAccentColor,
         useCustomAccent = themeSettings.useCustomAccent
     )
-    val backgroundColor = colors.surface.copy(alpha = themeSettings.widgetBackgroundOpacity / 100f)
     val zone = ZoneId.systemDefault()
     val today = LocalDate.now(zone)
-    val now = System.currentTimeMillis()
-    val eligibleReminders = when (kind) {
-        ReminderWidgetKind.TODAY -> reminders.filter { reminder ->
+    val todaysReminders = reminders
+        .filter { reminder ->
             reminder.dueDateTimeEpochMillis?.let {
                 Instant.ofEpochMilli(it).atZone(zone).toLocalDate() == today
             } == true
         }
-        ReminderWidgetKind.UPCOMING -> reminders.filter {
-            (it.dueDateTimeEpochMillis ?: Long.MIN_VALUE) > now
+        .sortedBy { it.dueDateTimeEpochMillis }
+    val maxRows = ((androidx.glance.LocalSize.current.height - 42.dp).value / 42f).toInt().coerceIn(1, 5)
+    val widgetBackground = if (isTransparent) Color.Transparent else colors.surfaceContainer
+
+    Column(
+        GlanceModifier.fillMaxSize()
+            .background(ColorProvider(widgetBackground))
+            .padding(12.dp)
+    ) {
+        Row(GlanceModifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = context.getString(R.string.today),
+                style = TextStyle(color = ColorProvider(colors.onSurface), fontSize = 17.sp, fontWeight = FontWeight.Medium)
+            )
+            Spacer(GlanceModifier.defaultWeight())
+            Text(
+                text = todaysReminders.size.toString(),
+                style = TextStyle(color = ColorProvider(colors.primary), fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            )
         }
-        ReminderWidgetKind.COMPACT -> reminders
-    }
-
-    if (kind == ReminderWidgetKind.COMPACT) {
-        CompactWidgetContent(context, eligibleReminders.firstOrNull(), backgroundColor, colors)
-        return
-    }
-
-    val size = LocalSize.current
-    val maxRows = if (size.height >= 160.dp) 5 else 2
-    Column(GlanceModifier.fillMaxSize().background(ColorProvider(backgroundColor)).padding(8.dp)) {
-        Text(
-            when (kind) {
-                ReminderWidgetKind.TODAY -> context.getString(R.string.today)
-                ReminderWidgetKind.UPCOMING -> context.getString(R.string.scheduled)
-                ReminderWidgetKind.COMPACT -> context.getString(R.string.reminders)
-            },
-            style = TextStyle(fontSize = 16.sp, color = ColorProvider(colors.onSurface))
-        )
-        Spacer(GlanceModifier.height(2.dp))
-        if (eligibleReminders.isEmpty()) {
-            Text(context.getString(R.string.no_reminders_here), style = TextStyle(fontSize = 14.sp, color = ColorProvider(colors.onSurfaceVariant)))
+        Spacer(GlanceModifier.height(6.dp))
+        if (todaysReminders.isEmpty()) {
+            Text(
+                text = context.getString(R.string.no_reminders_here),
+                style = TextStyle(color = ColorProvider(colors.onSurfaceVariant), fontSize = 13.sp)
+            )
         } else {
-            eligibleReminders.take(maxRows).forEach { reminder ->
-                val reminderIdKey = ActionParameters.Key<Long>("reminder_id")
-                Row(
+            todaysReminders.take(maxRows).forEach { reminder ->
+                Column(
                     GlanceModifier.fillMaxWidth()
                         .clickable(actionStartActivity<MainActivity>(parameters = actionParametersOf(reminderIdKey to reminder.id)))
-                        .padding(vertical = 1.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(vertical = 5.dp)
                 ) {
-                    Column(GlanceModifier.fillMaxWidth()) {
-                        Text(reminder.title, maxLines = 1, style = TextStyle(fontSize = 12.sp, color = ColorProvider(colors.onSurface)))
+                    Text(
+                        text = reminder.title,
+                        maxLines = 1,
+                        style = TextStyle(color = ColorProvider(colors.onSurface), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                    )
+                    reminder.dueDateTimeEpochMillis?.let { dueTime ->
                         Text(
-                            reminder.dueDateTimeEpochMillis?.let { formatDueDateTime(context, it, today, zone) }.orEmpty(),
+                            text = DateFormat.getTimeInstance(DateFormat.SHORT, context.resources.configuration.locales[0]).format(Date(dueTime)),
                             maxLines = 1,
-                            style = TextStyle(fontSize = 10.sp, color = ColorProvider(colors.onSurfaceVariant))
+                            style = TextStyle(color = ColorProvider(colors.onSurfaceVariant), fontSize = 11.sp)
                         )
                     }
                 }
@@ -154,84 +164,75 @@ private fun ReminderWidgetContent(
     }
 }
 
-@Composable
-private fun CompactWidgetContent(
-    context: Context,
-    reminder: Reminder?,
-    backgroundColor: androidx.compose.ui.graphics.Color,
-    colors: androidx.compose.material3.ColorScheme
-) {
-    Row(
-        GlanceModifier.fillMaxSize().background(ColorProvider(backgroundColor)).padding(4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(GlanceModifier.defaultWeight()) {
-            if (reminder == null) {
-                Text(context.getString(R.string.no_reminders_here), maxLines = 2, style = TextStyle(fontSize = 12.sp, color = ColorProvider(colors.onSurfaceVariant)))
-            } else {
-                val reminderIdKey = ActionParameters.Key<Long>("reminder_id")
-                Column(
-                    GlanceModifier.fillMaxWidth().clickable(actionStartActivity<MainActivity>(parameters = actionParametersOf(reminderIdKey to reminder.id)))
-                ) {
-                    Text(reminder.title, maxLines = 1, style = TextStyle(fontSize = 12.sp, color = ColorProvider(colors.onSurface)))
-                    Text(
-                        reminder.dueDateTimeEpochMillis?.let {
-                            formatDueDateTime(context, it, LocalDate.now(ZoneId.systemDefault()), ZoneId.systemDefault())
-                        }.orEmpty(),
-                        maxLines = 1,
-                        style = TextStyle(fontSize = 10.sp, color = ColorProvider(colors.onSurfaceVariant))
-                    )
-                }
+private class QuickAddWidget : GlanceAppWidget() {
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
+        val themeSettings = UserPreferencesRepository(context).themeSettings.first()
+        val darkTheme = when (themeSettings.themeMode) {
+            ThemeMode.DARK, ThemeMode.AMOLED -> true
+            ThemeMode.LIGHT -> false
+            ThemeMode.SYSTEM -> (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        }
+        val colors = reminderColorScheme(
+            context = context,
+            darkTheme = darkTheme,
+            isAmoledMode = themeSettings.themeMode == ThemeMode.AMOLED,
+            dynamicColor = themeSettings.useDynamicColors,
+            accentColor = themeSettings.accentColor,
+            customAccentColor = themeSettings.customAccentColor,
+            useCustomAccent = themeSettings.useCustomAccent
+        )
+        provideContent {
+            Column(
+                GlanceModifier.fillMaxSize()
+                    .background(ColorProvider(colors.primary))
+                    .clickable(actionStartActivity<MainActivity>(parameters = actionParametersOf(openNewReminderKey to true)))
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("+", style = TextStyle(color = ColorProvider(colors.onPrimary), fontSize = 24.sp))
+                Text(
+                    text = context.getString(R.string.create_reminder),
+                    maxLines = 1,
+                    style = TextStyle(color = ColorProvider(colors.onPrimary), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                )
             }
         }
-        Spacer(GlanceModifier.width(6.dp))
-        val addReminderKey = ActionParameters.Key<Boolean>("open_new_reminder")
-        Row(
-            GlanceModifier.background(ColorProvider(colors.primaryContainer))
-                .clickable(actionStartActivity<MainActivity>(parameters = actionParametersOf(addReminderKey to true)))
-                .padding(horizontal = 6.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("+", style = TextStyle(fontSize = 15.sp, color = ColorProvider(colors.onPrimaryContainer)))
-            Spacer(GlanceModifier.width(3.dp))
-            Text(context.getString(R.string.widget_add_reminder), maxLines = 1, style = TextStyle(fontSize = 10.sp, color = ColorProvider(colors.onPrimaryContainer)))
-        }
     }
+}
+
+class TodayRemindersWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = TodayRemindersWidget()
+}
+
+class QuickAddWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = QuickAddWidget()
+}
+
+suspend fun updateReminderWidgets(context: Context) {
+    val manager = GlanceAppWidgetManager(context)
+    manager.getGlanceIds(TodayRemindersWidget::class.java).forEach { glanceId ->
+        TodayRemindersWidget().update(context, glanceId)
+    }
+    manager.getGlanceIds(QuickAddWidget::class.java).forEach { glanceId ->
+        QuickAddWidget().update(context, glanceId)
+    }
+}
+
+internal suspend fun readTodayWidgetTransparency(context: Context, appWidgetId: Int): Boolean {
+    val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
+    return TodayRemindersWidget().getAppWidgetState<Preferences>(context, glanceId)[transparentWidgetBackgroundKey] ?: false
+}
+
+internal suspend fun saveTodayWidgetTransparency(context: Context, appWidgetId: Int, isTransparent: Boolean) {
+    val glanceId = GlanceAppWidgetManager(context).getGlanceIdBy(appWidgetId)
+    updateAppWidgetState(context, glanceId) { preferences ->
+        preferences[transparentWidgetBackgroundKey] = isTransparent
+    }
+    TodayRemindersWidget().update(context, glanceId)
 }
 
 private fun activeRemindersFlow(context: Context): Flow<List<Reminder>> {
     val database = ReminderDatabase.getInstance(context)
     return ReminderRepositoryImpl(database.reminderDao(), database.categoryDao()).getActiveReminders()
-}
-
-private fun formatDueDateTime(context: Context, dueTimeMillis: Long, today: LocalDate, zone: ZoneId): String {
-    val dateTime = Instant.ofEpochMilli(dueTimeMillis).atZone(zone)
-    val locale = context.resources.configuration.locales[0] ?: Locale.getDefault()
-    val formatter = if (dateTime.toLocalDate() == today) {
-        DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-    } else {
-        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
-    }
-    return formatter.withLocale(locale).format(dateTime)
-}
-
-private val todayWidget = ReminderListWidget(ReminderWidgetKind.TODAY)
-private val upcomingWidget = ReminderListWidget(ReminderWidgetKind.UPCOMING)
-private val compactWidget = ReminderListWidget(ReminderWidgetKind.COMPACT)
-
-class TodayRemindersWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = todayWidget }
-class UpcomingRemindersWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = upcomingWidget }
-class CompactRemindersWidgetReceiver : GlanceAppWidgetReceiver() { override val glanceAppWidget: GlanceAppWidget = compactWidget }
-
-suspend fun updateReminderWidgets(context: Context) {
-    val manager = AppWidgetManager.getInstance(context)
-    listOf(
-        TodayRemindersWidgetReceiver::class.java to todayWidget,
-        UpcomingRemindersWidgetReceiver::class.java to upcomingWidget,
-        CompactRemindersWidgetReceiver::class.java to compactWidget
-    ).forEach { (receiverClass, widget) ->
-        manager.getAppWidgetIds(ComponentName(context, receiverClass)).forEach { appWidgetId ->
-            widget.update(context, AppWidgetId(appWidgetId))
-        }
-    }
 }

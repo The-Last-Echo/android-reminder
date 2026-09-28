@@ -17,6 +17,10 @@
     <string name="done">完了</string>
     <string name="all_categories">すべてのカテゴリ</string>
     <string name="no_reminders_here">ここにリマインダーはありません</string>
+    <string name="widget_today_description">今日が期限のリマインダー。</string>
+    <string name="widget_add_description">新しいリマインダーの編集画面を開きます。</string>
+    <string name="widget_transparency_description">今日のウィジェットに背景を表示するか選択します。</string>
+    <string name="widget_transparent_background">背景を透明にする</string>
     <string name="no_completed_reminders">完了したリマインダーはありません</string>
     <string name="tap_plus_button">下の＋ボタンをタップして作成</string>
     <string name="edit_reminder">リマインダーを編集</string>
@@ -213,17 +217,6 @@
     <string name="category_icon">カテゴリのアイコン</string>
     <string name="more_options">その他のオプション</string>
     <string name="edit_category">カテゴリを編集</string>
-    <string name="widget_today_description">今日のリマインダーウィジェット</string>
-    <string name="widget_upcoming_description">今後のリマインダーウィジェット</string>
-    <string name="widget_compact_description">コンパクトなリマインダーウィジェット</string>
-    <string name="widget_add_reminder">追加</string>
-    <string name="settings_group_widgets_title">ウィジェット</string>
-    <string name="settings_group_widgets_description">ホーム画面ウィジェットの表示を設定します。</string>
-    <string name="widget_theme_title">ウィジェットのテーマ</string>
-    <string name="widget_theme_follows_app">アプリのモード、アクセントカラー、ダイナミックカラーに従います。</string>
-    <string name="widget_background_opacity">背景の不透明度</string>
-    <string name="widget_background_opacity_value">不透明度 %1$d%%</string>
-
     <string name="update_available">新しいバージョンがあります</string>
     <string name="app_up_to_date">最新バージョンを使用しています。</string>
     <string name="full_screen_fallback_details">全画面アラートには Android 設定で個別の許可が必要です。許可されていない場合、Reminder は代わりにヘッドアップ通知を表示します。全画面通知の設定を開いて許可してください。</string>

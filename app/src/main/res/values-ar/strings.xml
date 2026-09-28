@@ -17,6 +17,10 @@
     <string name="done">مكتملة</string>
     <string name="all_categories">كل الفئات</string>
     <string name="no_reminders_here">لا توجد تذكيرات هنا</string>
+    <string name="widget_today_description">التذكيرات المستحقة اليوم.</string>
+    <string name="widget_add_description">افتح محرر تذكير جديد.</string>
+    <string name="widget_transparency_description">اختر ما إذا كانت أداة اليوم تعرض خلفية.</string>
+    <string name="widget_transparent_background">خلفية شفافة</string>
     <string name="no_completed_reminders">لا توجد تذكيرات مكتملة</string>
     <string name="tap_plus_button">اضغط زر + أدناه لإنشاء تذكير</string>
     <string name="edit_reminder">تعديل التذكير</string>
@@ -213,17 +217,6 @@
     <string name="category_icon">أيقونة الفئة</string>
     <string name="more_options">خيارات إضافية</string>
     <string name="edit_category">تعديل الفئة</string>
-    <string name="widget_today_description">أداة تذكيرات اليوم</string>
-    <string name="widget_upcoming_description">أداة التذكيرات القادمة</string>
-    <string name="widget_compact_description">أداة تذكيرات مصغرة</string>
-    <string name="widget_add_reminder">إضافة</string>
-    <string name="settings_group_widgets_title">الأدوات</string>
-    <string name="settings_group_widgets_description">اضبط مظهر أدوات الشاشة الرئيسية.</string>
-    <string name="widget_theme_title">مظهر الأدوات</string>
-    <string name="widget_theme_follows_app">يتبع وضع التطبيق ولونه المميز وألوانه الديناميكية.</string>
-    <string name="widget_background_opacity">عتامة الخلفية</string>
-    <string name="widget_background_opacity_value">العتامة: %1$d%%</string>
-
     <string name="update_available">يتوفر إصدار أحدث</string>
     <string name="app_up_to_date">أنت تستخدم أحدث إصدار.</string>
     <string name="full_screen_fallback_details">تتطلب التنبيهات بملء الشاشة إذنًا منفصلًا في إعدادات Android. إذا كان الإذن متوقفًا، فسيستخدم Reminder إشعارًا بارزًا بدلًا منه. افتح إعدادات إشعارات ملء الشاشة لتفعيله.</string>

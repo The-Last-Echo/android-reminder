@@ -23,7 +23,7 @@ A typical reminder lifecycle is:
 
 ## Main package responsibilities
 
-- `presentation`: screens, navigation, ViewModels, widgets, and shared UI components
+- `presentation`: screens, navigation, ViewModels, Glance widgets, and shared UI components
 - `domain`: reminder models, repository interfaces, and use cases that encapsulate business rules
 - `data`: Room database, DAO access, repository implementations, backup logic, and WorkManager jobs
 - `core`: platform concerns such as alarms, notifications, preferences, debug logging, distribution flavor logic, and theming
@@ -57,7 +57,7 @@ This separation exists for distribution and optional update checks, not for onli
 
 ## Build and platform constraints
 
-The app targets Android 8.0+ and compiles with JDK 21 and Android SDK 36. The manifest declares exact-alarm permissions, notification permission, foreground media-playback service permission, boot completion receiver, and local app widget entries.
+The app targets Android 8.0+ and compiles with JDK 21 and Android SDK 36. The manifest declares exact-alarm permissions, notification permission, foreground media-playback service permission, and the boot completion receiver.
 
 ## Important architectural choices
 

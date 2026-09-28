@@ -9,7 +9,6 @@ data class SettingsUiState(
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
     val useCustomAccent: Boolean = false,
-    val widgetBackgroundOpacity: Int = 100,
     val notificationStyle: com.thelastecho.reminder.core.preferences.NotificationStyle = com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP,
     val alarmSoundUri: String? = null,
     val completedReminderRetentionDays: Int = 0,
@@ -25,7 +24,6 @@ sealed interface SettingsIntent {
     data class SetAccentColor(val color: AccentColor) : SettingsIntent
     data class SetCustomAccentColor(val argb: Int) : SettingsIntent
     data class SetDynamicColors(val enabled: Boolean) : SettingsIntent
-    data class SetWidgetBackgroundOpacity(val opacity: Int) : SettingsIntent
     data class SetNotificationStyle(val style: com.thelastecho.reminder.core.preferences.NotificationStyle) : SettingsIntent
     data class SetAlarmSound(val uri: String?) : SettingsIntent
     data class SetCompletedRetention(val days: Int) : SettingsIntent
