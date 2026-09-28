@@ -15,7 +15,9 @@ import org.junit.Before
 import org.junit.Test
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 
 class ToggleReminderCompleteUseCaseTest {
 
@@ -66,8 +68,12 @@ class ToggleReminderCompleteUseCaseTest {
     @Test
     fun weekdaysCalculation_skipsWeekends() {
         val zone = ZoneId.systemDefault()
-        // Friday at 10:00
-        val friday = java.time.LocalDate.of(2026, 9, 25).atTime(10, 0).atZone(zone).toInstant().toEpochMilli()
+        val friday = LocalDate.now(zone)
+            .with(TemporalAdjusters.nextOrSame(DayOfWeek.FRIDAY))
+            .atTime(10, 0)
+            .atZone(zone)
+            .toInstant()
+            .toEpochMilli()
         val nextOccurrence = useCase.calculateNextOccurrence(friday, RepeatInterval.WEEKDAYS)
 
         val nextDate = Instant.ofEpochMilli(nextOccurrence).atZone(zone).toLocalDate()

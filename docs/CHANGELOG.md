@@ -2,6 +2,20 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.8 - 2026-09-28
+
+### Added
+- Rebuild the home-screen widgets with a responsive Today reminders widget and a fixed Quick Add shortcut.
+- Add launcher-managed resizing and per-instance transparent-background configuration for the Today widget.
+- Localize widget labels and configuration across all supported languages.
+
+### Changed
+- Remove the legacy Upcoming and Compact widgets and the in-app widget appearance settings.
+- Refresh widgets when reminders, appearance settings, date/time, locale, or system appearance changes.
+
+### Tests
+- Make the weekday recurrence test use a date relative to the current day instead of a fixed date.
+
 ## 1.8.7 - 2026-09-27
 
 ### Added

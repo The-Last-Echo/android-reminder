@@ -186,7 +186,7 @@ private class QuickAddWidget : GlanceAppWidget() {
                 GlanceModifier.fillMaxSize()
                     .background(ColorProvider(colors.primary))
                     .clickable(actionStartActivity<MainActivity>(parameters = actionParametersOf(openNewReminderKey to true)))
-                    .padding(12.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -194,7 +194,7 @@ private class QuickAddWidget : GlanceAppWidget() {
                 Text(
                     text = context.getString(R.string.create_reminder),
                     maxLines = 1,
-                    style = TextStyle(color = ColorProvider(colors.onPrimary), fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    style = TextStyle(color = ColorProvider(colors.onPrimary), fontSize = 11.sp, fontWeight = FontWeight.Medium)
                 )
             }
         }
