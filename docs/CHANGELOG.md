@@ -2,6 +2,20 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.9 - 2026-09-29
+
+### Added
+- Add configurable reminder repetition intervals from minutes through years, with forever, occurrence-count, and end-date duration options.
+- Add persistent reminder favorites, display them first on Home, and include their state in portable backups.
+- Reorganize reminder creation around title, notes, photo, checklist, schedule, notification style, and category, with a completion confirmation animation.
+- Localize the new reminder controls across all supported languages.
+
+### Changed
+- Extend the Room reminder schema with a backward-compatible migration for recurrence settings and favorites.
+
+### Tests
+- Cover custom minute intervals, recurrence count limits, and Home favorite ordering.
+
 ## 1.8.8 - 2026-09-28
 
 ### Added

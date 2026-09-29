@@ -3,6 +3,7 @@ package com.thelastecho.reminder.presentation.editor
 import com.thelastecho.reminder.domain.model.Category
 import com.thelastecho.reminder.domain.model.Priority
 import com.thelastecho.reminder.domain.model.RepeatInterval
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import com.thelastecho.reminder.domain.model.SubTask
 
 data class EditorUiState(
@@ -12,7 +13,13 @@ data class EditorUiState(
     val dueDateTimeEpochMillis: Long? = null,
     val priority: Priority = Priority.NONE,
     val repeatInterval: RepeatInterval = RepeatInterval.ONCE,
+    val repeatEvery: Int = 1,
+    val repeatDuration: RepeatDuration = RepeatDuration.FOREVER,
+    val repeatCount: Int = 1,
+    val repeatUntilEpochMillis: Long? = null,
+    val repeatCompletedCount: Int = 0,
     val categoryId: Long? = null,
+    val isFavorite: Boolean = false,
     val imagePath: String? = null,
     val legacyImageUri: String? = null,
     val notificationStyle: String? = null,
@@ -31,6 +38,11 @@ sealed interface EditorIntent {
     data object ClearDateTime : EditorIntent
     data class SetPriority(val priority: Priority) : EditorIntent
     data class SetRepeatInterval(val interval: RepeatInterval) : EditorIntent
+    data class SetRepeatEvery(val count: Int) : EditorIntent
+    data class SetRepeatDuration(val duration: RepeatDuration) : EditorIntent
+    data class SetRepeatCount(val count: Int) : EditorIntent
+    data class SetRepeatUntil(val epochDayMillis: Long) : EditorIntent
+    data object ToggleFavorite : EditorIntent
     data class SetCategory(val categoryId: Long?) : EditorIntent
     data class SetImageAttachment(val relativePath: String?) : EditorIntent
     data class SetNotificationStyle(val style: String?) : EditorIntent

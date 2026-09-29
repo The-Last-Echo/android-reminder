@@ -70,6 +70,7 @@ The current migrations are:
 - `1 -> 2`: adds `isDeleted` and `deletedAt`
 - `2 -> 3`: adds `notificationStyleId`
 - `3 -> 4`: adds `expiresAt` and backfills it from `deletedAt`
+- `4 -> 5`: adds relative photo paths, repeat interval/duration fields, and favorite state
 
 This schema history is intentionally local and persistent across the current application lifecycle.
 

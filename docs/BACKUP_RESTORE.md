@@ -4,7 +4,7 @@ Reminder implements local backup and restore with portable `.reminderbackup` arc
 
 ## Format
 
-The archive contains `manifest.json`, `database.json`, and optional `attachments/` files. The manifest records `formatVersion`, `appVersion`, `createdAt`, `databaseVersion`, `encrypted`, and `attachmentsIncluded`. Database JSON contains reminders, categories, subtasks, and the portable app preferences. Photo references are stable attachment IDs, not device URIs.
+The archive contains `manifest.json`, `database.json`, and optional `attachments/` files. The manifest records `formatVersion`, `appVersion`, `createdAt`, `databaseVersion`, `encrypted`, and `attachmentsIncluded`. Database JSON contains reminders, categories, subtasks, and the portable app preferences. Reminder exports include configurable recurrence intervals and limits and favorite state; older archives default these fields to the original recurrence behavior and not-favorite state. Photo references are stable attachment IDs, not device URIs.
 
 Optional encryption wraps the complete ZIP payload in a versioned envelope. It uses PBKDF2-HMAC-SHA-256 with a per-backup random salt and AES-256-GCM with a per-backup random nonce. Restore requires only the backup password, not the originating device's Android Keystore.
 

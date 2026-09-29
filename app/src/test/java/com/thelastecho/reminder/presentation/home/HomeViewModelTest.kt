@@ -95,4 +95,21 @@ class HomeViewModelTest {
         val state = viewModel.uiState.value
         assertEquals(1, state.overdueCount)
     }
+
+    @Test
+    fun observeReminders_placesFavoritesFirst() = runTest {
+        val ordinaryReminder = Reminder(id = 1, title = "Ordinary")
+        val favoriteReminder = Reminder(id = 2, title = "Favorite", isFavorite = true)
+        every { repository.getAllReminders() } returns flowOf(listOf(ordinaryReminder, favoriteReminder))
+        every { repository.getAllCategories() } returns flowOf(emptyList())
+
+        val viewModel = HomeViewModel(
+            getRemindersUseCase = getRemindersUseCase,
+            toggleReminderCompleteUseCase = toggleReminderCompleteUseCase,
+            deleteReminderUseCase = deleteReminderUseCase,
+            repository = repository
+        )
+
+        assertEquals(listOf(2L, 1L), viewModel.uiState.value.reminders.map { it.id })
+    }
 }

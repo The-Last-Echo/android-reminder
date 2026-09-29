@@ -16,6 +16,7 @@ fun priorityLabelResource(priority: Priority): Int = when (priority) {
 @StringRes
 fun repeatLabelResource(interval: RepeatInterval): Int = when (interval) {
     RepeatInterval.ONCE -> R.string.repeat_once
+    RepeatInterval.MINUTELY -> R.string.repeat_minutely
     RepeatInterval.HOURLY -> R.string.repeat_hourly
     RepeatInterval.DAILY -> R.string.repeat_daily
     RepeatInterval.WEEKDAYS -> R.string.repeat_weekdays

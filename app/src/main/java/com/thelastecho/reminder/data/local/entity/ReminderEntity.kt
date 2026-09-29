@@ -6,6 +6,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.thelastecho.reminder.domain.model.Priority
 import com.thelastecho.reminder.domain.model.Reminder
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import com.thelastecho.reminder.domain.model.RepeatInterval
 
 @Entity(
@@ -33,7 +34,13 @@ data class ReminderEntity(
     val isCompleted: Boolean = false,
     val priorityLevel: Int = 0,
     val repeatIntervalId: String = "ONCE",
+    val repeatEvery: Int = 1,
+    val repeatDurationId: String = "FOREVER",
+    val repeatCount: Int = 1,
+    val repeatUntilEpochMillis: Long? = null,
+    val repeatCompletedCount: Int = 0,
     val categoryId: Long? = null,
+    val isFavorite: Boolean = false,
     // Legacy picker URI retained only while its photo cannot yet be copied into app-private storage.
     val imageUri: String? = null,
     val notificationStyleId: String? = null,
@@ -52,7 +59,13 @@ data class ReminderEntity(
         isCompleted = isCompleted,
         priority = Priority.fromLevel(priorityLevel),
         repeatInterval = RepeatInterval.fromId(repeatIntervalId),
+        repeatEvery = repeatEvery,
+        repeatDuration = RepeatDuration.fromId(repeatDurationId),
+        repeatCount = repeatCount,
+        repeatUntilEpochMillis = repeatUntilEpochMillis,
+        repeatCompletedCount = repeatCompletedCount,
         categoryId = categoryId,
+        isFavorite = isFavorite,
         legacyImageUri = imageUri,
         notificationStyle = notificationStyleId,
         subTasks = emptyList(),
@@ -72,7 +85,13 @@ data class ReminderEntity(
             isCompleted = domain.isCompleted,
             priorityLevel = domain.priority.level,
             repeatIntervalId = domain.repeatInterval.id,
+            repeatEvery = domain.repeatEvery,
+            repeatDurationId = domain.repeatDuration.id,
+            repeatCount = domain.repeatCount,
+            repeatUntilEpochMillis = domain.repeatUntilEpochMillis,
+            repeatCompletedCount = domain.repeatCompletedCount,
             categoryId = domain.categoryId,
+            isFavorite = domain.isFavorite,
             imageUri = domain.legacyImageUri,
             notificationStyleId = domain.notificationStyle,
             createdAt = domain.createdAt,

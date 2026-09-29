@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
         SubTaskEntity::class,
         CategoryEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class ReminderDatabase : RoomDatabase() {
@@ -89,7 +89,23 @@ abstract class ReminderDatabase : RoomDatabase() {
         }
         private val MIGRATION_4_5 = object : androidx.room.migration.Migration(4, 5) {
             override fun migrate(database: androidx.sqlite.db.SupportSQLiteDatabase) {
-                database.execSQL("ALTER TABLE reminders ADD COLUMN imagePath TEXT")
+                val columns = mutableSetOf<String>()
+                database.query("PRAGMA table_info(reminders)").use { cursor ->
+                    val nameIndex = cursor.getColumnIndexOrThrow("name")
+                    while (cursor.moveToNext()) columns += cursor.getString(nameIndex)
+                }
+                val additions = listOf(
+                    "imagePath" to "TEXT",
+                    "repeatEvery" to "INTEGER NOT NULL DEFAULT 1",
+                    "repeatDurationId" to "TEXT NOT NULL DEFAULT 'FOREVER'",
+                    "repeatCount" to "INTEGER NOT NULL DEFAULT 1",
+                    "repeatUntilEpochMillis" to "INTEGER",
+                    "repeatCompletedCount" to "INTEGER NOT NULL DEFAULT 0",
+                    "isFavorite" to "INTEGER NOT NULL DEFAULT 0"
+                )
+                additions.filterNot { it.first in columns }.forEach { (name, type) ->
+                    database.execSQL("ALTER TABLE reminders ADD COLUMN $name $type")
+                }
             }
         }
     }

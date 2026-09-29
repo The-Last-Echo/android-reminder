@@ -123,6 +123,13 @@ class HomeViewModel(
                     toggleReminderCompleteUseCase(intent.reminderId, intent.isCompleted)
                 }
             }
+            is HomeIntent.ToggleFavorite -> {
+                viewModelScope.launch {
+                    latestReminders.firstOrNull { it.id == intent.reminderId }?.let { reminder ->
+                        repository.saveReminder(reminder.copy(isFavorite = !reminder.isFavorite))
+                    }
+                }
+            }
             is HomeIntent.DeleteReminder -> {
                 viewModelScope.launch {
                     notificationManager?.dismissNotification(intent.reminderId)
@@ -218,6 +225,6 @@ class HomeViewModel(
             }
 
             matchesCategory && matchesSearch && matchesFilter
-        }
+        }.sortedByDescending { it.isFavorite }
     }
 }

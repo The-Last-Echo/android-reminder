@@ -326,6 +326,7 @@ fun HomeScreen(
                                 },
                                 onClick = { viewModel.onIntent(HomeIntent.EditReminder(reminder.id)) },
                                 onDelete = { viewModel.onIntent(HomeIntent.DeleteReminder(reminder.id)) },
+                                onToggleFavorite = { viewModel.onIntent(HomeIntent.ToggleFavorite(reminder.id)) },
                                 onToggleSubTask = { subTask ->
                                     viewModel.onIntent(HomeIntent.ToggleSubTask(reminder.id, subTask.id, !subTask.isCompleted))
                                 }

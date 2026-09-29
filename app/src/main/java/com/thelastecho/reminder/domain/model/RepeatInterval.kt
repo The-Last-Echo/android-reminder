@@ -5,6 +5,7 @@ package com.thelastecho.reminder.domain.model
  */
 enum class RepeatInterval(val id: String) {
     ONCE("ONCE"),
+    MINUTELY("MINUTELY"),
     HOURLY("HOURLY"),
     DAILY("DAILY"),
     WEEKDAYS("WEEKDAYS"),
@@ -15,5 +16,15 @@ enum class RepeatInterval(val id: String) {
     companion object {
         fun fromId(id: String?): RepeatInterval =
             entries.find { it.id == id } ?: ONCE
+    }
+}
+
+enum class RepeatDuration(val id: String) {
+    FOREVER("FOREVER"),
+    COUNT("COUNT"),
+    UNTIL("UNTIL");
+
+    companion object {
+        fun fromId(id: String?): RepeatDuration = entries.find { it.id == id } ?: FOREVER
     }
 }

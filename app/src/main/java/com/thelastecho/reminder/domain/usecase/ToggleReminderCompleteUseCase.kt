@@ -2,6 +2,7 @@ package com.thelastecho.reminder.domain.usecase
 
 import com.thelastecho.reminder.core.alarm.AlarmScheduler
 import com.thelastecho.reminder.domain.model.RepeatInterval
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import java.time.DayOfWeek
 import java.time.Instant
@@ -23,13 +24,24 @@ class ToggleReminderCompleteUseCase(
             alarmScheduler.cancel(reminderId)
 
             if (reminder.repeatInterval != RepeatInterval.ONCE && reminder.dueDateTimeEpochMillis != null) {
-                // Compute next occurrence for repeating reminder
+                val nextCompletedCount = reminder.repeatCompletedCount + 1
                 val nextEpochMillis = calculateNextOccurrence(
                     currentEpochMillis = reminder.dueDateTimeEpochMillis,
-                    interval = reminder.repeatInterval
+                    interval = reminder.repeatInterval,
+                    repeatEvery = reminder.repeatEvery
                 )
+                val canRepeat = when (reminder.repeatDuration) {
+                    RepeatDuration.FOREVER -> true
+                    RepeatDuration.COUNT -> nextCompletedCount <= reminder.repeatCount
+                    RepeatDuration.UNTIL -> reminder.repeatUntilEpochMillis?.let { nextEpochMillis <= it } ?: true
+                }
+                if (!canRepeat) {
+                    repository.toggleReminderComplete(reminderId, true)
+                    return
+                }
                 val updatedReminder = reminder.copy(
                     dueDateTimeEpochMillis = nextEpochMillis,
+                    repeatCompletedCount = nextCompletedCount,
                     isCompleted = false,
                     completedAt = null
                 )
@@ -49,15 +61,20 @@ class ToggleReminderCompleteUseCase(
         }
     }
 
-    internal fun calculateNextOccurrence(currentEpochMillis: Long, interval: RepeatInterval): Long {
+    internal fun calculateNextOccurrence(
+        currentEpochMillis: Long,
+        interval: RepeatInterval,
+        repeatEvery: Int = 1
+    ): Long {
         val zone = ZoneId.systemDefault()
         var zdt = Instant.ofEpochMilli(currentEpochMillis).atZone(zone)
         val now = ZonedDateTime.now(zone)
 
         do {
             zdt = when (interval) {
-                RepeatInterval.HOURLY -> zdt.plusHours(1)
-                RepeatInterval.DAILY -> zdt.plusDays(1)
+                RepeatInterval.MINUTELY -> zdt.plusMinutes(repeatEvery.coerceAtLeast(1).toLong())
+                RepeatInterval.HOURLY -> zdt.plusHours(repeatEvery.coerceAtLeast(1).toLong())
+                RepeatInterval.DAILY -> zdt.plusDays(repeatEvery.coerceAtLeast(1).toLong())
                 RepeatInterval.WEEKDAYS -> {
                     var next = zdt.plusDays(1)
                     while (next.dayOfWeek == DayOfWeek.SATURDAY || next.dayOfWeek == DayOfWeek.SUNDAY) {
@@ -65,9 +82,9 @@ class ToggleReminderCompleteUseCase(
                     }
                     next
                 }
-                RepeatInterval.WEEKLY -> zdt.plusWeeks(1)
-                RepeatInterval.MONTHLY -> zdt.plusMonths(1)
-                RepeatInterval.YEARLY -> zdt.plusYears(1)
+                RepeatInterval.WEEKLY -> zdt.plusWeeks(repeatEvery.coerceAtLeast(1).toLong())
+                RepeatInterval.MONTHLY -> zdt.plusMonths(repeatEvery.coerceAtLeast(1).toLong())
+                RepeatInterval.YEARLY -> zdt.plusYears(repeatEvery.coerceAtLeast(1).toLong())
                 RepeatInterval.ONCE -> zdt
             }
         } while (zdt.isBefore(now) && interval != RepeatInterval.ONCE)

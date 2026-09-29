@@ -414,6 +414,9 @@ class ReminderArchiveRepository(
         put("id", id); put("title", title); put("notes", notes)
         put("due", dueDateTimeEpochMillis ?: JSONObject.NULL); put("completed", isCompleted)
         put("priority", priorityLevel); put("repeat", repeatIntervalId)
+        put("repeatEvery", repeatEvery); put("repeatDuration", repeatDurationId)
+        put("repeatCount", repeatCount); put("repeatUntil", repeatUntilEpochMillis ?: JSONObject.NULL)
+        put("repeatCompletedCount", repeatCompletedCount); put("favorite", isFavorite)
         put("category", categoryId ?: JSONObject.NULL); put("style", notificationStyleId ?: JSONObject.NULL)
         put("created", createdAt); put("completedAt", completedAt ?: JSONObject.NULL)
         put("deleted", isDeleted); put("deletedAt", deletedAt ?: JSONObject.NULL); put("expiresAt", expiresAt ?: JSONObject.NULL)
@@ -441,7 +444,13 @@ class ReminderArchiveRepository(
         isCompleted = optBoolean("completed"),
         priorityLevel = optInt("priority"),
         repeatIntervalId = optString("repeat", "ONCE"),
+        repeatEvery = optInt("repeatEvery", 1).coerceIn(1, 9999),
+        repeatDurationId = optString("repeatDuration", "FOREVER"),
+        repeatCount = optInt("repeatCount", 1).coerceIn(1, 9999),
+        repeatUntilEpochMillis = nullableLong("repeatUntil"),
+        repeatCompletedCount = optInt("repeatCompletedCount").coerceAtLeast(0),
         categoryId = nullableLong("category"),
+        isFavorite = optBoolean("favorite"),
         imageUri = null,
         notificationStyleId = nullableString("style"),
         createdAt = optLong("created"),

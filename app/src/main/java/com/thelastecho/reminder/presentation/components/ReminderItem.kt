@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
@@ -27,6 +28,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Checkbox
@@ -40,10 +43,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.border
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,6 +63,7 @@ import com.thelastecho.reminder.domain.model.RepeatInterval
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -67,10 +73,13 @@ fun ReminderItem(
     onToggleComplete: () -> Unit,
     onClick: () -> Unit,
     onDelete: () -> Unit,
+    onToggleFavorite: () -> Unit = {},
     onToggleSubTask: (SubTask) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var checklistExpanded by remember(reminder.id) { mutableStateOf(false) }
+    val completionScale = remember(reminder.id) { Animatable(1f) }
+    val animationScope = rememberCoroutineScope()
 
     Card(
         modifier = modifier
@@ -95,7 +104,14 @@ fun ReminderItem(
         ) {
             // Completion Toggle Checkbox
             IconButton(
-                onClick = onToggleComplete,
+                onClick = {
+                    animationScope.launch {
+                        completionScale.snapTo(0.82f)
+                        completionScale.animateTo(1.16f, tween(110))
+                        completionScale.animateTo(1f, tween(130))
+                    }
+                    onToggleComplete()
+                },
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
@@ -109,6 +125,10 @@ fun ReminderItem(
                         MaterialTheme.colorScheme.primary
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    modifier = Modifier.graphicsLayer {
+                        scaleX = completionScale.value
+                        scaleY = completionScale.value
                     }
                 )
             }
@@ -199,8 +219,22 @@ fun ReminderItem(
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
+                            val repeatText = if (reminder.repeatEvery > 1 && reminder.repeatInterval != RepeatInterval.ONCE) {
+                                val unitRes = when (reminder.repeatInterval) {
+                                    RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
+                                    RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
+                                    RepeatInterval.DAILY, RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                    RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
+                                    RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
+                                    RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
+                                    RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                }
+                                stringResource(com.thelastecho.reminder.R.string.repeat_frequency, reminder.repeatEvery, stringResource(unitRes))
+                            } else {
+                                stringResource(repeatLabelResource(reminder.repeatInterval))
+                            }
                             Text(
-                                text = stringResource(repeatLabelResource(reminder.repeatInterval)),
+                                text = repeatText,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary
                             )
@@ -267,6 +301,17 @@ fun ReminderItem(
             }
 
             // Quick Delete Button
+            IconButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    imageVector = if (reminder.isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                    contentDescription = stringResource(if (reminder.isFavorite) com.thelastecho.reminder.R.string.remove_favorite else com.thelastecho.reminder.R.string.add_favorite),
+                    tint = if (reminder.isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier.size(48.dp)

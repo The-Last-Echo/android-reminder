@@ -3,6 +3,7 @@ package com.thelastecho.reminder.domain.usecase
 import com.thelastecho.reminder.core.alarm.AlarmScheduler
 import com.thelastecho.reminder.domain.model.Reminder
 import com.thelastecho.reminder.domain.model.RepeatInterval
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -78,5 +79,33 @@ class ToggleReminderCompleteUseCaseTest {
 
         val nextDate = Instant.ofEpochMilli(nextOccurrence).atZone(zone).toLocalDate()
         assertEquals(DayOfWeek.MONDAY, nextDate.dayOfWeek)
+    }
+
+    @Test
+    fun minutelyCalculation_usesConfiguredInterval() {
+        val start = System.currentTimeMillis()
+        val next = useCase.calculateNextOccurrence(start, RepeatInterval.MINUTELY, repeatEvery = 7)
+
+        assertEquals(start + 7 * 60_000L, next)
+    }
+
+    @Test
+    fun repeatingReminder_whenOccurrenceLimitReached_marksReminderComplete() = runTest {
+        val reminder = Reminder(
+            id = 8,
+            title = "Limited repetition",
+            dueDateTimeEpochMillis = System.currentTimeMillis() + 60_000,
+            repeatInterval = RepeatInterval.DAILY,
+            repeatDuration = RepeatDuration.COUNT,
+            repeatCount = 1,
+            repeatCompletedCount = 1
+        )
+        coEvery { repository.getReminderByIdOnce(8) } returns reminder
+
+        useCase(8, isCompleted = true)
+
+        coVerify { repository.toggleReminderComplete(8, true) }
+        coVerify(exactly = 0) { repository.saveReminder(any()) }
+        verify { alarmScheduler.cancel(8) }
     }
 }

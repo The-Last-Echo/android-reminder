@@ -6,6 +6,7 @@ import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.domain.model.Priority
 import com.thelastecho.reminder.domain.model.Reminder
 import com.thelastecho.reminder.domain.model.RepeatInterval
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import com.thelastecho.reminder.domain.model.SubTask
 import com.thelastecho.reminder.domain.repository.ReminderRepository
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
@@ -61,7 +62,13 @@ class EditorViewModel(
                             dueDateTimeEpochMillis = existing.dueDateTimeEpochMillis,
                             priority = existing.priority,
                             repeatInterval = existing.repeatInterval,
+                            repeatEvery = existing.repeatEvery,
+                            repeatDuration = existing.repeatDuration,
+                            repeatCount = existing.repeatCount,
+                            repeatUntilEpochMillis = existing.repeatUntilEpochMillis,
+                            repeatCompletedCount = existing.repeatCompletedCount,
                             categoryId = existing.categoryId,
+                            isFavorite = existing.isFavorite,
                             imagePath = existing.imagePath,
                             legacyImageUri = existing.legacyImageUri,
                             notificationStyle = existing.notificationStyle,
@@ -117,7 +124,35 @@ class EditorViewModel(
                 _uiState.update { it.copy(priority = intent.priority) }
             }
             is EditorIntent.SetRepeatInterval -> {
-                _uiState.update { it.copy(repeatInterval = intent.interval) }
+                _uiState.update {
+                    it.copy(
+                        repeatInterval = intent.interval,
+                        repeatEvery = if (it.repeatInterval == RepeatInterval.ONCE && intent.interval != RepeatInterval.ONCE) 1 else it.repeatEvery,
+                        repeatCompletedCount = if (it.repeatInterval != intent.interval) 0 else it.repeatCompletedCount
+                    )
+                }
+            }
+            is EditorIntent.SetRepeatEvery -> {
+                _uiState.update { it.copy(repeatEvery = intent.count.coerceIn(1, 9999)) }
+            }
+            is EditorIntent.SetRepeatDuration -> {
+                _uiState.update { it.copy(repeatDuration = intent.duration) }
+            }
+            is EditorIntent.SetRepeatCount -> {
+                _uiState.update { it.copy(repeatCount = intent.count.coerceIn(1, 9999)) }
+            }
+            is EditorIntent.SetRepeatUntil -> {
+                val endOfSelectedDay = Instant.ofEpochMilli(intent.epochDayMillis)
+                    .atZone(ZoneId.of("UTC"))
+                    .toLocalDate()
+                    .atTime(LocalTime.MAX)
+                    .atZone(ZoneId.systemDefault())
+                    .toInstant()
+                    .toEpochMilli()
+                _uiState.update { it.copy(repeatUntilEpochMillis = endOfSelectedDay) }
+            }
+            EditorIntent.ToggleFavorite -> {
+                _uiState.update { it.copy(isFavorite = !it.isFavorite) }
             }
             is EditorIntent.SetCategory -> {
                 _uiState.update { it.copy(categoryId = intent.categoryId) }
@@ -185,7 +220,13 @@ class EditorViewModel(
                 isCompleted = state.isCompleted,
                 priority = state.priority,
                 repeatInterval = state.repeatInterval,
+                repeatEvery = state.repeatEvery,
+                repeatDuration = state.repeatDuration,
+                repeatCount = state.repeatCount,
+                repeatUntilEpochMillis = state.repeatUntilEpochMillis,
+                repeatCompletedCount = state.repeatCompletedCount,
                 categoryId = state.categoryId,
+                isFavorite = state.isFavorite,
                 imagePath = state.imagePath,
                 legacyImageUri = state.legacyImageUri,
                 notificationStyle = state.notificationStyle,

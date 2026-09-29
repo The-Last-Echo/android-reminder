@@ -29,4 +29,4 @@ This Android project does not expose a network or public SDK API. This page docu
 
 ## Database
 
-Room schema version is 5. Migrations 1→2 add soft-delete fields; 2→3 adds the per-reminder notification style; 3→4 adds the Trash expiration timestamp; 4→5 adds relative photo paths. The legacy URI column remains only for references that could not be migrated. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.
+Room schema version is 5. Migrations 1→2 add soft-delete fields; 2→3 adds the per-reminder notification style; 3→4 adds the Trash expiration timestamp; 4→5 adds relative photo paths, repeat interval/duration fields, and favorite state. The legacy URI column remains only for references that could not be migrated. See `data/local/ReminderDatabase.kt` and `data/local/dao/ReminderDao.kt` for the concrete schema and queries.

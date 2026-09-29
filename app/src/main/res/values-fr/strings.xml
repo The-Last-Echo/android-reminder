@@ -128,6 +128,24 @@
 
     <!-- Repeat Intervals -->
     <string name="repeat_once">Une fois</string>
+    <string name="add_favorite">Ajouter aux favoris</string>
+    <string name="remove_favorite">Retirer des favoris</string>
+    <string name="repeat_duration">Durée</string>
+    <string name="repeat_forever">Toujours</string>
+    <string name="repeat_number_of_times">Nombre de répétitions</string>
+    <string name="repeat_until_date">Jusqu’à une date</string>
+    <string name="repeat_until_day">Jusqu’au %1$s</string>
+    <string name="repeat_unit_minute">minute(s)</string>
+    <string name="repeat_unit_hour">heure(s)</string>
+    <string name="repeat_unit_day">jour(s)</string>
+    <string name="repeat_unit_week">semaine(s)</string>
+    <string name="repeat_unit_month">mois</string>
+    <string name="repeat_unit_year">an(s)</string>
+    <string name="repeat_frequency">Tous les %1$d %2$s</string>
+    <string name="repeat_minutely">Toutes les minutes</string>
+    <string name="time_section">Temps</string>
+    <string name="repeat_interval_count">Répéter tous les</string>
+    <string name="choose_repeat_end_date">Choisir la date de fin</string>
     <string name="repeat_daily">Quotidien</string>
     <string name="repeat_weekdays">Lun-Ven</string>
     <string name="repeat_weekly">Hebdomadaire</string>

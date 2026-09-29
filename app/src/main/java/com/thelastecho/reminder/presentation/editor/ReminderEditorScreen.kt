@@ -27,6 +27,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.outlined.AccessTime
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Repeat
+import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -80,6 +82,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import com.thelastecho.reminder.core.designsystem.ReminderShapes
 import com.thelastecho.reminder.data.attachments.AttachmentStore
 import com.thelastecho.reminder.core.designsystem.ReminderDimensions
@@ -92,6 +96,7 @@ import com.thelastecho.reminder.presentation.components.SectionHeading
 import com.thelastecho.reminder.presentation.components.priorityLabelResource
 import com.thelastecho.reminder.presentation.components.repeatLabelResource
 import com.thelastecho.reminder.domain.model.RepeatInterval
+import com.thelastecho.reminder.domain.model.RepeatDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,7 +124,7 @@ fun ReminderEditorScreen(
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
-    var newSubTaskText by remember { mutableStateOf("") }
+    var showRepeatUntilPicker by remember { mutableStateOf(false) }
     var repeatDropdownExpanded by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -171,6 +176,13 @@ fun ReminderEditorScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { viewModel.onIntent(EditorIntent.ToggleFavorite) }) {
+                        Icon(
+                            imageVector = if (state.isFavorite) Icons.Filled.Star else Icons.Outlined.StarOutline,
+                            contentDescription = stringResource(if (state.isFavorite) com.thelastecho.reminder.R.string.remove_favorite else com.thelastecho.reminder.R.string.add_favorite),
+                            tint = if (state.isFavorite) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     if (state.reminderId != null) {
                         IconButton(onClick = { viewModel.onIntent(EditorIntent.DeleteReminder) }) {
                             Icon(Icons.Outlined.Delete, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete))
@@ -178,7 +190,11 @@ fun ReminderEditorScreen(
                     }
                     TextButton(
                         onClick = { viewModel.onIntent(EditorIntent.SaveReminder) },
-                        enabled = !state.isSaving
+                        enabled = !state.isSaving && (
+                            state.repeatInterval == RepeatInterval.ONCE ||
+                                state.repeatDuration != RepeatDuration.UNTIL ||
+                                state.repeatUntilEpochMillis != null
+                            )
                     ) {
                         Text(
                             text = stringResource(com.thelastecho.reminder.R.string.save),
@@ -204,9 +220,6 @@ fun ReminderEditorScreen(
                     .padding(ReminderDimensions.Medium),
                 verticalArrangement = Arrangement.spacedBy(ReminderDimensions.Medium)
             ) {
-            SectionHeading(stringResource(com.thelastecho.reminder.R.string.basic_information))
-
-            // Title Input
             OutlinedTextField(
                 value = state.title,
                 onValueChange = { viewModel.onIntent(EditorIntent.UpdateTitle(it)) },
@@ -229,209 +242,6 @@ fun ReminderEditorScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = ReminderShapes.Input
             )
-
-            // Date & Time Scheduling Section
-            SectionHeading(stringResource(com.thelastecho.reminder.R.string.schedule_alarm))
-
-            Card(
-                shape = ReminderShapes.Card,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth().border(
-                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
-                    ReminderShapes.Card
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    if (state.dueDateTimeEpochMillis == null) {
-                        // Quick add date buttons
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Button(
-                                onClick = { showDatePicker = true },
-                                modifier = Modifier.weight(1f),
-                                shape = ReminderShapes.Control
-                            ) {
-                                Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(stringResource(com.thelastecho.reminder.R.string.set_date))
-                            }
-                        }
-                    } else {
-                        val zone = ZoneId.systemDefault()
-                        val zdt = Instant.ofEpochMilli(state.dueDateTimeEpochMillis!!).atZone(zone)
-                        val appLocale = LocalConfiguration.current.locales[0]
-                        val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(appLocale)
-                        val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(appLocale)
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .clip(ReminderShapes.Compact)
-                                    .clickable { showDatePicker = true }
-                                    .padding(8.dp)
-                            ) {
-                                Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(zdt.format(dateFormatter), style = MaterialTheme.typography.bodyLarge)
-                            }
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .clip(ReminderShapes.Compact)
-                                    .clickable { showTimePicker = true }
-                                    .padding(8.dp)
-                            ) {
-                                Icon(Icons.Outlined.AccessTime, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(zdt.format(timeFormatter), style = MaterialTheme.typography.bodyLarge)
-                            }
-
-                            IconButton(onClick = { viewModel.onIntent(EditorIntent.ClearDateTime) }) {
-                                Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.clear_date_time))
-                            }
-                        }
-
-                        // Recurrence Dropdown
-                        Spacer(modifier = Modifier.height(10.dp))
-                        ExposedDropdownMenuBox(
-                            expanded = repeatDropdownExpanded,
-                            onExpandedChange = { repeatDropdownExpanded = !repeatDropdownExpanded }
-                        ) {
-                            OutlinedTextField(
-                                value = stringResource(repeatLabelResource(state.repeatInterval)),
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat)) },
-                                leadingIcon = { Icon(Icons.Outlined.Repeat, contentDescription = null) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatDropdownExpanded) },
-                                modifier = Modifier
-                                    .menuAnchor(MenuAnchorType.PrimaryNotEditable)
-                                    .fillMaxWidth(),
-                                shape = ReminderShapes.Control
-                            )
-                            ExposedDropdownMenu(
-                                expanded = repeatDropdownExpanded,
-                                onDismissRequest = { repeatDropdownExpanded = false }
-                            ) {
-                                RepeatInterval.entries.forEach { interval ->
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(repeatLabelResource(interval))) },
-                                        onClick = {
-                                            viewModel.onIntent(EditorIntent.SetRepeatInterval(interval))
-                                            repeatDropdownExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Categories Selector
-            if (state.categories.isNotEmpty()) {
-                SectionHeading(stringResource(com.thelastecho.reminder.R.string.category))
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    FilterChip(
-                        selected = state.categoryId == null,
-                        onClick = { viewModel.onIntent(EditorIntent.SetCategory(null)) },
-                        label = { Text(stringResource(com.thelastecho.reminder.R.string.no_category)) }
-                    )
-                    state.categories.forEach { category ->
-                        FilterChip(
-                            selected = state.categoryId == category.id,
-                            onClick = { viewModel.onIntent(EditorIntent.SetCategory(category.id)) },
-                            label = { Text(category.name) },
-                            leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), androidx.compose.ui.graphics.Color(category.colorArgb)) }
-                        )
-                    }
-                }
-            }
-
-            // Checklist / Subtasks Section
-            SectionHeading(stringResource(com.thelastecho.reminder.R.string.subtasks_checklist))
-
-            Card(
-                shape = ReminderShapes.Card,
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                modifier = Modifier.fillMaxWidth().border(
-                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
-                    ReminderShapes.Card
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    state.subTasks.forEachIndexed { index, subTask ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            IconButton(
-                                onClick = { viewModel.onIntent(EditorIntent.ToggleSubTask(index)) },
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(
-                                    imageVector = if (subTask.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
-                                    contentDescription = null,
-                                    tint = if (subTask.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = subTask.title,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
-                            )
-                            IconButton(
-                                onClick = { viewModel.onIntent(EditorIntent.DeleteSubTask(index)) },
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                Icon(Icons.Outlined.Close, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_subtask), modifier = Modifier.size(16.dp))
-                            }
-                        }
-                    }
-
-                    // Add Subtask row
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = newSubTaskText,
-                            onValueChange = { newSubTaskText = it },
-                            placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.add_subtask)) },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true,
-                            shape = ReminderShapes.Input
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(
-                            onClick = {
-                                if (newSubTaskText.isNotBlank()) {
-                                    viewModel.onIntent(EditorIntent.AddSubTask(newSubTaskText))
-                                    newSubTaskText = ""
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = stringResource(com.thelastecho.reminder.R.string.add))
-                        }
-                    }
-                }
-            }
 
             var photoBitmap by remember(state.imagePath, state.legacyImageUri) { mutableStateOf<Bitmap?>(null) }
             LaunchedEffect(state.imagePath, state.legacyImageUri) {
@@ -506,6 +316,17 @@ fun ReminderEditorScreen(
                 }
             }
 
+            ReminderSubtasksSection(state = state, onIntent = viewModel::onIntent)
+            ReminderScheduleSection(
+                state = state,
+                onIntent = viewModel::onIntent,
+                onDateClick = { showDatePicker = true },
+                onTimeClick = { showTimePicker = true },
+                onRepeatUntilClick = { showRepeatUntilPicker = true },
+                repeatDropdownExpanded = repeatDropdownExpanded,
+                onRepeatDropdownChange = { repeatDropdownExpanded = it }
+            )
+
             SectionHeading(stringResource(com.thelastecho.reminder.R.string.advanced_options))
 
             Card(
@@ -572,6 +393,29 @@ fun ReminderEditorScreen(
                                 label = { Text(label) }
                             )
                         }
+                    }
+                }
+            }
+
+            if (state.categories.isNotEmpty()) {
+                SectionHeading(stringResource(com.thelastecho.reminder.R.string.category))
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    FilterChip(
+                        selected = state.categoryId == null,
+                        onClick = { viewModel.onIntent(EditorIntent.SetCategory(null)) },
+                        label = { Text(stringResource(com.thelastecho.reminder.R.string.no_category)) }
+                    )
+                    state.categories.forEach { category ->
+                        FilterChip(
+                            selected = state.categoryId == category.id,
+                            onClick = { viewModel.onIntent(EditorIntent.SetCategory(category.id)) },
+                            label = { Text(category.name) },
+                            leadingIcon = { CategoryIcon(category.iconName, Modifier.size(18.dp), androidx.compose.ui.graphics.Color(category.colorArgb)) }
+                        )
                     }
                 }
             }
@@ -645,4 +489,272 @@ fun ReminderEditorScreen(
             }
         )
     }
+
+    if (showRepeatUntilPicker) {
+        val untilPickerState = rememberDatePickerState(
+            initialSelectedDateMillis = state.repeatUntilEpochMillis?.let {
+                Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                    .atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
+            } ?: state.dueDateTimeEpochMillis ?: System.currentTimeMillis()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showRepeatUntilPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    untilPickerState.selectedDateMillis?.let {
+                        viewModel.onIntent(EditorIntent.SetRepeatUntil(it))
+                    }
+                    showRepeatUntilPicker = false
+                }) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.ok))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRepeatUntilPicker = false }) {
+                    Text(stringResource(com.thelastecho.reminder.R.string.cancel))
+                }
+            }
+        ) {
+            DatePicker(state = untilPickerState)
+        }
+    }
 }
+
+        @Composable
+        private fun ReminderSubtasksSection(
+            state: EditorUiState,
+            onIntent: (EditorIntent) -> Unit
+        ) {
+            var newSubTaskText by remember { mutableStateOf("") }
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.subtasks_checklist))
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    state.subTasks.forEachIndexed { index, subTask ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = { onIntent(EditorIntent.ToggleSubTask(index)) }, modifier = Modifier.size(48.dp)) {
+                                Icon(
+                                    imageVector = if (subTask.isCompleted) Icons.Outlined.CheckCircle else Icons.Outlined.RadioButtonUnchecked,
+                                    contentDescription = null,
+                                    tint = if (subTask.isCompleted) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = subTask.title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                            IconButton(onClick = { onIntent(EditorIntent.DeleteSubTask(index)) }, modifier = Modifier.size(48.dp)) {
+                                Icon(Icons.Outlined.Close, contentDescription = stringResource(com.thelastecho.reminder.R.string.delete_subtask), modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = newSubTaskText,
+                            onValueChange = { newSubTaskText = it },
+                            placeholder = { Text(stringResource(com.thelastecho.reminder.R.string.add_subtask)) },
+                            modifier = Modifier.weight(1f),
+                            singleLine = true,
+                            shape = ReminderShapes.Input
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(onClick = {
+                            if (newSubTaskText.isNotBlank()) {
+                                onIntent(EditorIntent.AddSubTask(newSubTaskText))
+                                newSubTaskText = ""
+                            }
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(com.thelastecho.reminder.R.string.add))
+                        }
+                    }
+                }
+            }
+        }
+
+        @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+        @Composable
+        private fun ReminderScheduleSection(
+            state: EditorUiState,
+            onIntent: (EditorIntent) -> Unit,
+            onDateClick: () -> Unit,
+            onTimeClick: () -> Unit,
+            onRepeatUntilClick: () -> Unit,
+            repeatDropdownExpanded: Boolean,
+            onRepeatDropdownChange: (Boolean) -> Unit
+        ) {
+            SectionHeading(stringResource(com.thelastecho.reminder.R.string.time_section))
+            Card(
+                shape = ReminderShapes.Card,
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+                modifier = Modifier.fillMaxWidth().border(
+                    BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+                    ReminderShapes.Card
+                )
+            ) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    val locale = LocalConfiguration.current.locales[0]
+                    val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
+                    if (state.dueDateTimeEpochMillis == null) {
+                        Button(onClick = onDateClick, modifier = Modifier.fillMaxWidth(), shape = ReminderShapes.Control) {
+                            Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(stringResource(com.thelastecho.reminder.R.string.set_date))
+                        }
+                    } else {
+                        val zone = ZoneId.systemDefault()
+                        val scheduled = Instant.ofEpochMilli(state.dueDateTimeEpochMillis).atZone(zone)
+                        val timeFormatter = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clip(ReminderShapes.Compact).clickable(onClick = onDateClick).padding(8.dp)
+                            ) {
+                                Icon(Icons.Outlined.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(scheduled.format(dateFormatter), style = MaterialTheme.typography.bodyLarge)
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clip(ReminderShapes.Compact).clickable(onClick = onTimeClick).padding(8.dp)
+                            ) {
+                                Icon(Icons.Outlined.AccessTime, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(scheduled.format(timeFormatter), style = MaterialTheme.typography.bodyLarge)
+                            }
+                            IconButton(onClick = { onIntent(EditorIntent.ClearDateTime) }) {
+                                Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.clear_date_time))
+                            }
+                        }
+                        ExposedDropdownMenuBox(
+                            expanded = repeatDropdownExpanded,
+                            onExpandedChange = { onRepeatDropdownChange(!repeatDropdownExpanded) }
+                        ) {
+                            val repeatLabel = if (state.repeatInterval == RepeatInterval.ONCE) {
+                                stringResource(com.thelastecho.reminder.R.string.repeat_once)
+                            } else {
+                                val unitRes = when (state.repeatInterval) {
+                                    RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
+                                    RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
+                                    RepeatInterval.DAILY, RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                    RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
+                                    RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
+                                    RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
+                                    RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                }
+                                stringResource(com.thelastecho.reminder.R.string.repeat_frequency, state.repeatEvery, stringResource(unitRes))
+                            }
+                            OutlinedTextField(
+                                value = repeatLabel,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat)) },
+                                leadingIcon = { Icon(Icons.Outlined.Repeat, contentDescription = null) },
+                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatDropdownExpanded) },
+                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                shape = ReminderShapes.Control
+                            )
+                            ExposedDropdownMenu(
+                                expanded = repeatDropdownExpanded,
+                                onDismissRequest = { onRepeatDropdownChange(false) }
+                            ) {
+                                listOf(
+                                    RepeatInterval.ONCE,
+                                    RepeatInterval.MINUTELY,
+                                    RepeatInterval.HOURLY,
+                                    RepeatInterval.DAILY,
+                                    RepeatInterval.WEEKLY,
+                                    RepeatInterval.MONTHLY,
+                                    RepeatInterval.YEARLY
+                                ).forEach { interval ->
+                                    val labelRes = when (interval) {
+                                        RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_once
+                                        RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
+                                        RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
+                                        RepeatInterval.DAILY -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                        RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
+                                        RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
+                                        RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
+                                        RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                    }
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(labelRes)) },
+                                        onClick = {
+                                            onIntent(EditorIntent.SetRepeatInterval(interval))
+                                            onRepeatDropdownChange(false)
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        if (state.repeatInterval != RepeatInterval.ONCE) {
+                            OutlinedTextField(
+                                value = state.repeatEvery.toString(),
+                                onValueChange = { value ->
+                                    value.filter(Char::isDigit).toIntOrNull()?.let { onIntent(EditorIntent.SetRepeatEvery(it)) }
+                                },
+                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat_interval_count)) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = ReminderShapes.Control
+                            )
+                            Text(stringResource(com.thelastecho.reminder.R.string.repeat_duration), style = MaterialTheme.typography.titleSmall)
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                RepeatDuration.entries.forEach { duration ->
+                                    val labelRes = when (duration) {
+                                        RepeatDuration.FOREVER -> com.thelastecho.reminder.R.string.repeat_forever
+                                        RepeatDuration.COUNT -> com.thelastecho.reminder.R.string.repeat_number_of_times
+                                        RepeatDuration.UNTIL -> com.thelastecho.reminder.R.string.repeat_until_date
+                                    }
+                                    FilterChip(
+                                        selected = state.repeatDuration == duration,
+                                        onClick = { onIntent(EditorIntent.SetRepeatDuration(duration)) },
+                                        label = { Text(stringResource(labelRes)) }
+                                    )
+                                }
+                            }
+                            when (state.repeatDuration) {
+                                RepeatDuration.COUNT -> OutlinedTextField(
+                                    value = state.repeatCount.toString(),
+                                    onValueChange = { value ->
+                                        value.filter(Char::isDigit).toIntOrNull()?.let { onIntent(EditorIntent.SetRepeatCount(it)) }
+                                    },
+                                    label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat_number_of_times)) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    shape = ReminderShapes.Control
+                                )
+                                RepeatDuration.UNTIL -> {
+                                    val untilDate = state.repeatUntilEpochMillis?.let {
+                                        Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                                    }
+                                    Button(onClick = onRepeatUntilClick, modifier = Modifier.fillMaxWidth(), shape = ReminderShapes.Control) {
+                                        Icon(Icons.Outlined.CalendarToday, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(6.dp))
+                                        Text(
+                                            untilDate?.format(dateFormatter)?.let {
+                                                stringResource(com.thelastecho.reminder.R.string.repeat_until_day, it)
+                                            } ?: stringResource(com.thelastecho.reminder.R.string.choose_repeat_end_date)
+                                        )
+                                    }
+                                }
+                                RepeatDuration.FOREVER -> Unit
+                            }
+                        }
+                    }
+                }
+            }
+        }
