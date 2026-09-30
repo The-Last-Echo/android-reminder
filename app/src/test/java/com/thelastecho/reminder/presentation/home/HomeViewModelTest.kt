@@ -5,6 +5,8 @@ import com.thelastecho.reminder.domain.repository.ReminderRepository
 import com.thelastecho.reminder.domain.usecase.DeleteReminderUseCase
 import com.thelastecho.reminder.domain.usecase.GetRemindersUseCase
 import com.thelastecho.reminder.domain.usecase.ToggleReminderCompleteUseCase
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +18,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 
@@ -111,5 +114,26 @@ class HomeViewModelTest {
         )
 
         assertEquals(listOf(2L, 1L), viewModel.uiState.value.reminders.map { it.id })
+    }
+
+    @Test
+    fun refreshLoadsOneShotSnapshotAndClearsRefreshingState() = runTest {
+        val refreshedReminder = Reminder(id = 3, title = "Refreshed reminder")
+        every { repository.getAllReminders() } returns flowOf(emptyList())
+        every { repository.getAllCategories() } returns flowOf(emptyList())
+        coEvery { repository.getAllRemindersOnce() } returns listOf(refreshedReminder)
+
+        val viewModel = HomeViewModel(
+            getRemindersUseCase = getRemindersUseCase,
+            toggleReminderCompleteUseCase = toggleReminderCompleteUseCase,
+            deleteReminderUseCase = deleteReminderUseCase,
+            repository = repository
+        )
+
+        viewModel.onIntent(HomeIntent.Refresh)
+
+        coVerify(exactly = 1) { repository.getAllRemindersOnce() }
+        assertEquals(listOf(refreshedReminder), viewModel.uiState.value.reminders)
+        assertFalse(viewModel.uiState.value.isRefreshing)
     }
 }

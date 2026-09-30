@@ -142,9 +142,12 @@
     <string name="repeat_unit_month">mois</string>
     <string name="repeat_unit_year">an(s)</string>
     <string name="repeat_frequency">Tous les %1$d %2$s</string>
+    <string name="repeat_every_label">Répéter tous les</string>
+    <string name="repeat_unit_label">Unité</string>
+    <string name="repeat_progress">%1$d/%2$d occurrences</string>
     <string name="repeat_minutely">Toutes les minutes</string>
     <string name="time_section">Temps</string>
-    <string name="repeat_interval_count">Répéter tous les</string>
+    <string name="repeat_interval_count">Nombre</string>
     <string name="choose_repeat_end_date">Choisir la date de fin</string>
     <string name="repeat_daily">Quotidien</string>
     <string name="repeat_weekdays">Lun-Ven</string>

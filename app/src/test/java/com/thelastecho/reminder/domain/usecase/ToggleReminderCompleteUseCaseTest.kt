@@ -98,14 +98,46 @@ class ToggleReminderCompleteUseCaseTest {
             repeatInterval = RepeatInterval.DAILY,
             repeatDuration = RepeatDuration.COUNT,
             repeatCount = 1,
-            repeatCompletedCount = 1
+            repeatCompletedCount = 0
         )
         coEvery { repository.getReminderByIdOnce(8) } returns reminder
 
         useCase(8, isCompleted = true)
 
-        coVerify { repository.toggleReminderComplete(8, true) }
-        coVerify(exactly = 0) { repository.saveReminder(any()) }
+        coVerify {
+            repository.saveReminder(
+                match {
+                    it.repeatCompletedCount == 1 &&
+                        it.repeatCount == 1 &&
+                        it.isCompleted &&
+                        it.completedAt != null
+                }
+            )
+        }
         verify { alarmScheduler.cancel(8) }
+        verify(exactly = 0) { alarmScheduler.schedule(any()) }
+    }
+
+    @Test
+    fun countLimitedReminder_afterNinthOfTenOccurrences_savesNineAndSchedulesTenth() = runTest {
+        val reminder = Reminder(
+            id = 9,
+            title = "Ten repetitions",
+            dueDateTimeEpochMillis = System.currentTimeMillis() + 60_000,
+            repeatInterval = RepeatInterval.DAILY,
+            repeatDuration = RepeatDuration.COUNT,
+            repeatCount = 10,
+            repeatCompletedCount = 8
+        )
+        coEvery { repository.getReminderByIdOnce(9) } returns reminder
+
+        useCase(9, isCompleted = true)
+
+        coVerify {
+            repository.saveReminder(
+                match { it.repeatCompletedCount == 9 && !it.isCompleted }
+            )
+        }
+        verify { alarmScheduler.schedule(match { it.id == 9L && !it.isCompleted }) }
     }
 }

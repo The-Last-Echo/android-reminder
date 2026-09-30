@@ -125,9 +125,12 @@
     <string name="repeat_unit_month">شهر</string>
     <string name="repeat_unit_year">سنة</string>
     <string name="repeat_frequency">كل %1$d %2$s</string>
+    <string name="repeat_every_label">كرر كل</string>
+    <string name="repeat_unit_label">الوحدة</string>
+    <string name="repeat_progress">%1$d/%2$d مرات</string>
     <string name="repeat_minutely">كل دقيقة</string>
     <string name="time_section">الوقت</string>
-    <string name="repeat_interval_count">فاصل التكرار</string>
+    <string name="repeat_interval_count">العدد</string>
     <string name="choose_repeat_end_date">اختيار تاريخ الانتهاء</string>
     <string name="repeat_daily">يوميًا</string>
     <string name="repeat_weekdays">من الاثنين إلى الجمعة</string>

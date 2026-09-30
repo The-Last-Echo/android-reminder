@@ -116,8 +116,8 @@ fun ReminderEditorScreen(
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val state by viewModel.uiState.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val state by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val attachmentStore = remember(context) { AttachmentStore(context) }
@@ -637,79 +637,98 @@ fun ReminderEditorScreen(
                                 Icon(Icons.Default.Clear, contentDescription = stringResource(com.thelastecho.reminder.R.string.clear_date_time))
                             }
                         }
-                        ExposedDropdownMenuBox(
-                            expanded = repeatDropdownExpanded,
-                            onExpandedChange = { onRepeatDropdownChange(!repeatDropdownExpanded) }
-                        ) {
-                            val repeatLabel = if (state.repeatInterval == RepeatInterval.ONCE) {
-                                stringResource(com.thelastecho.reminder.R.string.repeat_once)
-                            } else {
-                                val unitRes = when (state.repeatInterval) {
-                                    RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
-                                    RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
-                                    RepeatInterval.DAILY, RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
-                                    RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
-                                    RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
-                                    RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
-                                    RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_unit_day
+                        Text(
+                            stringResource(
+                                if (state.repeatInterval == RepeatInterval.ONCE) {
+                                    com.thelastecho.reminder.R.string.repeat
+                                } else {
+                                    com.thelastecho.reminder.R.string.repeat_every_label
                                 }
-                                stringResource(com.thelastecho.reminder.R.string.repeat_frequency, state.repeatEvery, stringResource(unitRes))
+                            ),
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (state.repeatInterval != RepeatInterval.ONCE) {
+                                OutlinedTextField(
+                                    value = state.repeatEvery.toString(),
+                                    onValueChange = { value ->
+                                        value.filter(Char::isDigit).toIntOrNull()?.let { onIntent(EditorIntent.SetRepeatEvery(it)) }
+                                    },
+                                    label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat_interval_count)) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(0.38f),
+                                    shape = ReminderShapes.Control
+                                )
                             }
-                            OutlinedTextField(
-                                value = repeatLabel,
-                                onValueChange = {},
-                                readOnly = true,
-                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat)) },
-                                leadingIcon = { Icon(Icons.Outlined.Repeat, contentDescription = null) },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatDropdownExpanded) },
-                                modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
-                                shape = ReminderShapes.Control
-                            )
-                            ExposedDropdownMenu(
+                            ExposedDropdownMenuBox(
                                 expanded = repeatDropdownExpanded,
-                                onDismissRequest = { onRepeatDropdownChange(false) }
+                                onExpandedChange = { onRepeatDropdownChange(!repeatDropdownExpanded) },
+                                modifier = Modifier.weight(if (state.repeatInterval == RepeatInterval.ONCE) 1f else 0.62f)
                             ) {
-                                listOf(
-                                    RepeatInterval.ONCE,
-                                    RepeatInterval.MINUTELY,
-                                    RepeatInterval.HOURLY,
-                                    RepeatInterval.DAILY,
-                                    RepeatInterval.WEEKLY,
-                                    RepeatInterval.MONTHLY,
-                                    RepeatInterval.YEARLY
-                                ).forEach { interval ->
-                                    val labelRes = when (interval) {
-                                        RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_once
+                                val repeatLabel = if (state.repeatInterval == RepeatInterval.ONCE) {
+                                    stringResource(com.thelastecho.reminder.R.string.repeat_once)
+                                } else {
+                                    val unitRes = when (state.repeatInterval) {
                                         RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
                                         RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
-                                        RepeatInterval.DAILY -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                        RepeatInterval.DAILY, RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
                                         RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
                                         RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
                                         RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
-                                        RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                        RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_unit_day
                                     }
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(labelRes)) },
-                                        onClick = {
-                                            onIntent(EditorIntent.SetRepeatInterval(interval))
-                                            onRepeatDropdownChange(false)
+                                    stringResource(unitRes)
+                                }
+                                OutlinedTextField(
+                                    value = repeatLabel,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat_unit_label)) },
+                                    leadingIcon = { Icon(Icons.Outlined.Repeat, contentDescription = null) },
+                                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = repeatDropdownExpanded) },
+                                    modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
+                                    shape = ReminderShapes.Control
+                                )
+                                ExposedDropdownMenu(
+                                    expanded = repeatDropdownExpanded,
+                                    onDismissRequest = { onRepeatDropdownChange(false) }
+                                ) {
+                                    listOf(
+                                        RepeatInterval.ONCE,
+                                        RepeatInterval.MINUTELY,
+                                        RepeatInterval.HOURLY,
+                                        RepeatInterval.DAILY,
+                                        RepeatInterval.WEEKLY,
+                                        RepeatInterval.MONTHLY,
+                                        RepeatInterval.YEARLY
+                                    ).forEach { interval ->
+                                        val labelRes = when (interval) {
+                                            RepeatInterval.ONCE -> com.thelastecho.reminder.R.string.repeat_once
+                                            RepeatInterval.MINUTELY -> com.thelastecho.reminder.R.string.repeat_unit_minute
+                                            RepeatInterval.HOURLY -> com.thelastecho.reminder.R.string.repeat_unit_hour
+                                            RepeatInterval.DAILY -> com.thelastecho.reminder.R.string.repeat_unit_day
+                                            RepeatInterval.WEEKLY -> com.thelastecho.reminder.R.string.repeat_unit_week
+                                            RepeatInterval.MONTHLY -> com.thelastecho.reminder.R.string.repeat_unit_month
+                                            RepeatInterval.YEARLY -> com.thelastecho.reminder.R.string.repeat_unit_year
+                                            RepeatInterval.WEEKDAYS -> com.thelastecho.reminder.R.string.repeat_unit_day
                                         }
-                                    )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(labelRes)) },
+                                            onClick = {
+                                                onIntent(EditorIntent.SetRepeatInterval(interval))
+                                                onRepeatDropdownChange(false)
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                         if (state.repeatInterval != RepeatInterval.ONCE) {
-                            OutlinedTextField(
-                                value = state.repeatEvery.toString(),
-                                onValueChange = { value ->
-                                    value.filter(Char::isDigit).toIntOrNull()?.let { onIntent(EditorIntent.SetRepeatEvery(it)) }
-                                },
-                                label = { Text(stringResource(com.thelastecho.reminder.R.string.repeat_interval_count)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = ReminderShapes.Control
-                            )
                             Text(stringResource(com.thelastecho.reminder.R.string.repeat_duration), style = MaterialTheme.typography.titleSmall)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                 RepeatDuration.entries.forEach { duration ->

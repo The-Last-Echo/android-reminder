@@ -19,6 +19,10 @@ interface ReminderDao {
     fun getAllRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 
     @Transaction
+    @Query("SELECT * FROM reminders WHERE isDeleted = 0 ORDER BY isCompleted ASC, CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
+    suspend fun getAllRemindersWithSubTasksOnce(): List<ReminderWithSubTasks>
+
+    @Transaction
     @Query("SELECT * FROM reminders WHERE isCompleted = 0 AND isDeleted = 0 ORDER BY CASE WHEN dueDateTimeEpochMillis IS NULL THEN 1 ELSE 0 END, dueDateTimeEpochMillis ASC, createdAt DESC")
     fun getActiveRemindersWithSubTasks(): Flow<List<ReminderWithSubTasks>>
 

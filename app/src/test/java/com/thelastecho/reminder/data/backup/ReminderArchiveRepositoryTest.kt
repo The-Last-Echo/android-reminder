@@ -38,7 +38,14 @@ class ReminderArchiveRepositoryTest {
     private val alarmScheduler = ImportedReminderAlarmScheduler(mockk<AlarmScheduler>(relaxed = true))
     private val tempDirectory = java.nio.file.Files.createTempDirectory("reminder-archive-test").toFile()
     private val repository = ReminderArchiveRepository(context, database, preferences, alarmScheduler, attachments)
-    private val sourceReminder = ReminderEntity(id = 7, title = "Portable reminder", notes = "Body")
+    private val sourceReminder = ReminderEntity(
+        id = 7,
+        title = "Portable reminder",
+        notes = "Body",
+        repeatDurationId = "COUNT",
+        repeatCount = 10,
+        repeatCompletedCount = 9
+    )
 
     @Before
     fun setUp() {
@@ -76,7 +83,15 @@ class ReminderArchiveRepositoryTest {
         assertEquals(0, report.skippedReminders)
         assertEquals(0, report.conflicts)
         assertTrue(report.alarmFailureReminderIds.isEmpty())
-        coVerify { reminderDao.insertReminderEntitiesForBackup(match { it.single().title == "Portable reminder" }) }
+        coVerify {
+            reminderDao.insertReminderEntitiesForBackup(
+                match {
+                    it.single().title == "Portable reminder" &&
+                        it.single().repeatCount == 10 &&
+                        it.single().repeatCompletedCount == 9
+                }
+            )
+        }
         coVerify { reminderDao.insertSubTaskEntitiesForBackup(match { it.single().title == "Subtask" }) }
         coVerify { categoryDao.insertCategoryEntitiesForBackup(match { it.single().name == "Home" }) }
     }

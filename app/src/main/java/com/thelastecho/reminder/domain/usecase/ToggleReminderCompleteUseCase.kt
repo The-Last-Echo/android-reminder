@@ -32,11 +32,21 @@ class ToggleReminderCompleteUseCase(
                 )
                 val canRepeat = when (reminder.repeatDuration) {
                     RepeatDuration.FOREVER -> true
-                    RepeatDuration.COUNT -> nextCompletedCount <= reminder.repeatCount
+                    RepeatDuration.COUNT -> nextCompletedCount < reminder.repeatCount
                     RepeatDuration.UNTIL -> reminder.repeatUntilEpochMillis?.let { nextEpochMillis <= it } ?: true
                 }
                 if (!canRepeat) {
-                    repository.toggleReminderComplete(reminderId, true)
+                    if (reminder.repeatDuration == RepeatDuration.COUNT) {
+                        repository.saveReminder(
+                            reminder.copy(
+                                repeatCompletedCount = nextCompletedCount,
+                                isCompleted = true,
+                                completedAt = System.currentTimeMillis()
+                            )
+                        )
+                    } else {
+                        repository.toggleReminderComplete(reminderId, true)
+                    }
                     return
                 }
                 val updatedReminder = reminder.copy(

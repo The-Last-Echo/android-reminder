@@ -125,9 +125,12 @@
     <string name="repeat_unit_month">个月</string>
     <string name="repeat_unit_year">年</string>
     <string name="repeat_frequency">每 %1$d %2$s</string>
+    <string name="repeat_every_label">重复间隔</string>
+    <string name="repeat_unit_label">单位</string>
+    <string name="repeat_progress">%1$d/%2$d 次</string>
     <string name="repeat_minutely">每分钟</string>
     <string name="time_section">时间</string>
-    <string name="repeat_interval_count">重复间隔</string>
+    <string name="repeat_interval_count">次数</string>
     <string name="choose_repeat_end_date">选择结束日期</string>
     <string name="repeat_daily">每天</string>
     <string name="repeat_weekdays">周一至周五</string>

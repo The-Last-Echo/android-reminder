@@ -22,6 +22,10 @@ class ReminderRepositoryImpl(
         }
     }
 
+    override suspend fun getAllRemindersOnce(): List<Reminder> {
+        return reminderDao.getAllRemindersWithSubTasksOnce().map { it.toDomain() }
+    }
+
     override fun getActiveReminders(): Flow<List<Reminder>> {
         return reminderDao.getActiveRemindersWithSubTasks().map { list ->
             list.map { it.toDomain() }

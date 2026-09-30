@@ -142,9 +142,12 @@
     <string name="repeat_unit_month">Month</string>
     <string name="repeat_unit_year">Year</string>
     <string name="repeat_frequency">Every %1$d %2$s</string>
+    <string name="repeat_every_label">Repeat every</string>
+    <string name="repeat_unit_label">Unit</string>
+    <string name="repeat_progress">%1$d/%2$d occurrences</string>
     <string name="repeat_minutely">Every minute</string>
     <string name="time_section">Time</string>
-    <string name="repeat_interval_count">Repeat interval</string>
+    <string name="repeat_interval_count">Number</string>
     <string name="choose_repeat_end_date">Choose end date</string>
     <string name="repeat_daily">Daily</string>
     <string name="repeat_weekdays">Mon-Fri</string>

@@ -125,9 +125,12 @@
     <string name="repeat_unit_month">mes</string>
     <string name="repeat_unit_year">año</string>
     <string name="repeat_frequency">Cada %1$d %2$s</string>
+    <string name="repeat_every_label">Repetir cada</string>
+    <string name="repeat_unit_label">Unidad</string>
+    <string name="repeat_progress">%1$d/%2$d repeticiones</string>
     <string name="repeat_minutely">Cada minuto</string>
     <string name="time_section">Hora</string>
-    <string name="repeat_interval_count">Intervalo de repetición</string>
+    <string name="repeat_interval_count">Número</string>
     <string name="choose_repeat_end_date">Elegir fecha de fin</string>
     <string name="repeat_daily">Diario</string>
     <string name="repeat_weekdays">Lun–vie</string>

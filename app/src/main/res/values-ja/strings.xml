@@ -125,9 +125,12 @@
     <string name="repeat_unit_month">か月</string>
     <string name="repeat_unit_year">年</string>
     <string name="repeat_frequency">%1$d %2$sごと</string>
+    <string name="repeat_every_label">繰り返し間隔</string>
+    <string name="repeat_unit_label">単位</string>
+    <string name="repeat_progress">%1$d/%2$d 回</string>
     <string name="repeat_minutely">毎分</string>
     <string name="time_section">日時</string>
-    <string name="repeat_interval_count">繰り返し間隔</string>
+    <string name="repeat_interval_count">回数</string>
     <string name="choose_repeat_end_date">終了日を選択</string>
     <string name="repeat_daily">毎日</string>
     <string name="repeat_weekdays">平日</string>

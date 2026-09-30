@@ -238,6 +238,18 @@ fun ReminderItem(
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.secondary
                             )
+                            if (reminder.repeatDuration == com.thelastecho.reminder.domain.model.RepeatDuration.COUNT) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(
+                                        com.thelastecho.reminder.R.string.repeat_progress,
+                                        reminder.repeatCompletedCount.coerceAtMost(reminder.repeatCount),
+                                        reminder.repeatCount
+                                    ),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
                         }
                     }
 

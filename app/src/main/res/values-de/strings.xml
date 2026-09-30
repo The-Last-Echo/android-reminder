@@ -125,9 +125,12 @@
     <string name="repeat_unit_month">Monat</string>
     <string name="repeat_unit_year">Jahr</string>
     <string name="repeat_frequency">Alle %1$d %2$s</string>
+    <string name="repeat_every_label">Wiederholen alle</string>
+    <string name="repeat_unit_label">Einheit</string>
+    <string name="repeat_progress">%1$d/%2$d Wiederholungen</string>
     <string name="repeat_minutely">Jede Minute</string>
     <string name="time_section">Zeit</string>
-    <string name="repeat_interval_count">Wiederholungsintervall</string>
+    <string name="repeat_interval_count">Anzahl</string>
     <string name="choose_repeat_end_date">Enddatum auswählen</string>
     <string name="repeat_daily">Täglich</string>
     <string name="repeat_weekdays">Mo–Fr</string>

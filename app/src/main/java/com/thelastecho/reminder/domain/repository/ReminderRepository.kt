@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
  */
 interface ReminderRepository {
     fun getAllReminders(): Flow<List<Reminder>>
+    suspend fun getAllRemindersOnce(): List<Reminder>
     fun getActiveReminders(): Flow<List<Reminder>>
     fun getCompletedReminders(): Flow<List<Reminder>>
     fun getRemindersByCategory(categoryId: Long): Flow<List<Reminder>>
