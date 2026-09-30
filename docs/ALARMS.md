@@ -59,7 +59,7 @@ There is no cross-device or cloud snooze synchronization in the current code.
 
 ## Recurrence and completion
 
-The reminder model includes a `RepeatInterval`, and the domain flow handles completion and rescheduling in the same local logic. The project does not currently provide a remote sync engine or a distributed recurrence state model.
+The reminder model includes a `RepeatInterval`, and the domain flow handles completion and rescheduling in the same local logic. A count-limited repeat count is the total number of occurrences, including the first scheduled occurrence; completed-occurrence progress is stored with the reminder and included in backups. The project does not currently provide a remote sync engine or a distributed recurrence state model.
 
 ## Audio and foreground service
 

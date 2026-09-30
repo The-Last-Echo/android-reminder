@@ -2,6 +2,20 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.10 - 2026-09-30
+
+### Changed
+- Treat a count-limited repeat value as the total number of occurrences, include the final completion in persisted progress, and show progress such as 9/10 on reminders.
+- Clarify repeat scheduling by grouping the interval number and unit in the editor, with translated labels across all supported languages.
+- Refresh Home from a one-shot Room snapshot and explicitly bind the pull indicator to the refresh state.
+
+### Fixed
+- Prevent count-limited reminders from scheduling an extra occurrence and ensure the terminal completed count is retained in backups.
+- Prevent pull-to-refresh from waiting indefinitely for a first emission from the reminder flow.
+
+### Tests
+- Cover the 9/10 and 10/10 completion boundaries, archive progress round-trip, and Home refresh snapshot behavior.
+
 ## 1.8.9 - 2026-09-29
 
 ### Added
