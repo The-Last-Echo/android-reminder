@@ -3,15 +3,18 @@ package com.thelastecho.reminder.core.notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.thelastecho.reminder.ReminderApp
 import com.thelastecho.reminder.R
 import com.thelastecho.reminder.core.debug.ReminderDebugTrace
 import com.thelastecho.reminder.data.attachments.AttachmentStore
@@ -28,9 +31,9 @@ class ReminderNotificationManager(
 
     /** Create stable style channels once at app startup while preserving any user channel choices. */
     fun ensureReminderChannels() {
-        ensureReminderChannel(NotificationStyle.SIMPLE, PRIORITY_HIGH)
-        ensureReminderChannel(NotificationStyle.HEADS_UP, PRIORITY_HIGH)
-        ensureReminderChannel(NotificationStyle.FULL_SCREEN, PRIORITY_HIGH)
+        ensureReminderChannel(NotificationStyle.LIGHT, PRIORITY_HIGH)
+        ensureReminderChannel(NotificationStyle.MEDIUM, PRIORITY_HIGH)
+        ensureReminderChannel(NotificationStyle.STRONG, PRIORITY_HIGH)
     }
 
     fun showReminderNotification(
@@ -40,10 +43,9 @@ class ReminderNotificationManager(
         priorityLevel: Int,
         photoUri: String? = null,
         reminderStyle: String? = null,
-        defaultStyle: NotificationStyle = NotificationStyle.HEADS_UP
+        defaultStyle: NotificationStyle = NotificationStyle.LIGHT
     ) {
-        val style = reminderStyle?.let { runCatching { NotificationStyle.valueOf(it) }.getOrNull() }
-            ?: defaultStyle
+        val style = NotificationStyle.fromPersisted(reminderStyle) ?: defaultStyle
 
         val priority = priorityLevel.coerceIn(0, 3)
 
@@ -61,27 +63,35 @@ class ReminderNotificationManager(
                 state = "dismissed",
                 extra = mapOf("style" to NotificationStyle.NONE.name)
             )
+            AlarmSoundService.stopIfPlaying(context, reminderId)
             dismissNotification(reminderId)
             return
         }
 
-        if (style == NotificationStyle.FULL_SCREEN) {
-            if (!canUseFullScreenIntent()) {
-                ReminderDebugTrace.log(
-                    step = "notification.fullscreen.fallback",
-                    reminderId = reminderId,
-                    state = "blocked",
-                    extra = mapOf("reason" to "full_screen_intent_access")
-                )
-                Log.w(TAG, "Full-screen intent access unavailable; using the high-importance alarm notification fallback")
-            }
+        val launchAlarmScreenDirectly = style.shouldLaunchAlarmScreenDirectly(
+            isAppForeground = isAppForeground(),
+            canDrawOverlays = Settings.canDrawOverlays(context),
+            isDeviceLocked = isDeviceLocked()
+        )
+        if (style.startsAlarmPlayback) {
             try {
                 ReminderDebugTrace.log(
                     step = "notification.foreground_service.start",
                     reminderId = reminderId,
                     state = "pending"
                 )
-                AlarmSoundService.start(context, reminderId, title, notes, photoUri, priority)
+                AlarmSoundService.start(
+                    context,
+                    reminderId,
+                    title,
+                    notes,
+                    photoUri,
+                    priority,
+                    allowFullScreenIntent = !launchAlarmScreenDirectly
+                )
+                if (launchAlarmScreenDirectly) {
+                    launchAlarmScreen(reminderId, title, notes, photoUri)
+                }
                 ReminderDebugTrace.log(
                     step = "notification.foreground_service.result",
                     reminderId = reminderId,
@@ -95,7 +105,7 @@ class ReminderNotificationManager(
                     extra = mapOf("reason" to exception.javaClass.simpleName)
                 )
                 Log.e(TAG, "Could not start the alarm foreground service; posting an explicit notification fallback", exception)
-                showStandardNotification(reminderId, title, notes, priority, photoUri, style)
+                showStandardNotification(reminderId, title, notes, priority, photoUri, NotificationStyle.MEDIUM)
             }
             return
         }
@@ -116,23 +126,16 @@ class ReminderNotificationManager(
         photoUri: String?,
         style: NotificationStyle
     ) {
-        val fullScreenAllowed = canUseFullScreenIntent()
-        val effectiveStyle = if (style == NotificationStyle.FULL_SCREEN && !fullScreenAllowed) {
-            ReminderDebugTrace.log(
-                step = "notification.standard.fallback",
-                reminderId = reminderId,
-                state = "full_screen_to_heads_up",
-                extra = mapOf("fullScreenAllowed" to fullScreenAllowed.toString())
-            )
-            Log.w(TAG, "Full-screen intent access unavailable; explicitly falling back to the Heads-up channel")
-            NotificationStyle.HEADS_UP
-        } else {
-            style
-        }
-        ensureReminderChannel(effectiveStyle, priority)
-        val channelId = channelId(effectiveStyle)
+        val launchFullScreenDirectly = style.shouldLaunchAlarmScreenDirectly(
+            isAppForeground = isAppForeground(),
+            canDrawOverlays = Settings.canDrawOverlays(context),
+            isDeviceLocked = isDeviceLocked()
+        )
+        val fullScreenAllowed = style.requestsFullScreenIntent && !launchFullScreenDirectly && canUseFullScreenIntent()
+        ensureReminderChannel(style, priority)
+        val channelId = channelId(style)
 
-        val openIntent = if (style == NotificationStyle.FULL_SCREEN) {
+        val openIntent = if (style != NotificationStyle.LIGHT) {
             Intent(context, ReminderFullScreenActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra(EXTRA_REMINDER_ID, reminderId)
@@ -154,7 +157,7 @@ class ReminderNotificationManager(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val compatPriority = compatPriority(effectiveStyle)
+        val compatPriority = compatPriority(style)
 
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -162,7 +165,7 @@ class ReminderNotificationManager(
             .setContentText(notes.ifBlank { null })
             .setStyle(if (notes.isNotBlank()) NotificationCompat.BigTextStyle().bigText(notes) else null)
             .setPriority(compatPriority)
-            .setCategory(if (style == NotificationStyle.FULL_SCREEN) NotificationCompat.CATEGORY_ALARM else NotificationCompat.CATEGORY_REMINDER)
+            .setCategory(if (style == NotificationStyle.LIGHT) NotificationCompat.CATEGORY_REMINDER else NotificationCompat.CATEGORY_ALARM)
             .setColor(priorityColor(priority))
             .setAutoCancel(true)
             .setContentIntent(openPendingIntent)
@@ -176,7 +179,7 @@ class ReminderNotificationManager(
             }
         }
 
-        if (style == NotificationStyle.FULL_SCREEN && fullScreenAllowed) {
+        if (style.requestsFullScreenIntent && fullScreenAllowed) {
             val fullScreenIntent = Intent(context, ReminderFullScreenActivity::class.java).apply {
                 putExtra(EXTRA_REMINDER_ID, reminderId)
                 putExtra(EXTRA_REMINDER_TITLE, title)
@@ -194,15 +197,15 @@ class ReminderNotificationManager(
         }
 
         // Recheck immediately before posting: Android 14+ lets the user revoke FSI access at any time.
-        if (style == NotificationStyle.FULL_SCREEN && fullScreenAllowed && !canUseFullScreenIntent()) {
+        if (style.requestsFullScreenIntent && fullScreenAllowed && !canUseFullScreenIntent()) {
             ReminderDebugTrace.log(
                 step = "notification.post.result",
                 reminderId = reminderId,
                 state = "revoked_after_check",
-                extra = mapOf("fallback" to NotificationStyle.HEADS_UP.name)
+                extra = mapOf("fallback" to NotificationStyle.MEDIUM.name)
             )
-            Log.w(TAG, "Full-screen intent access was revoked before reminder $reminderId was posted; retrying on the Heads-up channel")
-            showStandardNotification(reminderId, title, notes, priority, photoUri, NotificationStyle.HEADS_UP)
+            Log.w(TAG, "Full-screen intent access was revoked before reminder $reminderId was posted; retrying without full-screen access")
+            showStandardNotification(reminderId, title, notes, priority, photoUri, NotificationStyle.MEDIUM)
             return
         }
 
@@ -212,7 +215,7 @@ class ReminderNotificationManager(
                 step = "notification.post.result",
                 reminderId = reminderId,
                 state = "posted",
-                extra = mapOf("channel" to channelId(effectiveStyle), "fullScreenAllowed" to fullScreenAllowed.toString())
+                extra = mapOf("channel" to channelId(style), "fullScreenAllowed" to fullScreenAllowed.toString())
             )
         } catch (exception: SecurityException) {
             ReminderDebugTrace.log(
@@ -223,6 +226,42 @@ class ReminderNotificationManager(
             )
             Log.e(TAG, "Notification permission was revoked before posting reminder $reminderId", exception)
         }
+
+        if (launchFullScreenDirectly) launchAlarmScreen(reminderId, title, notes, photoUri)
+    }
+
+    private fun isAppForeground(): Boolean {
+        return (context.applicationContext as? ReminderApp)?.hasVisibleActivity == true
+    }
+
+    private fun isDeviceLocked(): Boolean =
+        context.getSystemService(KeyguardManager::class.java)?.isKeyguardLocked == true
+
+    private fun launchAlarmScreen(reminderId: Long, title: String, notes: String, photoUri: String?) {
+        val intent = Intent(context, ReminderFullScreenActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra(EXTRA_REMINDER_ID, reminderId)
+            putExtra(EXTRA_REMINDER_TITLE, title)
+            putExtra(EXTRA_REMINDER_NOTES, notes)
+            putExtra(EXTRA_REMINDER_PHOTO_URI, photoUri)
+        }
+        try {
+            context.startActivity(intent)
+            ReminderDebugTrace.log(
+                step = "notification.fullscreen.direct_launch",
+                reminderId = reminderId,
+                state = "started",
+                extra = mapOf("reason" to "app_foreground")
+            )
+        } catch (exception: Exception) {
+            ReminderDebugTrace.log(
+                step = "notification.fullscreen.direct_launch",
+                reminderId = reminderId,
+                state = "failed",
+                extra = mapOf("reason" to exception.javaClass.simpleName)
+            )
+            Log.w(TAG, "Could not directly open the alarm screen while the app was foregrounded", exception)
+        }
     }
 
     fun dismissNotification(reminderId: Long) {
@@ -230,10 +269,10 @@ class ReminderNotificationManager(
     }
 
     private fun channelId(style: NotificationStyle): String = when (style) {
-        NotificationStyle.SIMPLE -> CHANNEL_ID_SIMPLE
-        NotificationStyle.HEADS_UP -> CHANNEL_ID_HEADS_UP
-        NotificationStyle.FULL_SCREEN -> CHANNEL_ID_FULL_SCREEN
-        NotificationStyle.NONE -> CHANNEL_ID_SIMPLE
+        NotificationStyle.LIGHT -> CHANNEL_ID_LIGHT
+        NotificationStyle.MEDIUM -> CHANNEL_ID_MEDIUM
+        NotificationStyle.STRONG -> CHANNEL_ID_STRONG
+        NotificationStyle.NONE -> CHANNEL_ID_LIGHT
     }
 
     private fun ensureReminderChannel(style: NotificationStyle, priority: Int) {
@@ -241,9 +280,9 @@ class ReminderNotificationManager(
         val id = channelId(style)
         if (notificationManager.getNotificationChannel(id) != null) return
         val styleName = when (style) {
-            NotificationStyle.SIMPLE -> R.string.simple_style_name
-            NotificationStyle.HEADS_UP -> R.string.heads_up_style_name
-            NotificationStyle.FULL_SCREEN -> R.string.full_screen_style_name
+            NotificationStyle.LIGHT -> R.string.notification_light_name
+            NotificationStyle.MEDIUM -> R.string.notification_medium_name
+            NotificationStyle.STRONG -> R.string.notification_strong_name
             NotificationStyle.NONE -> R.string.notification_none_name
         }
         val channel = NotificationChannel(
@@ -252,7 +291,18 @@ class ReminderNotificationManager(
             channelImportance(style)
         ).apply {
             description = context.getString(R.string.reminder_channel_description)
-            enableVibration(priority >= PRIORITY_MEDIUM && style != NotificationStyle.SIMPLE)
+            enableVibration(style == NotificationStyle.STRONG)
+            if (style.usesNotificationSound) {
+                setSound(
+                    Settings.System.DEFAULT_NOTIFICATION_URI,
+                    android.media.AudioAttributes.Builder()
+                        .setUsage(android.media.AudioAttributes.USAGE_NOTIFICATION)
+                        .setContentType(android.media.AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .build()
+                )
+            } else {
+                setSound(null, null)
+            }
             setShowBadge(true)
         }
         try {
@@ -264,14 +314,14 @@ class ReminderNotificationManager(
     }
 
     private fun channelImportance(style: NotificationStyle): Int = when (style) {
-        NotificationStyle.SIMPLE -> NotificationManager.IMPORTANCE_LOW
-        NotificationStyle.HEADS_UP, NotificationStyle.FULL_SCREEN -> NotificationManager.IMPORTANCE_HIGH
+        NotificationStyle.LIGHT -> NotificationManager.IMPORTANCE_HIGH
+        NotificationStyle.MEDIUM, NotificationStyle.STRONG -> NotificationManager.IMPORTANCE_HIGH
         NotificationStyle.NONE -> NotificationManager.IMPORTANCE_NONE
     }
 
     private fun compatPriority(style: NotificationStyle): Int = when (style) {
-        NotificationStyle.SIMPLE -> NotificationCompat.PRIORITY_LOW
-        NotificationStyle.HEADS_UP, NotificationStyle.FULL_SCREEN -> NotificationCompat.PRIORITY_HIGH
+        NotificationStyle.LIGHT -> NotificationCompat.PRIORITY_HIGH
+        NotificationStyle.MEDIUM, NotificationStyle.STRONG -> NotificationCompat.PRIORITY_HIGH
         NotificationStyle.NONE -> NotificationCompat.PRIORITY_MIN
     }
 
@@ -321,9 +371,9 @@ class ReminderNotificationManager(
         const val EXTRA_REMINDER_NOTES = "reminder_notes"
         const val EXTRA_REMINDER_PHOTO_URI = "reminder_photo_uri"
 
-        const val CHANNEL_ID_SIMPLE = "reminders_simple"
-        const val CHANNEL_ID_HEADS_UP = "reminders_heads_up"
-        const val CHANNEL_ID_FULL_SCREEN = "reminders_full_screen"
+        const val CHANNEL_ID_LIGHT = "reminders_light_v3"
+        const val CHANNEL_ID_MEDIUM = "reminders_medium_v2"
+        const val CHANNEL_ID_STRONG = "reminders_strong_v2"
         private const val TAG = "ReminderNotifications"
 
         private const val PRIORITY_HIGH = 3

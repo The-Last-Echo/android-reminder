@@ -9,7 +9,7 @@ data class SettingsUiState(
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
     val useCustomAccent: Boolean = false,
-    val notificationStyle: com.thelastecho.reminder.core.preferences.NotificationStyle = com.thelastecho.reminder.core.preferences.NotificationStyle.HEADS_UP,
+    val notificationStyle: com.thelastecho.reminder.core.preferences.NotificationStyle = com.thelastecho.reminder.core.preferences.NotificationStyle.LIGHT,
     val alarmSoundUri: String? = null,
     val completedReminderRetentionDays: Int = 0,
     val addButtonOnLeft: Boolean = false,

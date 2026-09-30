@@ -25,7 +25,7 @@ The project is intentionally split into an `offline` flavor and an `online` flav
 - reminders with title, notes, due date/time, category, priority, subtasks, and attachments;
 - local soft-delete + restore flow with a 90-day retention window and trash purge;
 - recurrence semantics through the reminder model and scheduling logic already present in the app;
-- multiple notification styles: simple, heads-up, full-screen, and disabled;
+- three reminder alert levels: Light heads-up notification, Medium full-screen alert, and Strong full-screen alarm with looping sound; Android permissions control full-screen display over other apps;
 - local alarm scheduling and reboot rescheduling;
 - local backups with validate-and-restore logic;
 - a resizable Today reminders widget with per-widget transparency and a fixed quick-add widget.

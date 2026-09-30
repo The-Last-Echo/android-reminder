@@ -2,6 +2,25 @@
 
 Notable project changes are recorded here. Dates refer to repository release metadata.
 
+## 1.8.11 - 2026-09-30
+
+### Added
+- Add Light, Medium, and Strong reminder alert levels with separate notification channels, foreground alarm presentation, and legacy-style compatibility.
+- Explain optional full-screen Android access after notification permission is granted; request missing access when Medium or Strong is selected and fall back to Light when declined.
+- Add an organized notification settings screen for alert defaults, Android access, and alarm sound.
+- Localize alert levels, access prompts, and notification settings across all supported languages.
+
+### Changed
+- Make Light a high-priority heads-up notification and use immersive alarm presentation for Medium and Strong when Android access and device state allow it.
+- Preserve Android-managed full-screen intent behavior on the lock screen and document unlocked-device limitations.
+
+### Fixed
+- Keep notification-style editing and archive restoration compatible with previously saved style values.
+- Prevent Medium and Strong from remaining selected when the required full-screen access is declined.
+
+### Tests
+- Cover legacy alert-style mapping, full-screen access prompt timing, and fallback-to-Light behavior.
+
 ## 1.8.10 - 2026-09-30
 
 ### Changed

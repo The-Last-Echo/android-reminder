@@ -1,9 +1,14 @@
 package com.thelastecho.reminder.presentation.editor
 
 import android.graphics.Bitmap
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings as AndroidSettings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -40,6 +45,7 @@ import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material.icons.outlined.Repeat
 import androidx.compose.material.icons.outlined.StarOutline
 import androidx.compose.material3.Button
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
@@ -78,6 +84,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.border
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
+import com.thelastecho.reminder.core.preferences.NotificationStyle
+import com.thelastecho.reminder.core.preferences.resolveRequestedNotificationStyle
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.text.font.FontWeight
@@ -126,6 +134,60 @@ fun ReminderEditorScreen(
     var showTimePicker by remember { mutableStateOf(false) }
     var showRepeatUntilPicker by remember { mutableStateOf(false) }
     var repeatDropdownExpanded by remember { mutableStateOf(false) }
+    var showFullScreenAccessDialog by remember { mutableStateOf(false) }
+    var pendingFullScreenStyle by remember { mutableStateOf<String?>(null) }
+
+    fun finishFullScreenStyleRequest() {
+        val requestedStyle = pendingFullScreenStyle ?: return
+        val fullScreenAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+        val overlayAllowed = AndroidSettings.canDrawOverlays(context)
+        val resolvedStyle = resolveRequestedNotificationStyle(
+            NotificationStyle.fromPersisted(requestedStyle) ?: NotificationStyle.LIGHT,
+            fullScreenAllowed && overlayAllowed
+        )
+        viewModel.onIntent(EditorIntent.SetNotificationStyle(resolvedStyle.name))
+        if (resolvedStyle == NotificationStyle.LIGHT && NotificationStyle.fromPersisted(requestedStyle)?.requiresFullScreenAccess == true) {
+            scope.launch {
+                snackbarHostState.showSnackbar(context.getString(com.thelastecho.reminder.R.string.full_screen_access_denied_using_light))
+            }
+        }
+        pendingFullScreenStyle = null
+    }
+
+    val overlaySettingsLauncher = rememberLauncherForActivityResult(StartActivityForResult()) {
+        finishFullScreenStyleRequest()
+    }
+    val fullScreenSettingsLauncher = rememberLauncherForActivityResult(StartActivityForResult()) {
+        val fullScreenAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+        if (fullScreenAllowed && !AndroidSettings.canDrawOverlays(context)) {
+            runCatching {
+                overlaySettingsLauncher.launch(
+                    Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                )
+            }.onFailure { finishFullScreenStyleRequest() }
+        } else {
+            finishFullScreenStyleRequest()
+        }
+    }
+
+    fun requestNotificationStyle(style: String?) {
+        val requiresFullScreen = NotificationStyle.fromPersisted(style)?.requiresFullScreenAccess == true
+        if (!requiresFullScreen) {
+            pendingFullScreenStyle = null
+            viewModel.onIntent(EditorIntent.SetNotificationStyle(style))
+            return
+        }
+        val fullScreenAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+            context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+        if (fullScreenAllowed && AndroidSettings.canDrawOverlays(context)) {
+            viewModel.onIntent(EditorIntent.SetNotificationStyle(style))
+        } else {
+            pendingFullScreenStyle = style
+            showFullScreenAccessDialog = true
+        }
+    }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
@@ -383,13 +445,17 @@ fun ReminderEditorScreen(
                     ) {
                         listOf(
                             null to stringResource(com.thelastecho.reminder.R.string.notification_default),
-                            "SIMPLE" to stringResource(com.thelastecho.reminder.R.string.simple_style_name),
-                            "HEADS_UP" to stringResource(com.thelastecho.reminder.R.string.heads_up_style_name),
-                            "FULL_SCREEN" to stringResource(com.thelastecho.reminder.R.string.full_screen_style_name)
+                            "LIGHT" to stringResource(com.thelastecho.reminder.R.string.notification_light_name),
+                            "MEDIUM" to stringResource(com.thelastecho.reminder.R.string.notification_medium_name),
+                            "STRONG" to stringResource(com.thelastecho.reminder.R.string.notification_strong_name)
                         ).forEach { (style, label) ->
                             FilterChip(
-                                selected = state.notificationStyle == style,
-                                onClick = { viewModel.onIntent(EditorIntent.SetNotificationStyle(style)) },
+                                selected = if (style == null) {
+                                    state.notificationStyle == null || NotificationStyle.fromPersisted(state.notificationStyle) == null
+                                } else {
+                                    NotificationStyle.fromPersisted(state.notificationStyle)?.name == style
+                                },
+                                onClick = { requestNotificationStyle(style) },
                                 label = { Text(label) }
                             )
                         }
@@ -517,6 +583,42 @@ fun ReminderEditorScreen(
         ) {
             DatePicker(state = untilPickerState)
         }
+    }
+
+    if (showFullScreenAccessDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showFullScreenAccessDialog = false
+                finishFullScreenStyleRequest()
+            },
+            title = { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_access_required_title)) },
+            text = { Text(stringResource(com.thelastecho.reminder.R.string.full_screen_access_required_message)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    showFullScreenAccessDialog = false
+                    val fullScreenAllowed = Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE ||
+                        context.getSystemService(android.app.NotificationManager::class.java).canUseFullScreenIntent()
+                    runCatching {
+                        if (!fullScreenAllowed) {
+                            fullScreenSettingsLauncher.launch(
+                                Intent(AndroidSettings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+                                    .setData(Uri.parse("package:${context.packageName}"))
+                            )
+                        } else {
+                            overlaySettingsLauncher.launch(
+                                Intent(AndroidSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${context.packageName}"))
+                            )
+                        }
+                    }.onFailure { finishFullScreenStyleRequest() }
+                }) { Text(stringResource(com.thelastecho.reminder.R.string.enable_full_screen_access)) }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showFullScreenAccessDialog = false
+                    finishFullScreenStyleRequest()
+                }) { Text(stringResource(com.thelastecho.reminder.R.string.use_light)) }
+            }
+        )
     }
 }
 

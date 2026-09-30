@@ -12,37 +12,37 @@ The main implementation is in:
 
 The app creates stable notification channels at startup and preserves any user configuration already on the device.
 
-## Notification styles
+## Notification levels
 
-`NotificationStyle` is defined in `UserPreferencesRepository` and currently includes:
+`NotificationStyle` is defined in `UserPreferencesRepository` and includes:
 
-- `SIMPLE`
-- `HEADS_UP`
-- `FULL_SCREEN`
+- `LIGHT`: high-importance heads-up notification with the system notification sound.
+- `MEDIUM`: high-importance notification with a full-screen intent request and the system notification sound.
+- `STRONG`: high-importance full-screen intent request, vibration, and looping alarm playback from `AlarmSoundService`.
 - `NONE`
 
-A reminder may override the default notification style. If a reminder does not provide one, the app-wide preference is used.
+A reminder may override the app-wide default. A missing or unknown reminder value inherits the default. Legacy values are interpreted as `SIMPLE`/`HEADS_UP` to `LIGHT` and `FULL_SCREEN` to `STRONG`.
 
 ## Channel model
 
-The notification manager creates three channels:
+The notification manager creates three versioned channels:
 
-- `reminders_simple`
-- `reminders_heads_up`
-- `reminders_full_screen`
+- `reminders_light_v3`
+- `reminders_medium_v2`
+- `reminders_strong_v2`
 
-The effective channel depends on the chosen style. Android channel importance and user settings still apply. Notification channels are not a custom app-owned transport mechanism; they are Android OS channels.
+Light uses a high-importance channel so it can appear as a heads-up notification. Medium and Strong also use high-importance channels. Light and Medium use the system's default notification sound. Strong is silent at the channel level to prevent overlapping playback; the foreground service owns its alarm sound. New channel IDs are used because Android does not let apps change sound or importance after a channel has been created. Android channel importance and user settings still apply.
 
 ## Full-screen behavior
 
-When a reminder uses `FULL_SCREEN`, the code does the following:
+Medium and Strong request `ReminderFullScreenActivity` through a full-screen `PendingIntent` when Android allows it. If either fires while the device is unlocked, the app opens the activity directly when it is foregrounded or the user has granted the optional `SYSTEM_ALERT_WINDOW` special access. The alarm activity hides system bars for an immersive, full-display experience. When locked, the app relies on Android's full-screen intent path. Without overlay access, Android may show a heads-up notification while the device is unlocked. The app:
 
 - checks whether Android permits full-screen intent usage;
-- starts the alarm foreground service;
-- posts a high-priority notification or regular fallback if the system blocks full-screen access;
-- opens `ReminderFullScreenActivity` if allowed.
+- keeps a high-importance notification when access is denied;
+- relies on Android to choose between a full-screen activity and a heads-up notification when the device is actively in use and overlay access is not granted.
+- never uses overlay access to bypass the secure lock screen; Android's full-screen alarm access handles that case.
 
-The system can revoke full-screen access at any time. The app rechecks before posting and falls back to the Heads-up path when needed.
+The system can revoke full-screen access at any time. The app rechecks before posting. Background activity launch is used while unlocked only when the user explicitly grants Android's overlay special access.
 
 ## Foreground service and sound
 
@@ -52,6 +52,7 @@ The service:
 
 - reads the configured alarm sound URI from DataStore or falls back to the system default alarm ringtone;
 - sets `AudioAttributes` with `USAGE_ALARM` and loops playback;
+- is started for Strong alerts only; Medium and Light rely on their notification channel sound;
 - keeps the reminder notification in the foreground while the sound plays;
 - reacts to stop, complete, snooze, and delete actions.
 

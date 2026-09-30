@@ -470,7 +470,7 @@ class ReminderArchiveRepository(
         useDynamicColors = optBoolean("dynamic", true),
         customAccentColor = if (isNull("customAccentColor")) null else optInt("customAccentColor"),
         useCustomAccent = optBoolean("useCustomAccent", false),
-        notificationStyle = runCatching { NotificationStyle.valueOf(optString("notificationStyle", NotificationStyle.HEADS_UP.name)) }.getOrDefault(NotificationStyle.HEADS_UP),
+        notificationStyle = NotificationStyle.fromPersisted(optString("notificationStyle", NotificationStyle.LIGHT.name)) ?: NotificationStyle.LIGHT,
         alarmSoundUri = nullableString("alarmSound"),
         completedReminderRetentionDays = optInt("completedRetentionDays").coerceIn(0, 3650),
         addButtonOnLeft = optBoolean("addButtonOnLeft")

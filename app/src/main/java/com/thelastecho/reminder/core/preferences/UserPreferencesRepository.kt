@@ -18,7 +18,7 @@ data class AppThemeSettings(
     val useDynamicColors: Boolean = true,
     val customAccentColor: Int? = null,
     val useCustomAccent: Boolean = false,
-    val notificationStyle: NotificationStyle = NotificationStyle.HEADS_UP,
+    val notificationStyle: NotificationStyle = NotificationStyle.LIGHT,
     val alarmSoundUri: String? = null,
     val completedReminderRetentionDays: Int = 0,
     val addButtonOnLeft: Boolean = false,
@@ -27,14 +27,44 @@ data class AppThemeSettings(
     val latestReleaseTag: String? = null,
     val latestReleaseUrl: String? = null,
     val notificationPermissionAsked: Boolean = false,
+    val fullScreenAccessPromptAsked: Boolean = false,
     val unreadableLegacyAttachmentCount: Int = 0
 )
 
 enum class NotificationStyle {
-    SIMPLE,
-    FULL_SCREEN,
-    HEADS_UP,
-    NONE
+    LIGHT,
+    MEDIUM,
+    STRONG,
+    NONE;
+
+    val requestsFullScreenIntent: Boolean
+        get() = this == MEDIUM || this == STRONG
+
+    val startsAlarmPlayback: Boolean
+        get() = this == STRONG
+
+    val usesNotificationSound: Boolean
+        get() = this == LIGHT || this == MEDIUM
+
+    val requiresFullScreenAccess: Boolean
+        get() = this == MEDIUM || this == STRONG
+
+    fun shouldLaunchAlarmScreenDirectly(
+        isAppForeground: Boolean,
+        canDrawOverlays: Boolean,
+        isDeviceLocked: Boolean
+    ): Boolean = (this == MEDIUM || this == STRONG) && !isDeviceLocked &&
+        (isAppForeground || canDrawOverlays)
+
+    companion object {
+        fun fromPersisted(value: String?): NotificationStyle? = when (value) {
+            "LIGHT", "SIMPLE", "HEADS_UP" -> LIGHT
+            "MEDIUM" -> MEDIUM
+            "STRONG", "FULL_SCREEN" -> STRONG
+            "NONE" -> NONE
+            else -> null
+        }
+    }
 }
 
 class UserPreferencesRepository(private val context: Context) {
@@ -56,6 +86,7 @@ class UserPreferencesRepository(private val context: Context) {
         val LATEST_RELEASE_TAG = androidx.datastore.preferences.core.stringPreferencesKey("latest_release_tag")
         val LATEST_RELEASE_URL = androidx.datastore.preferences.core.stringPreferencesKey("latest_release_url")
         val NOTIFICATION_PERMISSION_ASKED = booleanPreferencesKey("notification_permission_asked")
+        val FULL_SCREEN_ACCESS_PROMPT_ASKED = booleanPreferencesKey("full_screen_access_prompt_asked")
         val UNREADABLE_LEGACY_ATTACHMENT_COUNT = androidx.datastore.preferences.core.intPreferencesKey("unreadable_legacy_attachment_count")
     }
 
@@ -69,12 +100,8 @@ class UserPreferencesRepository(private val context: Context) {
             AccentColor.valueOf(preferences[PreferencesKeys.ACCENT_COLOR] ?: AccentColor.VIOLET.name)
         }.getOrDefault(AccentColor.VIOLET)
         val dynamicColors = preferences[PreferencesKeys.USE_DYNAMIC_COLORS] ?: true
-        val notificationStyleStr = preferences[PreferencesKeys.NOTIFICATION_STYLE] ?: NotificationStyle.HEADS_UP.name
-        val notificationStyle = try {
-            NotificationStyle.valueOf(notificationStyleStr)
-        } catch (e: Exception) {
-            NotificationStyle.HEADS_UP
-        }
+        val notificationStyle = NotificationStyle.fromPersisted(preferences[PreferencesKeys.NOTIFICATION_STYLE])
+            ?: NotificationStyle.LIGHT
 
         AppThemeSettings(
             themeMode = mode,
@@ -91,6 +118,7 @@ class UserPreferencesRepository(private val context: Context) {
             latestReleaseTag = preferences[PreferencesKeys.LATEST_RELEASE_TAG],
             latestReleaseUrl = preferences[PreferencesKeys.LATEST_RELEASE_URL],
             notificationPermissionAsked = preferences[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] ?: false,
+            fullScreenAccessPromptAsked = preferences[PreferencesKeys.FULL_SCREEN_ACCESS_PROMPT_ASKED] ?: false,
             unreadableLegacyAttachmentCount = preferences[PreferencesKeys.UNREADABLE_LEGACY_ATTACHMENT_COUNT] ?: 0
         )
     }.onEach { settings ->
@@ -133,6 +161,7 @@ class UserPreferencesRepository(private val context: Context) {
     suspend fun setAddButtonOnLeft(enabled: Boolean) { context.dataStore.edit { it[PreferencesKeys.ADD_BUTTON_ON_LEFT] = enabled } }
     suspend fun setAutomaticUpdateChecks(enabled: Boolean) { context.dataStore.edit { it[PreferencesKeys.AUTOMATIC_UPDATE_CHECKS] = enabled } }
     suspend fun markNotificationPermissionAsked() { context.dataStore.edit { it[PreferencesKeys.NOTIFICATION_PERMISSION_ASKED] = true } }
+    suspend fun markFullScreenAccessPromptAsked() { context.dataStore.edit { it[PreferencesKeys.FULL_SCREEN_ACCESS_PROMPT_ASKED] = true } }
     suspend fun setUnreadableLegacyAttachmentCount(count: Int) { context.dataStore.edit { it[PreferencesKeys.UNREADABLE_LEGACY_ATTACHMENT_COUNT] = count.coerceAtLeast(0) } }
     suspend fun saveUpdateCheck(timestamp: Long, tag: String?, url: String?) { context.dataStore.edit { p -> p[PreferencesKeys.LAST_UPDATE_CHECK] = timestamp; if (tag != null) p[PreferencesKeys.LATEST_RELEASE_TAG] = tag; if (url != null) p[PreferencesKeys.LATEST_RELEASE_URL] = url } }
 
@@ -156,4 +185,18 @@ class UserPreferencesRepository(private val context: Context) {
             preferences[PreferencesKeys.NOTIFICATION_STYLE] = style.name
         }
     }
+}
+
+fun shouldOfferFullScreenAccessPrompt(
+    notificationsGranted: Boolean,
+    promptAlreadyAsked: Boolean
+): Boolean = notificationsGranted && !promptAlreadyAsked
+
+fun resolveRequestedNotificationStyle(
+    requested: NotificationStyle,
+    fullScreenAccessGranted: Boolean
+): NotificationStyle = if (requested.requiresFullScreenAccess && !fullScreenAccessGranted) {
+    NotificationStyle.LIGHT
+} else {
+    requested
 }

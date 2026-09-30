@@ -43,10 +43,9 @@ object NotificationDiagnostics {
         }
         val channels = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             buildList {
-                add(ReminderNotificationManager.CHANNEL_ID_SIMPLE)
-                add(ReminderNotificationManager.CHANNEL_ID_HEADS_UP)
-                // This is the channel used by the visible Full-Screen alarm notification.
-                add(ReminderNotificationManager.CHANNEL_ID_FULL_SCREEN)
+                add(ReminderNotificationManager.CHANNEL_ID_LIGHT)
+                add(ReminderNotificationManager.CHANNEL_ID_MEDIUM)
+                add(ReminderNotificationManager.CHANNEL_ID_STRONG)
             }.map { id ->
                 val channel = notificationManager.getNotificationChannel(id)
                 NotificationDiagnosticsSnapshot.ChannelState(

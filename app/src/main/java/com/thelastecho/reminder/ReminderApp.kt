@@ -1,6 +1,8 @@
 package com.thelastecho.reminder
 
 import android.app.Application
+import android.app.Activity
+import android.os.Bundle
 import com.thelastecho.reminder.core.notification.ReminderNotificationManager
 import com.thelastecho.reminder.core.distribution.DistributionFeatures
 import com.thelastecho.reminder.core.distribution.DistributionFeaturesFactory
@@ -22,7 +24,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
-class ReminderApp : Application() {
+class ReminderApp : Application(), Application.ActivityLifecycleCallbacks {
     private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     lateinit var distributionFeatures: DistributionFeatures
@@ -30,6 +32,7 @@ class ReminderApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        registerActivityLifecycleCallbacks(this)
         val preferencesRepository = UserPreferencesRepository(this)
         // Flavor services are composed here without a DI framework: Gradle selects one factory from src/offline or src/online.
         distributionFeatures = DistributionFeaturesFactory.create(this)
@@ -74,5 +77,27 @@ class ReminderApp : Application() {
             }
             database.reminderDao().permanentlyDeleteExpiredReminders(now)
         }
+    }
+
+    override fun onActivityStarted(activity: Activity) {
+        startedActivityCount++
+    }
+
+    override fun onActivityStopped(activity: Activity) {
+        startedActivityCount = (startedActivityCount - 1).coerceAtLeast(0)
+    }
+
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+    override fun onActivityResumed(activity: Activity) = Unit
+    override fun onActivityPaused(activity: Activity) = Unit
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+    override fun onActivityDestroyed(activity: Activity) = Unit
+
+    val hasVisibleActivity: Boolean
+        get() = startedActivityCount > 0
+
+    private companion object {
+        @Volatile
+        var startedActivityCount = 0
     }
 }
